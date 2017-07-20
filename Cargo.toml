@@ -1,0 +1,24 @@
+[package]
+name = "mixer"
+version = "0.0.0"
+authors = ["Sehyo Chang   sehyoc@gmail.com>"]
+
+[lib]
+doctest = false
+name = "mixer"
+test = false
+crate-type = ["dylib"]
+
+[dependencies]
+grpc		= "0.*"
+protobuf        = "1.*"
+futures         = "0.*"
+futures-cpupool = "0.1.*"
+tls-api         = "0.*"
+httpbis         = "0.4.1"
+libc            = "0.2.26"
+
+[build-dependencies]
+protoc-rust-grpc = { path = "../grpc-rust/protoc-rust-grpc" }
+
+
