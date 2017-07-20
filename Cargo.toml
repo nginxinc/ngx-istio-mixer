@@ -7,7 +7,7 @@ authors = ["Sehyo Chang   sehyoc@gmail.com>"]
 doctest = false
 name = "mixer"
 test = false
-crate-type = ["dylib"]
+crate-type = ["staticlib"]
 
 [dependencies]
 grpc		= "0.*"
