@@ -4,10 +4,12 @@ extern crate protobuf;
 extern crate grpc;
 extern crate tls_api;
 
-pub mod helloworld;
-pub mod helloworld_grpc;
+pub mod check;
+pub mod attributes;
+pub mod status;
+pub mod quota;
+pub mod report;
 
-pub mod route_guide;
-pub mod route_guide_grpc;
+pub mod service_grpc;
 
-pub mod greeter_client;
+pub mod mixer_client;
