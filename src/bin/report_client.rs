@@ -16,7 +16,8 @@ use mixer::report::ReportRequest;
 use mixer::attributes::Attributes;
 use mixer::service_grpc::Mixer;
 
-static KEY1: i32 = 0;
+static REQUEST_HEADER: i32 = 0;
+static TARGET_SERVICE: i32 = 1;
 
 fn main() {
 
@@ -31,9 +32,15 @@ fn main() {
     //attr.set_string_attributes("")
     req.set_request_index(0);
 
-    let mut attrValues: HashMap<i32,String> = HashMap::new();
-    attrValues.insert(KEY1,String::from("kuberentes://xyzdefault"));
-    attr.set_dictionary(attrValues);
+    let mut dictValues: HashMap<i32,String> = HashMap::new();
+    dictValues.insert(REQUEST_HEADER,String::from("request.headers"));
+    dictValues.insert(TARGET_SERVICE,String::from("target.service"));
+    attr.set_dictionary(dictValues);
+
+    let mut stringValues: HashMap<i32,String> = HashMap::new();
+    stringValues.insert(TARGET_SERVICE,String::from("reviews.default.svc.cluster.local"));
+    stringValues.insert(REQUEST_HEADER,String::from("content-length:0"));
+    attr.set_string_attributes(stringValues);
 
     req.set_attribute_update(attr);
 
