@@ -5,9 +5,9 @@ authors = ["Sehyo Chang   sehyoc@gmail.com>"]
 
 [lib]
 doctest = false
-name = "mixer"
 test = false
-crate-type = ["staticlib"]
+crate-type = ["staticlib","rlib"]
+
 
 [dependencies]
 grpc		= "0.*"
@@ -21,4 +21,6 @@ libc            = "0.2.26"
 [build-dependencies]
 protoc-rust-grpc = { path = "../grpc-rust/protoc-rust-grpc" }
 
-
+[[bin]]
+name = "report_client"
+test = false
