@@ -20,7 +20,7 @@
 static char *ngx_http_istio_mixer(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static ngx_int_t ngx_http_istio_mixer_handler(ngx_http_request_t *r);
 
-char  *hello_rust();
+char  *mixer_client(ngx_http_request_t *r);
 
 
 
@@ -91,52 +91,12 @@ static ngx_int_t ngx_http_istio_mixer_handler(ngx_http_request_t *r)
     ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "start invoking istio mixer module");
 
 
-   // invoke rust
-   char *result = hello_rust();
+   // invoke mix client
+   char *result = mixer_client(r);
 
    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "finish calling istio module: %s",result);
 
-    // parse header
-    ngx_list_part_t            *part;
-    ngx_table_elt_t            *h;
-    ngx_uint_t                  i;
 
-
-    /*
-       Get the first part of the list. There is usual only one part.
-      */
-    part = &r->headers_in.headers.part;
-    h = part->elts;
-
-
-    ngx_str_t         header_name;
-    ngx_str_t         header_value;
-
-    /*
-       Headers list array may consist of more than one part,
-       so loop through all of it
-      */
-    for (i = 0; /* void */ ; i++) {
-        if (i >= part->nelts) {
-            if (part->next == NULL) {
-                    /* The last part, search is done. */
-                break;
-            }
-
-            part = part->next;
-            h = part->elts;
-            i = 0;
-        }
-
-
-      header_name = h[i].key;
-      header_value = h[i].value;
-
-
-      ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "request header: %*s, value: %*s",
-            header_name.len,header_name.data,header_value.len,header_value.data);
-
-    }
 
 
     // end of parsing header, just send output

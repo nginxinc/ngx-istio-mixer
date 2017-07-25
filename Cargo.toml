@@ -1,7 +1,7 @@
 [package]
 name = "mixer"
 version = "0.0.0"
-authors = ["Sehyo Chang   sehyoc@gmail.com>"]
+authors = ["Sehyo Chang   sehyo@nginx.com"]
 
 [lib]
 doctest = false
@@ -20,6 +20,7 @@ libc            = "0.2.26"
 
 [build-dependencies]
 protoc-rust-grpc = { path = "../grpc-rust/protoc-rust-grpc" }
+bindgen = "0.26.3"
 
 [[bin]]
 name = "report_client"

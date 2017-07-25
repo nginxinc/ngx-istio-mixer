@@ -13,3 +13,4 @@ pub mod report;
 pub mod service_grpc;
 
 pub mod mixer_client;
+pub mod bindings;
