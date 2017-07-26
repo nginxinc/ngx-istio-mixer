@@ -12,6 +12,7 @@ clean:
 	rm -f src/check.rs
 	rm -f src/quota.rs
 	rm -f src/service_grpc.rs
+	rm -f src/bindings.rs
 
 
 report:
