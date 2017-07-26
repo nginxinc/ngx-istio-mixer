@@ -19,7 +19,7 @@ rustup default 1.18.0`
 Install Clang at: https://rust-lang-nursery.github.io/rust-bindgen/requirements.html
 
 
-## Creating static module
+## Creating Nginx module
 `git clone https://github.com/nginxinc/mixer.git`
 
 
@@ -39,19 +39,29 @@ the nginx repositry must be accessible from mixer module.
 `cd mixer
 ln -s ../nginx-1.11.13 nginx`
 
-### Compiling mixer module
+### Creating mixer as static module
 
 goto nginx module
 
 `cd nginx-1.11.13`
 
-configure mixer module
 
 `./configure --add-module=../ngx-http-istio-mixer`
 
 make and install
 
 `sudo make install`
+
+### Creating mixer as dynamic module
+
+`cd nginx-1.11.13
+./configure --add-dynamic-module=../ngx-http-istio-mixer
+make modules
+sudo cp objs/ngx_http_istio_mixer_module.so /usr/local/nginx/modules/
+sudo /usr/local/nginx/sbin/nginx -s stop
+/usr/local/nginx/sbin/ginx
+`
+
 
 ### Run mixer test.
 
