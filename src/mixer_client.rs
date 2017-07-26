@@ -7,6 +7,7 @@ use std::env;
 use std::mem;
 use std::ptr;
 use std::str;
+use std::slice;
 use std::ffi::CString;
 use std::collections::HashMap;
 use service_grpc::MixerClient;
@@ -27,28 +28,23 @@ use bindings::ngx_cycle;
 static REQUEST_HEADER: i32 = 0;
 static TARGET_SERVICE: i32 = 1;
 
-#[no_mangle]
-pub extern fn mixer_client(ngxRequest: *const ngx_http_request_s) -> *const u8 {
+// convert nginx string to str slice
+fn ngx_str_to_string(ngStr: &ngx_str_t) -> &str  {
 
+    unsafe {
+        let slice = slice::from_raw_parts(ngStr.data,ngStr.len) ;
+        return str::from_utf8(slice).unwrap();
+    }            
+   
+}
 
-   let client = MixerClient::new_plain("localhost", 9091, Default::default()).expect("init");
+// extract request.header from nginx request
+// 
+fn extract_request_header_from_nginx(ngxRequest: *const ngx_http_request_s)  -> String {
 
-    let mut requests = Vec::new();
-    let mut req = ReportRequest::new();
-    let mut attr = Attributes::new();
-    //attr.set_string_attributes("")
-    req.set_request_index(0);
+    let mut outHeader = String::from("");
 
-
-    let mut dictValues: HashMap<i32,String> = HashMap::new();
-    dictValues.insert(REQUEST_HEADER,String::from("request.headers"));
-    dictValues.insert(TARGET_SERVICE,String::from("target.service"));
-    attr.set_dictionary(dictValues);
-
-
-    let mut stringValues: HashMap<i32,String> = HashMap::new();
-  //  stringValues.insert(TARGET_SERVICE,String::from("reviews.default.svc.cluster.local"));
-  
+      // extract 
     unsafe  {
         let mut part: *const ngx_list_part_t  = &(*ngxRequest).headers_in.headers.part ;
         let mut h: *const ngx_table_elt_t =  (*part).elts as *const ngx_table_elt_t;
@@ -69,45 +65,57 @@ pub extern fn mixer_client(ngxRequest: *const ngx_http_request_s) -> *const u8 {
             }
 
             let header: *const ngx_table_elt_t = h.offset(i as isize);
-            let header_name: ngx_str_t = (*header).key;
-            let header_value: ngx_str_t = (*header).value;
 
-            ngx_log_error_core(NGX_LOG_ERR as usize, (*ngx_cycle).log, 0, CString::new("request: %*s, value: %*s").unwrap().as_ptr(),
-            header_name.len,header_name.data,header_value.len,header_value.data);
-
-            let nameVector = Vec::from_raw_parts(header_name.data,header_name.len,header_name.len);
-            let valueVector = Vec::from_raw_parts(header_value.data,header_value.len,header_value.len)  ;
-
-            let mut outHeader = String::from("");
-
-            
-            ngx_log_error_core(NGX_LOG_ERR as usize, (*ngx_cycle).log, 0, CString::new("created string vectors").unwrap().as_ptr());
-
-            outHeader.push_str(str::from_utf8(&nameVector).unwrap());
-
-            ngx_log_error_core(NGX_LOG_ERR as usize, (*ngx_cycle).log, 0, CString::new("pushed  name vector").unwrap().as_ptr());
-
+            let header_name: ngx_str_t = (*header).key;   
+            ngx_log_error_core(NGX_LOG_ERR as usize, (*ngx_cycle).log, 0, CString::new("request header: %*s").unwrap().as_ptr(),
+                header_name.len,header_name.data);         
+            outHeader.push_str(ngx_str_to_string(&header_name));
+           
+           
             outHeader.push_str(":");
 
-            ngx_log_error_core(NGX_LOG_ERR as usize, (*ngx_cycle).log, 0, CString::new("appended :").unwrap().as_ptr());
- 
+            let header_value: ngx_str_t = (*header).value;
+            ngx_log_error_core(NGX_LOG_ERR as usize, (*ngx_cycle).log, 0, CString::new("request value: %*s").unwrap().as_ptr(),
+                header_value.len,header_value.data);  
 
-            outHeader.push_str(str::from_utf8(&valueVector).unwrap());
-
-            ngx_log_error_core(NGX_LOG_ERR as usize, (*ngx_cycle).log, 0, CString::new("pushed value vector").unwrap().as_ptr());
-            
-
-
-            stringValues.insert(REQUEST_HEADER,outHeader);
-
-            mem::forget(nameVector);
-            mem::forget(valueVector);
-
-
+            outHeader.push_str(ngx_str_to_string(&header_value));
+  
+                  
             i = i + 1;
 
         }
     }
+
+    return outHeader;
+
+}
+
+
+#[no_mangle]
+pub extern fn mixer_client(ngxRequest: *const ngx_http_request_s) -> *const u8 {
+
+
+    let client = MixerClient::new_plain("localhost", 9091, Default::default()).expect("init");
+
+    let mut requests = Vec::new();
+    let mut req = ReportRequest::new();
+    let mut attr = Attributes::new();
+    //attr.set_string_attributes("")
+    req.set_request_index(0);
+
+    // set up attribute dictionary 
+    let mut dictValues: HashMap<i32,String> = HashMap::new();
+    dictValues.insert(REQUEST_HEADER,String::from("request.headers"));
+    dictValues.insert(TARGET_SERVICE,String::from("target.service"));
+    attr.set_dictionary(dictValues);
+
+
+    let mut stringValues: HashMap<i32,String> = HashMap::new();
+ 
+    let outHeader = extract_request_header_from_nginx(ngxRequest);
+  
+
+    stringValues.insert(REQUEST_HEADER,outHeader);
 
     
     attr.set_string_attributes(stringValues);
