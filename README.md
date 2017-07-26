@@ -53,6 +53,12 @@ make and install
 
 `sudo make install`
 
+### Run mixer test.
+
+This send dummy data to mixer in order to excercise grpc interfaces
+
+`cargo run --bin report_client`
+
 
 
 
