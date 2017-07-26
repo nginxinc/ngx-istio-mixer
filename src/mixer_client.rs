@@ -28,15 +28,18 @@ use bindings::ngx_cycle;
 static REQUEST_HEADER: i32 = 0;
 static TARGET_SERVICE: i32 = 1;
 
-// convert nginx string to str slice
-fn ngx_str_to_string(ngStr: &ngx_str_t) -> &str  {
+impl ngx_str_t  {
+    // convert nginx string to str slice
+    fn to_str(&self) -> &str  {
 
-    unsafe {
-        let slice = slice::from_raw_parts(ngStr.data,ngStr.len) ;
-        return str::from_utf8(slice).unwrap();
-    }            
+        unsafe {
+            let slice = slice::from_raw_parts(self.data,self.len) ;
+            return str::from_utf8(slice).unwrap();
+        }            
    
+    }
 }
+
 
 // extract request.header from nginx request
 // 
@@ -69,7 +72,7 @@ fn extract_request_header_from_nginx(ngxRequest: *const ngx_http_request_s)  -> 
             let header_name: ngx_str_t = (*header).key;   
             ngx_log_error_core(NGX_LOG_ERR as usize, (*ngx_cycle).log, 0, CString::new("request header: %*s").unwrap().as_ptr(),
                 header_name.len,header_name.data);         
-            outHeader.push_str(ngx_str_to_string(&header_name));
+            outHeader.push_str(header_name.to_str());
            
            
             outHeader.push_str(":");
@@ -78,7 +81,7 @@ fn extract_request_header_from_nginx(ngxRequest: *const ngx_http_request_s)  -> 
             ngx_log_error_core(NGX_LOG_ERR as usize, (*ngx_cycle).log, 0, CString::new("request value: %*s").unwrap().as_ptr(),
                 header_value.len,header_value.data);  
 
-            outHeader.push_str(ngx_str_to_string(&header_value));
+            outHeader.push_str(header_value.to_str());
   
                   
             i = i + 1;
