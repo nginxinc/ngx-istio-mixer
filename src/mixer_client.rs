@@ -8,7 +8,6 @@ use std::mem;
 use std::ptr;
 use std::str;
 use std::slice;
-use std::ffi::CString;
 use std::collections::HashMap;
 use service_grpc::MixerClient;
 use report::ReportRequest;
@@ -17,6 +16,7 @@ use service_grpc::Mixer;
 
 use bindings::ngx_http_request_s;
 use nginx_http::request_iterator;
+use nginx_http::log;
 
 
 static REQUEST_HEADER: i32 = 0;
@@ -70,7 +70,7 @@ fn request_header_attributes(request: *const ngx_http_request_s)   {
 
 
     for (name,value) in request_iterator(request)  {
-        print!("iterating: {}, {}",name,value);    
+        log(&format!("header name: {}, value: {}",&name,&value));
     }
 
 

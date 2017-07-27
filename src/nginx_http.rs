@@ -90,14 +90,9 @@ impl Iterator for HttpRequestIterator  {
                 let header: *const ngx_table_elt_t = self.h.offset(self.i as isize);
 
                 let header_name: ngx_str_t = (*header).key;   
-                ngx_log_error_core(NGX_LOG_ERR as usize, (*ngx_cycle).log, 0, CString::new("test2 request header: %*s").unwrap().as_ptr(),
-                    header_name.len,header_name.data);         
-
-
+                    
                 let header_value: ngx_str_t = (*header).value;
-                ngx_log_error_core(NGX_LOG_ERR as usize, (*ngx_cycle).log, 0, CString::new("test2 request value: %*s").unwrap().as_ptr(),
-                    header_value.len,header_value.data);  
-
+               
                 self.i = self.i + 1;
 
                 return Some( (header_name.to_string(),header_value.to_string()) ) ;
@@ -107,4 +102,13 @@ impl Iterator for HttpRequestIterator  {
     
     }
 
+}
+
+// log message
+pub fn log(message: &str)  {
+
+    unsafe {
+          ngx_log_error_core(NGX_LOG_ERR as usize, (*ngx_cycle).log, 0, message.as_ptr() as *const ::std::os::raw::c_char,message.len());
+    }
+     
 }
