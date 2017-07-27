@@ -16,15 +16,16 @@ use attributes::Attributes;
 use service_grpc::Mixer;
 
 use bindings::ngx_http_request_s;
-use nginx_http::extract_request_header_from_nginx;
+use nginx_http::request_iterator;
 
 
 static REQUEST_HEADER: i32 = 0;
 static TARGET_SERVICE: i32 = 1;
 
 
+
 #[no_mangle]
-pub extern fn mixer_client(ngxRequest: *const ngx_http_request_s) -> *const u8 {
+pub extern fn mixer_client(request: *const ngx_http_request_s) -> *const u8 {
 
 
     let client = MixerClient::new_plain("localhost", 9091, Default::default()).expect("init");
@@ -44,9 +45,9 @@ pub extern fn mixer_client(ngxRequest: *const ngx_http_request_s) -> *const u8 {
 
     let mut stringValues: HashMap<i32,String> = HashMap::new();
  
-    let outHeader = extract_request_header_from_nginx(ngxRequest);
+    request_header_attributes(request);
 
-    stringValues.insert(REQUEST_HEADER,outHeader);
+   // stringValues.insert(REQUEST_HEADER,outHeader);
 
     
     attr.set_string_attributes(stringValues);
@@ -62,6 +63,18 @@ pub extern fn mixer_client(ngxRequest: *const ngx_http_request_s) -> *const u8 {
     resp.wait_drop_metadata().count();
 
     "Hello, world!\0".as_ptr()
+}
+
+
+fn request_header_attributes(request: *const ngx_http_request_s)   {
+
+
+    for (name,value) in request_iterator(request)  {
+        print!("iterating: {}, {}",name,value);    
+    }
+
+
+
 }
 
 

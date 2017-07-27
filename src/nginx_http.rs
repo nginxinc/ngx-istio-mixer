@@ -6,6 +6,7 @@ use std::str;
 use std::slice;
 use std::ffi::CString;
 
+
 use bindings::ngx_http_request_s;
 use bindings::ngx_list_part_t;
 use bindings::ngx_table_elt_t;
@@ -27,57 +28,83 @@ impl ngx_str_t  {
         }            
    
     }
+
+    // get string 
+    fn to_string(&self) -> String  {
+        return String::from(self.to_str());
+    }
 }
 
 
-// extract request.header from nginx request
-// 
-pub fn extract_request_header_from_nginx(request: *const ngx_http_request_s)  -> String {
+pub struct HttpRequestIterator {
 
-    let mut out_header = String::from("");
+    done: bool ,
+    part: *const ngx_list_part_t,
+    h: *const ngx_table_elt_t,
+    i: ngx_uint_t
+}
 
-      // extract 
-    unsafe  {
-        let mut part: *const ngx_list_part_t  = &(*request).headers_in.headers.part ;
-        let mut h: *const ngx_table_elt_t =  (*part).elts as *const ngx_table_elt_t;
 
-        let mut i: ngx_uint_t = 0;
-        let mut done = false;
+// create new http request iterator 
+pub fn request_iterator(request: *const ngx_http_request_s) -> HttpRequestIterator  {
 
-        while !done  {
-            if i >= (*part).nelts  {
-                if (*part).next.is_null() {
-                    done = true;
-                    break;
-                }
+    unsafe {
+        let  part: *const ngx_list_part_t  = &(*request).headers_in.headers.part ;
 
-                part = (*part).next;
-                h = (*part).elts as *mut ngx_table_elt_t;
-                i = 0;
-            }
-
-            let header: *const ngx_table_elt_t = h.offset(i as isize);
-
-            let header_name: ngx_str_t = (*header).key;   
-            ngx_log_error_core(NGX_LOG_ERR as usize, (*ngx_cycle).log, 0, CString::new("request header: %*s").unwrap().as_ptr(),
-                header_name.len,header_name.data);         
-            out_header.push_str(header_name.to_str());
-           
-           
-            out_header.push_str(":");
-
-            let header_value: ngx_str_t = (*header).value;
-            ngx_log_error_core(NGX_LOG_ERR as usize, (*ngx_cycle).log, 0, CString::new("request value: %*s").unwrap().as_ptr(),
-                header_value.len,header_value.data);  
-
-            out_header.push_str(header_value.to_str());
-  
-                  
-            i = i + 1;
-
+        HttpRequestIterator  {
+            done: false,
+            part: part,
+            h: (*part).elts as *const ngx_table_elt_t,
+            i: 0
         }
     }
+    
 
-    return out_header;
+}
+
+impl Iterator for HttpRequestIterator  {
+
+    // type Item = (&str,&str);
+    // TODO: try to use str instead of string
+
+    type Item = (String,String);
+    
+    fn next(&mut self) -> Option<Self::Item> {
+
+        unsafe {
+            if self.done  {
+                return None;
+            } else {
+                if self.i >= (*self.part).nelts  {
+                        if (*self.part).next.is_null() {
+                            self.done = true;
+                            return None
+                        }
+
+                        // loop back
+                        self.part = (*self.part).next;
+                        self.h = (*self.part).elts as *mut ngx_table_elt_t;
+                        self.i = 0;
+                }
+
+                let header: *const ngx_table_elt_t = self.h.offset(self.i as isize);
+
+                let header_name: ngx_str_t = (*header).key;   
+                ngx_log_error_core(NGX_LOG_ERR as usize, (*ngx_cycle).log, 0, CString::new("test2 request header: %*s").unwrap().as_ptr(),
+                    header_name.len,header_name.data);         
+
+
+                let header_value: ngx_str_t = (*header).value;
+                ngx_log_error_core(NGX_LOG_ERR as usize, (*ngx_cycle).log, 0, CString::new("test2 request value: %*s").unwrap().as_ptr(),
+                    header_value.len,header_value.data);  
+
+                self.i = self.i + 1;
+
+                return Some( (header_name.to_string(),header_value.to_string()) ) ;
+
+            }
+        }
+    
+    }
 
 }
