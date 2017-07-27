@@ -8,8 +8,6 @@ extern crate grpc;
 extern crate futures;
 extern crate libc;
 
-
-use std::env;
 use std::collections::HashMap;
 use mixer::service_grpc::MixerClient;
 use mixer::report::ReportRequest;
@@ -32,15 +30,15 @@ fn main() {
     //attr.set_string_attributes("")
     req.set_request_index(0);
 
-    let mut dictValues: HashMap<i32,String> = HashMap::new();
-    dictValues.insert(REQUEST_HEADER,String::from("request.headers"));
-    dictValues.insert(TARGET_SERVICE,String::from("target.service"));
-    attr.set_dictionary(dictValues);
+    let mut dict_values: HashMap<i32,String> = HashMap::new();
+    dict_values.insert(REQUEST_HEADER,String::from("request.headers"));
+    dict_values.insert(TARGET_SERVICE,String::from("target.service"));
+    attr.set_dictionary(dict_values);
 
-    let mut stringValues: HashMap<i32,String> = HashMap::new();
-    stringValues.insert(TARGET_SERVICE,String::from("reviews.default.svc.cluster.local"));
-    stringValues.insert(REQUEST_HEADER,String::from("content-length:0"));
-    attr.set_string_attributes(stringValues);
+    let mut string_values: HashMap<i32,String> = HashMap::new();
+    string_values.insert(TARGET_SERVICE,String::from("reviews.default.svc.cluster.local"));
+    string_values.insert(REQUEST_HEADER,String::from("content-length:0"));
+    attr.set_string_attributes(string_values);
 
     req.set_attribute_update(attr);
 
