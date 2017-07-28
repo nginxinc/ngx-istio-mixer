@@ -16,6 +16,8 @@ use mixer::service_grpc::Mixer;
 
 static REQUEST_HEADER: i32 = 0;
 static TARGET_SERVICE: i32 = 1;
+static REQUEST_HOST: i32 = 2;
+static USER_AGENT: i32 = 3;
 
 fn main() {
 
@@ -33,12 +35,14 @@ fn main() {
     let mut dict_values: HashMap<i32,String> = HashMap::new();
     dict_values.insert(REQUEST_HEADER,String::from("request.headers"));
     dict_values.insert(TARGET_SERVICE,String::from("target.service"));
+    dict_values.insert(REQUEST_HOST,String::from("request.host"));
     attr.set_dictionary(dict_values);
 
     let mut string_values: HashMap<i32,String> = HashMap::new();
     string_values.insert(TARGET_SERVICE,String::from("reviews.default.svc.cluster.local"));
-    string_values.insert(REQUEST_HEADER,String::from("content-length:0"));
+    string_values.insert(REQUEST_HOST,String::from("test.com"));
     attr.set_string_attributes(string_values);
+
 
     req.set_attribute_update(attr);
 
