@@ -24,8 +24,33 @@ static REQUEST_HEADER: i32 = 0;
 static TARGET_SERVICE: i32 = 1;
 
 
+/**
+  filter nginx 
+ */
+/*
+#[no_mangle] 
+public extern fn ngx_int_t ngx_http_istio_mixer_filter(request: *const ngx_http_request_s) -> ngx_int_t {
+{
 
-#[no_mangle]
+    log(&format!("start invoking istio mixer filter");
+
+    ngx_http_mixer_main_conf_t *conf = *rngx_http_istio_mixer_module);
+
+    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "using server: %*s",conf->mixer_server.len,conf->mixer_server.data);
+
+    // invoke mix client
+    mixer_client(r);
+
+    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "finish calling istio filter");
+
+    return ngx_http_next_header_filter(r);
+
+} */
+
+
+
+
+#[no_mangle] 
 pub extern fn mixer_client(request: *const ngx_http_request_s) -> *const u8 {
 
 

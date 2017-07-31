@@ -22,6 +22,14 @@ typedef struct {
 } ngx_http_mixer_loc_conf_t;
 
 
+/**
+ * @brief element mixer configuration
+ */
+typedef struct {
+    ngx_str_t              mixer_server;              /**< mixer server */
+} ngx_http_mixer_main_conf_t;
+
+
 static char *ngx_http_istio_mixer(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static ngx_int_t ngx_http_istio_mixer_filter(ngx_http_request_t *r);
 static ngx_int_t ngx_http_mixer_filter_init(ngx_conf_t *cf);
@@ -30,6 +38,9 @@ static ngx_int_t ngx_http_mixer_filter_init(ngx_conf_t *cf);
 static void *ngx_http_mixer_create_loc_conf(ngx_conf_t *cf);
 static char *ngx_http_mixer_merge_loc_conf(ngx_conf_t *cf, void *parent,
     void *child);
+
+static void *ngx_http_mixer_create_main_conf(ngx_conf_t *cf);    
+
 
 char  *mixer_client(ngx_http_request_t *r);
 
@@ -50,6 +61,16 @@ static ngx_command_t ngx_http_istio_mixer_commands[] = {
       0, /* No offset when storing the module configuration on struct. */
       NULL},
 
+    { 
+      ngx_string("mixer_server"), /* directive */
+      NGX_HTTP_MAIN_CONF|NGX_CONF_TAKE1, /* location context and takes
+                                            no arguments*/
+      ngx_conf_set_str_slot, /* configuration setup function */
+      NGX_HTTP_MAIN_CONF_OFFSET, 
+      offsetof(ngx_http_mixer_main_conf_t,mixer_server),
+      NULL
+    },  
+
     ngx_null_command /* command termination */
 };
 
@@ -59,8 +80,7 @@ static ngx_command_t ngx_http_istio_mixer_commands[] = {
 static ngx_http_module_t ngx_http_istio_mixer_module_ctx = {
     NULL, /* preconfiguration */
     ngx_http_mixer_filter_init, /* postconfiguration */
-
-    NULL, /* create main configuration */
+    ngx_http_mixer_create_main_conf, /* create main configuration */
     NULL, /* init main configuration */
 
     NULL, /* create server configuration */
@@ -109,9 +129,12 @@ static ngx_int_t ngx_http_istio_mixer_filter(ngx_http_request_t *r)
 
     ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "start invoking istio mixer filter");
 
+    ngx_http_mixer_main_conf_t *conf = ngx_http_get_module_main_conf(r, ngx_http_istio_mixer_module);
 
-   // invoke mix client
-   mixer_client(r);
+    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "using server: %*s",conf->mixer_server.len,conf->mixer_server.data);
+
+    // invoke mix client
+    mixer_client(r);
 
    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "finish calling istio filter");
 
@@ -180,4 +203,18 @@ static char *ngx_http_istio_mixer(ngx_conf_t *cf, ngx_command_t *cmd, void *conf
      ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "configuring mixer");
 
     return NGX_OK;
+}
+
+
+static void *ngx_http_mixer_create_main_conf(ngx_conf_t *cf)
+{
+  ngx_http_mixer_main_conf_t *conf;
+
+  conf = ngx_pcalloc(cf->pool, sizeof(ngx_http_mixer_main_conf_t));
+  if (conf == NULL) {
+    return NULL;
+  }
+
+
+  return conf;
 }
