@@ -5,6 +5,9 @@ restart:
 start:
 	sudo /usr/local/nginx/sbin/nginx
 
+setup:
+	cp /usr/local/nginx/conf/nginx.conf conf
+
 clean:
 	cargo clean
 	rm -f src/attributes.rs
