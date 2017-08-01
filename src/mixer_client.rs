@@ -18,6 +18,7 @@ use service_grpc::Mixer;
 use bindings::ngx_http_request_s;
 use nginx_http::request_iterator;
 use nginx_http::log;
+use bindings::ngx_str_t;
 
 
 static REQUEST_HEADER: i32 = 0;
@@ -51,10 +52,14 @@ public extern fn ngx_int_t ngx_http_istio_mixer_filter(request: *const ngx_http_
 
 
 #[no_mangle] 
-pub extern fn mixer_client(request: *const ngx_http_request_s) -> *const u8 {
+pub extern fn mixer_client(request: *const ngx_http_request_s,ng_server: *const ngx_str_t,port: u32) -> *const u8 {
 
+    let server = unsafe { *ng_server } ;
+    let server_name = server.to_str()  ;
 
-    let client = MixerClient::new_plain("localhost", 9091, Default::default()).expect("init");
+     log(&format!("server port {}",port));
+
+    let client = MixerClient::new_plain(server_name, 9091, Default::default()).expect("init");
 
     let mut requests = Vec::new();
     let mut req = ReportRequest::new();

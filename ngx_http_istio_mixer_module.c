@@ -26,7 +26,8 @@ typedef struct {
  * @brief element mixer configuration
  */
 typedef struct {
-    ngx_str_t              mixer_server;              /**< mixer server */
+    ngx_str_t mixer_server;              /**< mixer server */
+    ngx_int_t mixer_port;                /**  mixer port */
 } ngx_http_mixer_main_conf_t;
 
 
@@ -42,7 +43,7 @@ static char *ngx_http_mixer_merge_loc_conf(ngx_conf_t *cf, void *parent,
 static void *ngx_http_mixer_create_main_conf(ngx_conf_t *cf);    
 
 
-char  *mixer_client(ngx_http_request_t *r);
+char  *mixer_client(ngx_http_request_t *r,ngx_str_t *server,ngx_uint_t);
 
 static ngx_http_output_header_filter_pt ngx_http_next_header_filter;
 
@@ -63,11 +64,18 @@ static ngx_command_t ngx_http_istio_mixer_commands[] = {
 
     { 
       ngx_string("mixer_server"), /* directive */
-      NGX_HTTP_MAIN_CONF|NGX_CONF_TAKE1, /* location context and takes
-                                            no arguments*/
+      NGX_HTTP_MAIN_CONF|NGX_CONF_TAKE1,  // server takes 1 //
       ngx_conf_set_str_slot, /* configuration setup function */
       NGX_HTTP_MAIN_CONF_OFFSET, 
       offsetof(ngx_http_mixer_main_conf_t,mixer_server),
+      NULL
+    },  
+     { 
+      ngx_string("mixer_port"), /* directive */
+      NGX_HTTP_MAIN_CONF|NGX_CONF_TAKE1, // server port takes 1 //
+      ngx_conf_set_num_slot, /* configuration setup function */
+      NGX_HTTP_MAIN_CONF_OFFSET, 
+      offsetof(ngx_http_mixer_main_conf_t,mixer_port),
       NULL
     },  
 
@@ -134,9 +142,9 @@ static ngx_int_t ngx_http_istio_mixer_filter(ngx_http_request_t *r)
     ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "using server: %*s",conf->mixer_server.len,conf->mixer_server.data);
 
     // invoke mix client
-    mixer_client(r);
+    mixer_client(r,&conf->mixer_server,conf->mixer_port);
 
-   ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "finish calling istio filter");
+    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "finish calling istio filter");
 
 
    return ngx_http_next_header_filter(r);
@@ -215,6 +223,7 @@ static void *ngx_http_mixer_create_main_conf(ngx_conf_t *cf)
     return NULL;
   }
 
+  conf->mixer_port = NGX_CONF_UNSET_UINT;
 
   return conf;
 }

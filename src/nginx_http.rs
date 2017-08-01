@@ -17,10 +17,9 @@ use bindings::NGX_LOG_ERR;
 use bindings::ngx_cycle;
 
 
-
 impl ngx_str_t  {
     // convert nginx string to str slice
-    fn to_str(&self) -> &str  {
+    pub fn to_str(&self) -> &str  {
 
         unsafe {
             let slice = slice::from_raw_parts(self.data,self.len) ;
@@ -30,7 +29,7 @@ impl ngx_str_t  {
     }
 
     // get string 
-    fn to_string(&self) -> String  {
+    pub fn to_string(&self) -> String  {
         return String::from(self.to_str());
     }
 }
