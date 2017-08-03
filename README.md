@@ -1,6 +1,6 @@
 # Nginx Mixer Module
 
-## Development Set up
+## Development Set up for Mac
 
 
 ### Install Rust 1.18.0
@@ -17,6 +17,11 @@ rustup default 1.18.0`
 ### Install CLang for bindgen
 
 Install Clang at: https://rust-lang-nursery.github.io/rust-bindgen/requirements.html
+
+
+### Install gRpc compiler
+`brew install --with-plugins grpc
+brew install --with-plugins grpc`
 
 
 ## Creating Nginx module
