@@ -16,9 +16,7 @@
 
 
 typedef struct {
-    ngx_hash_t                          types;
-    ngx_array_t                        *types_keys;
-    ngx_http_complex_value_t           *variable;
+    ngx_flag_t         enable;              // for every location, we need flag to enable/disable mixer
 } ngx_http_mixer_loc_conf_t;
 
 
@@ -31,7 +29,6 @@ typedef struct {
 } ngx_http_mixer_main_conf_t;
 
 
-static char *ngx_http_istio_mixer(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static ngx_int_t ngx_http_istio_mixer_filter(ngx_http_request_t *r);
 static ngx_int_t ngx_http_mixer_filter_init(ngx_conf_t *cf);
 
@@ -54,12 +51,12 @@ static ngx_http_output_header_filter_pt ngx_http_next_header_filter;
  */
 static ngx_command_t ngx_http_istio_mixer_commands[] = {
 
-    { ngx_string("mixer"), /* directive */
-      NGX_HTTP_LOC_CONF|NGX_CONF_NOARGS, /* location context and takes
-                                            no arguments*/
-      ngx_http_istio_mixer, /* configuration setup function */
-      0, /* No offset. Only one context is supported. */
-      0, /* No offset when storing the module configuration on struct. */
+    { 
+      ngx_string("mixer"), /* directive */
+      NGX_HTTP_LOC_CONF | NGX_CONF_FLAG, 
+      ngx_conf_set_flag_slot, /* configuration setup function */
+      NGX_HTTP_LOC_CONF_OFFSET, 
+      offsetof(ngx_http_mixer_loc_conf_t, enable),  // store in the location configuration
       NULL},
 
     { 
@@ -134,15 +131,25 @@ static ngx_int_t ngx_http_mixer_filter_init(ngx_conf_t *cf) {
  */
 static ngx_int_t ngx_http_istio_mixer_filter(ngx_http_request_t *r)
 {
+    ngx_http_mixer_loc_conf_t  *loc_conf;
+    ngx_http_mixer_main_conf_t *main_conf;
 
     ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "start invoking istio mixer filter");
 
-    ngx_http_mixer_main_conf_t *conf = ngx_http_get_module_main_conf(r, ngx_http_istio_mixer_module);
+    loc_conf = ngx_http_get_module_loc_conf(r, ngx_http_istio_mixer_module);
 
-    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "using server: %*s",conf->mixer_server.len,conf->mixer_server.data);
+    if (!loc_conf->enable) {
+        ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "mixer not enabled, just passing header");
+        return ngx_http_next_header_filter(r);
+    }
+
+
+    main_conf = ngx_http_get_module_main_conf(r, ngx_http_istio_mixer_module);
+
+    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "using server: %*s",main_conf->mixer_server.len,main_conf->mixer_server.data);
 
     // invoke mix client
-    mixer_client(r,&conf->mixer_server,conf->mixer_port);
+    mixer_client(r,&main_conf->mixer_server,main_conf->mixer_port);
 
     ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "finish calling istio filter");
 
@@ -154,8 +161,9 @@ static ngx_int_t ngx_http_istio_mixer_filter(ngx_http_request_t *r)
 
 static void *ngx_http_mixer_create_loc_conf(ngx_conf_t *cf) {
 
-    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "creating loc conf");
+    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "creating mixer loc conf");
 
+    
     ngx_http_mixer_loc_conf_t  *conf;
 
     conf = ngx_pcalloc(cf->pool, sizeof(ngx_http_mixer_loc_conf_t));
@@ -163,13 +171,8 @@ static void *ngx_http_mixer_create_loc_conf(ngx_conf_t *cf) {
         return NULL;
     }
 
-    /*
-     * set by ngx_pcalloc():
-     *
-     *     conf->types = { NULL };
-     *     conf->types_keys = NULL;
-     *     conf->variable = NULL;
-     */
+    conf->enable = NGX_CONF_UNSET;
+
 
     return conf;
 }
@@ -182,41 +185,20 @@ ngx_http_mixer_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
     ngx_http_mixer_loc_conf_t  *prev = parent;
     ngx_http_mixer_loc_conf_t  *conf = child;
 
-    if (ngx_http_merge_types(cf, &conf->types_keys, &conf->types,
-                             &prev->types_keys,&prev->types,
-                             ngx_http_html_default_types)
-        != NGX_OK)
-    {
-       return NGX_CONF_ERROR;
-    }
-
-    if (conf->variable == NULL) {
-        conf->variable = prev->variable;
-    }
-
-    if (conf->variable == NULL) {
-        conf->variable = (ngx_http_complex_value_t *) -1;
-    }
+    ngx_conf_merge_value(conf->enable, prev->enable, 0);
 
     return NGX_CONF_OK;
 }
 
-// init config
-// borrow from https://github.com/alibaba/nginx-http-footer-filter/blob/master/ngx_http_footer_filter_module.c
-// not sure what this code is doing...
 
-static char *ngx_http_istio_mixer(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
-{
-   
-     ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "configuring mixer");
-
-    return NGX_OK;
-}
 
 
 static void *ngx_http_mixer_create_main_conf(ngx_conf_t *cf)
 {
   ngx_http_mixer_main_conf_t *conf;
+
+  ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "setting up main config");
+
 
   conf = ngx_pcalloc(cf->pool, sizeof(ngx_http_mixer_main_conf_t));
   if (conf == NULL) {
