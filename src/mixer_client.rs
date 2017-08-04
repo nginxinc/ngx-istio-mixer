@@ -16,13 +16,40 @@ use attributes::StringMap;
 use service_grpc::Mixer;
 
 use bindings::ngx_http_request_s;
-use nginx_http::request_iterator;
+use nginx_http::list_iterator;
 use nginx_http::log;
 use bindings::ngx_str_t;
 
 
 static REQUEST_HEADER: i32 = 0;
-static TARGET_SERVICE: i32 = 1;
+
+static SOURCE_IP: i32 = 2;
+static SOURCE_PORT: i32 = 3;
+static SOURCE_NAME: i32 = 4;
+static SOURCE_UID: i32 = 5;
+static SOURCE_NAMESPACE: i32 = 6;
+static SOURCE_LABLES: i32 = 7;
+static SOURCE_USER: i32 = 8;
+static TARGET_IP: i32 = 9;
+static TARGET_PORT: i32 = 10;
+static TARGET_SERVICE: i32 = 11;
+static TARGET_NAME: i32 = 12;
+static TARGET_UID: i32 = 13;
+static TARGET_NAMESPACE: i32 = 14;
+static TARGET_LABELS: i32 = 15;
+static TARGET_URSER: i32 = 16;
+
+static REQUEST_PATH: i32 = 17;
+static REQUEST_HOST: i32 = 18;
+static REQUEST_METHOD: i32 = 19;
+static REQUEST_REASON: i32 = 20;
+static REQUEST_REFER: i32 = 21;
+static REQUEST_SCHEME: i32 = 22;
+static REQUEST_SIZE: i32 = 23;
+static REQUEST_TIME: i32 = 24;
+static REQUEST_USERAGENT: i32 = 25;
+static REQUEST_DURATION: i32 = 28;
+static REQUEST_CODE: i32 = 29;
 
 
 /**
@@ -57,8 +84,9 @@ pub extern fn mixer_client(request: *const ngx_http_request_s,ng_server: *const 
     let server = unsafe { *ng_server } ;
     let server_name = server.to_str()  ;
 
-     log(&format!("server port {}",port));
+    log(&format!("server port {}",port));
 
+ 
     let client = MixerClient::new_plain(server_name, 9091, Default::default()).expect("init");
 
     let mut requests = Vec::new();
@@ -71,6 +99,7 @@ pub extern fn mixer_client(request: *const ngx_http_request_s,ng_server: *const 
     let mut dictValues: HashMap<i32,String> = HashMap::new();
     dictValues.insert(REQUEST_HEADER,String::from("request.headers"));
     dictValues.insert(TARGET_SERVICE,String::from("target.service"));
+    dictValues.insert(REQUEST_HOST,String::from("request.host"));
 
 
     let mut stringMapValues: HashMap<i32,StringMap> = HashMap::new();
@@ -80,6 +109,14 @@ pub extern fn mixer_client(request: *const ngx_http_request_s,ng_server: *const 
     attr.set_dictionary(dictValues);
     attr.set_stringMap_attributes(stringMapValues);
     
+    // fill in the rest of attributes
+    let mut stringValues: HashMap<i32,String> = HashMap::new();
+    let headers_in = unsafe { (*request).headers_in };
+    let host = headers_in.host_str();
+    log(&format!("request host {}",host));
+    stringValues.insert(REQUEST_HOST,String::from(host));
+    attr.set_string_attributes(stringValues);
+
   
     req.set_attribute_update(attr);
 
@@ -118,8 +155,8 @@ fn process_request_attribute(request: *const ngx_http_request_s, dictValues: &mu
 
     let mut map: HashMap<i32,String> = HashMap::new();
   
-
-    for (name,value) in request_iterator(request)  {
+    let request = unsafe { *request };
+    for (name,value) in request.headers_in_iterator()   {
         log(&format!("header name: {}, value: {}",&name,&value));
 
         let result = string_index(&value,dictValues);

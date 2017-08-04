@@ -8,8 +8,10 @@ use std::ffi::CString;
 
 
 use bindings::ngx_http_request_s;
+use bindings::ngx_http_headers_in_t;
 use bindings::ngx_list_part_t;
 use bindings::ngx_table_elt_t;
+use bindings::ngx_list_t;
 use bindings::ngx_uint_t;
 use bindings::ngx_str_t;
 use bindings::ngx_log_error_core;
@@ -34,8 +36,24 @@ impl ngx_str_t  {
     }
 }
 
+impl ngx_http_request_s {
 
-pub struct HttpRequestIterator {
+    pub fn headers_in_iterator(&self) -> NgxListIterator {
+        list_iterator(unsafe { &(self).headers_in.headers }) 
+    }
+
+}
+
+impl ngx_http_headers_in_t {
+
+    // host
+    pub fn host_str(&self) -> &str  {
+        unsafe { (*self.host).value.to_str() }
+    }
+}
+
+
+pub struct NgxListIterator {
 
     done: bool ,
     part: *const ngx_list_part_t,
@@ -45,12 +63,12 @@ pub struct HttpRequestIterator {
 
 
 // create new http request iterator 
-pub fn request_iterator(request: *const ngx_http_request_s) -> HttpRequestIterator  {
+pub fn list_iterator(list: *const ngx_list_t) -> NgxListIterator  {
 
     unsafe {
-        let  part: *const ngx_list_part_t  = &(*request).headers_in.headers.part ;
+        let  part: *const ngx_list_part_t  = &(*list).part ;
 
-        HttpRequestIterator  {
+        NgxListIterator  {
             done: false,
             part: part,
             h: (*part).elts as *const ngx_table_elt_t,
@@ -58,10 +76,11 @@ pub fn request_iterator(request: *const ngx_http_request_s) -> HttpRequestIterat
         }
     }
     
-
 }
 
-impl Iterator for HttpRequestIterator  {
+// iterator for ngx_list_t
+
+impl Iterator for NgxListIterator  {
 
     // type Item = (&str,&str);
     // TODO: try to use str instead of string
