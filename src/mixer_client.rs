@@ -16,6 +16,7 @@ use attributes::StringMap;
 use service_grpc::Mixer;
 
 use bindings::ngx_http_request_s;
+use bindings::ngx_http_headers_in_t;
 use nginx_http::list_iterator;
 use nginx_http::log;
 use bindings::ngx_str_t;
@@ -50,13 +51,18 @@ static REQUEST_TIME: i32 = 24;
 static REQUEST_USERAGENT: i32 = 25;
 static REQUEST_DURATION: i32 = 28;
 static REQUEST_CODE: i32 = 29;
+static RESPONSE_SIZE: i32 = 30;
+static RESPONSE_HEADERS: i32 = 31;
+static RESPONSE_TIME: i32 = 32;
+static RESPONSE_DURATIOn: i32 = 33;
+static RESPONSE_CODE: i32 = 34;
 
 
 /**
-  filter nginx 
+  filter nginx
  */
 /*
-#[no_mangle] 
+#[no_mangle]
 public extern fn ngx_int_t ngx_http_istio_mixer_filter(request: *const ngx_http_request_s) -> ngx_int_t {
 {
 
@@ -95,27 +101,41 @@ pub extern fn mixer_client(request: *const ngx_http_request_s,ng_server: *const 
     //attr.set_string_attributes("")
     req.set_request_index(0);
 
+    // define attribute value types
+    let mut stringAttributes: HashMap<i32,String> = HashMap::new();
+    let mut stringMapAttributes: HashMap<i32,StringMap> = HashMap::new();
+
+
     // set up attribute dictionary 
     let mut dictValues: HashMap<i32,String> = HashMap::new();
     dictValues.insert(REQUEST_HEADER,String::from("request.headers"));
     dictValues.insert(TARGET_SERVICE,String::from("target.service"));
     dictValues.insert(REQUEST_HOST,String::from("request.host"));
+    dictValues.insert(RESPONSE_SIZE,String::from("response.size"));
+    dictValues.insert(RESPONSE_HEADERS,String::from("response.headers"));
+    dictValues.insert(RESPONSE_SIZE,String::from("response.size"));
 
 
-    let mut stringMapValues: HashMap<i32,StringMap> = HashMap::new();
-    let stringMap = process_request_attribute(request,&mut dictValues);
-    stringMapValues.insert(REQUEST_HEADER,stringMap);
+
+    // process request map
+    let requestValueMap = process_request_attribute(
+        unsafe { (*request).headers_in },
+        &mut dictValues,
+        &mut stringAttributes,
+        &mut stringMapAttributes
+    );
+
+    let reponseValueMap = process_response_attribute(&mut dictValues);
+    stringMapAttributes.insert(RESPONSE_HEADERS,reponseValueMap);
     
     attr.set_dictionary(dictValues);
-    attr.set_stringMap_attributes(stringMapValues);
+    attr.set_stringMap_attributes(stringMapAttributes);
     
-    // fill in the rest of attributes
-    let mut stringValues: HashMap<i32,String> = HashMap::new();
-    let headers_in = unsafe { (*request).headers_in };
-    let host = headers_in.host_str();
-    log(&format!("request host {}",host));
-    stringValues.insert(REQUEST_HOST,String::from(host));
-    attr.set_string_attributes(stringValues);
+
+    let mut int64Values: HashMap<i32,i64> = HashMap::new();
+    int64Values.insert(RESPONSE_SIZE,100);      // fake to test
+    int64Values.insert(RESPONSE_SIZE,500);
+    attr.set_int64_attributes(int64Values);
 
   
     req.set_attribute_update(attr);
@@ -130,6 +150,9 @@ pub extern fn mixer_client(request: *const ngx_http_request_s,ng_server: *const 
 
     "Hello, world!\0".as_ptr()
 }
+
+
+
 
 
 // find string index from dictionary
@@ -147,16 +170,27 @@ fn string_index(value: &str, dictValues: &HashMap<i32,String>) -> Option<i32> {
     return None;
 }
 
+
+
 // process request attribute,
 // loop over request header and add to dictionary
 // then use that to build new string map
-fn process_request_attribute(request: *const ngx_http_request_s, dictValues: &mut HashMap<i32,String>) -> StringMap {
+fn process_request_attribute(
+         headers_in:  ngx_http_headers_in_t,
+         dictValues: &mut HashMap<i32,String>,
+         stringAttributes: &mut HashMap<i32,String>,
+         stringMapValues: &mut HashMap<i32,StringMap>)  {
+
+    // fill in the string values
+    let host = headers_in.host_str();
+    log(&format!("request host {}",host));
+    stringAttributes.insert(REQUEST_HOST,String::from(host));
 
 
+    // fill in the string value
     let mut map: HashMap<i32,String> = HashMap::new();
   
-    let request = unsafe { *request };
-    for (name,value) in request.headers_in_iterator()   {
+    for (name,value) in headers_in.headers_iterator()   {
         log(&format!("header name: {}, value: {}",&name,&value));
 
         let result = string_index(&value,dictValues);
@@ -177,10 +211,32 @@ fn process_request_attribute(request: *const ngx_http_request_s, dictValues: &mu
         
     }
 
+    let mut requestValueMap = StringMap::new();
+    requestValueMap.set_map(map);
+    
+    stringMapValues.insert(REQUEST_HEADER,requestValueMap);
+}
+
+
+static RESPONSE_HEADER_STATUS: i32 = 100;
+static RESPONSE_HEADER_CONTENT_LENGTH: i32 = 101;
+
+/**
+ * proces response headers
+ */
+fn process_response_attribute(dictValues: &mut HashMap<i32,String>) -> StringMap {
+
+     let mut map: HashMap<i32,String> = HashMap::new();
+
+    
+    dictValues.insert(RESPONSE_HEADER_STATUS,String::from(":status"));
+    dictValues.insert(RESPONSE_HEADER_CONTENT_LENGTH,String::from("content-length"));
+
+    map.insert(RESPONSE_HEADER_STATUS,String::from("200"));
+    map.insert(RESPONSE_HEADER_CONTENT_LENGTH,String::from("213"));
+    
     let mut stringMap = StringMap::new();
     stringMap.set_map(map);
     return stringMap;
 
 }
-
-

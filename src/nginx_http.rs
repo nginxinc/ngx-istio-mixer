@@ -38,9 +38,6 @@ impl ngx_str_t  {
 
 impl ngx_http_request_s {
 
-    pub fn headers_in_iterator(&self) -> NgxListIterator {
-        list_iterator(unsafe { &(self).headers_in.headers }) 
-    }
 
 }
 
@@ -50,6 +47,12 @@ impl ngx_http_headers_in_t {
     pub fn host_str(&self) -> &str  {
         unsafe { (*self.host).value.to_str() }
     }
+
+    pub fn headers_iterator(&self) -> NgxListIterator {
+        list_iterator( &self.headers )
+    }
+
+
 }
 
 
