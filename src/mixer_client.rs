@@ -85,15 +85,14 @@ public extern fn ngx_int_t ngx_http_istio_mixer_filter(request: *const ngx_http_
 
 
 #[no_mangle] 
-pub extern fn mixer_client(request: *const ngx_http_request_s,ng_server: *const ngx_str_t,port: u32) -> *const u8 {
+pub extern fn mixer_client(request: & ngx_http_request_s,ng_server: & ngx_str_t,port: u32) -> *const u8 {
 
-    let server = unsafe { *ng_server } ;
-    let server_name = server.to_str()  ;
+    let server_name = ng_server.to_str()  ;
 
     log(&format!("server port {}",port));
 
  
-    let client = MixerClient::new_plain(server_name, 9091, Default::default()).expect("init");
+    let client = MixerClient::new_plain(server_name, port as u16, Default::default()).expect("init");
 
     let mut requests = Vec::new();
     let mut req = ReportRequest::new();
@@ -119,7 +118,7 @@ pub extern fn mixer_client(request: *const ngx_http_request_s,ng_server: *const 
 
     // process request map
     let requestValueMap = process_request_attribute(
-        unsafe { (*request).headers_in },
+        request.headers_in,
         &mut dictValues,
         &mut stringAttributes,
         &mut stringMapAttributes
