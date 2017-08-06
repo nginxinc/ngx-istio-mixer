@@ -9,6 +9,7 @@ use std::ffi::CString;
 
 use bindings::ngx_http_request_s;
 use bindings::ngx_http_headers_in_t;
+use bindings::ngx_http_headers_out_t;
 use bindings::ngx_list_part_t;
 use bindings::ngx_table_elt_t;
 use bindings::ngx_list_t;
@@ -52,6 +53,17 @@ impl ngx_http_headers_in_t {
         list_iterator( &self.headers )
     }
 
+}
+
+impl ngx_http_headers_out_t {
+
+    pub fn content_length_str(&self) -> &str  {
+        unsafe { (*self.content_length).value.to_str() }
+    }
+
+    pub fn server_str(&self) -> &str  {
+        unsafe { (*self.server).value.to_str() }
+    }
 
 }
 

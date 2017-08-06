@@ -113,7 +113,7 @@ ngx_module_t ngx_http_istio_mixer_module = {
 
 static ngx_int_t ngx_http_mixer_filter_init(ngx_conf_t *cf) {
 
-    
+
     ngx_http_next_header_filter = ngx_http_top_header_filter;
     ngx_http_top_header_filter = ngx_http_istio_mixer_filter;
 
@@ -161,9 +161,6 @@ static ngx_int_t ngx_http_istio_mixer_filter(ngx_http_request_t *r)
 
 static void *ngx_http_mixer_create_loc_conf(ngx_conf_t *cf) {
 
-    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "creating mixer loc conf");
-
-    
     ngx_http_mixer_loc_conf_t  *conf;
 
     conf = ngx_pcalloc(cf->pool, sizeof(ngx_http_mixer_loc_conf_t));
@@ -173,6 +170,7 @@ static void *ngx_http_mixer_create_loc_conf(ngx_conf_t *cf) {
 
     conf->enable = NGX_CONF_UNSET;
 
+    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "set up  mixer location config");
 
     return conf;
 }
