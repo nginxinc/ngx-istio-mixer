@@ -39,6 +39,11 @@ impl ngx_str_t  {
 
 impl ngx_http_request_s {
 
+    /*
+    pub fn scheme(&self) -> char {
+        unsafe {  (*self.schema_start)};
+    }
+    */
 
 }
 
@@ -47,6 +52,22 @@ impl ngx_http_headers_in_t {
     // host
     pub fn host_str(&self) -> &str  {
         unsafe { (*self.host).value.to_str() }
+    }
+
+    pub fn user_agent_str(&self) -> &str  {
+        unsafe { (*self.user_agent).value.to_str() }
+    }
+
+    // referrer
+    pub fn referer_str(&self) -> Option<&str>  {
+
+        let referer = self.referer;
+
+        if referer.is_null() {
+            return None;
+        }
+
+        return Some(unsafe { (*referer).value.to_str() });
     }
 
     pub fn headers_iterator(&self) -> NgxListIterator {
@@ -63,6 +84,10 @@ impl ngx_http_headers_out_t {
 
     pub fn server_str(&self) -> &str  {
         unsafe { (*self.server).value.to_str() }
+    }
+
+    pub fn headers_iterator(&self) -> NgxListIterator {
+        list_iterator( &self.headers )
     }
 
 }
