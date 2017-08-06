@@ -15,3 +15,7 @@ pub mod service_grpc;
 pub mod mixer_client;
 pub mod bindings;
 pub mod nginx_http;
+pub mod attr_dict;
+
+
+

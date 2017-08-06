@@ -17,7 +17,7 @@ use mixer::service_grpc::Mixer;
 static REQUEST_HEADER: i32 = 0;
 static TARGET_SERVICE: i32 = 1;
 static REQUEST_HOST: i32 = 2;
-static USER_AGENT: i32 = 3;
+
 
 fn main() {
 

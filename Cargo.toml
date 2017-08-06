@@ -25,3 +25,7 @@ bindgen = "0.26.3"
 [[bin]]
 name = "report_client"
 test = false
+
+[[test]]
+name = "attr_test"
+path = "tests/attr_dict_test.rs"
