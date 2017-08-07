@@ -9,9 +9,12 @@ use std::ptr;
 use std::str;
 use std::slice;
 use std::{thread, time};
-use std::sync::mpsc;
+use std::sync::mpsc::{channel,Sender,Receiver};
+use std::sync::Mutex;
 use std::time::Duration;
 use std::collections::HashMap;
+
+
 use service_grpc::MixerClient;
 use report::ReportRequest;
 use attributes::Attributes;
@@ -107,15 +110,7 @@ pub extern fn mixer_init(cycle: &ngx_cycle_t) -> ngx_int_t {
 
     log(&format!("init mixer start "));
     thread::spawn(|| {
-        let mut i = 0;
-        loop {
-            log(&format!("mixer thread sleeping: {}",i));
-            let second = time::Duration::new(5,0);
-            thread::sleep(second);
-            log(&format!("mixer wake from sleep "));
-            i = i + 1;
-        }
-
+        mixer_background();
     });
     log(&format!("init mixer end "));
     return NGX_OK as ngx_int_t;
@@ -129,12 +124,46 @@ pub extern fn mixer_exit() {
 
 static mut req_index: i64 = 0;
 
+struct Channels<T> {
+    pub tx: Mutex<Sender<T>>,
+    pub rx: Mutex<Receiver<T>>
+}
+
+
+// initialize channel that can be shared
+lazy_static! {
+    static ref CHANNELS: Channels<i64> = {
+        let (tx, rx) = channel();
+
+        Channels {
+            tx: Mutex::new(tx),
+            rx: Mutex::new(rx),
+        }
+    };
+}
+
+// background actity handle mixer connection
+fn mixer_background()  {
+    let mut i = 0;
+    let rx = CHANNELS.rx.lock().unwrap();
+    loop {
+        log(&format!("mixer thread waiting: {}",i));
+        let second = time::Duration::new(5,0);
+        let msg = rx.recv().unwrap();
+        log(&format!("mixer wake from wait: {} ",msg));
+        i = i + 1;
+    }
+}
+
 fn send(main_config: &ngx_http_mixer_main_conf_t, mut req: ReportRequest)  {
 
     unsafe {
         req.set_request_index(req_index);
         req_index = req_index + 1;
     }
+
+    let tx = CHANNELS.tx.lock().unwrap().clone();
+    tx.send(10);
 
     let mut requests = Vec::new();
     requests.push(req);
@@ -164,40 +193,28 @@ fn process_request_attribute(request: & ngx_http_request_s, attr: &mut Attribute
     let headers_in = request.headers_in;
 
 
-    let host = headers_in.host_str();
-    log(&format!("request host {}",host));
-    attr.insert_string_attribute(REQUEST_HOST, host);
-
-    let method = request.method_name.to_str();
-    log(&format!("request method {}",method));
-    attr.insert_string_attribute(REQUEST_METHOD, method);
-
-    let path = request.uri.to_str();
-    log(&format!("request path {}",path));
-    attr.insert_string_attribute(REQUEST_PATH, path);
+    attr.insert_string_attribute(REQUEST_HOST,  headers_in.host_str());
+    attr.insert_string_attribute(REQUEST_METHOD, request.method_name.to_str());
+    attr.insert_string_attribute(REQUEST_PATH, request.uri.to_str());
 
     let referer = headers_in.referer_str();
     if let Some(refererStr) = referer {
-        log(&format!("request referrer {}",refererStr));
         attr.insert_string_attribute(REQUEST_REFER, refererStr);
     }
 
     let scheme = request.http_protocol.to_str();
-    log(&format!("request scheme {}",scheme));
     attr.insert_string_attribute(REQUEST_SCHEME, "http"); // hard code now
 
-    let request_size = request.request_length;
-    log(&format!("request size {}",request_size));
-    attr.insert_int64_attribute(REQUEST_SIZE, request_size);
+
+    attr.insert_int64_attribute(REQUEST_SIZE, request.request_length);
 
     let mut request_time = Timestamp::new();
     request_time.set_seconds(request.start_sec);
     request_time.set_nanos(request.start_msec as i32);
     attr.insert_time_stamp_attribute(REQUEST_TIME, request_time);
 
-    let user_agent = headers_in.user_agent_str();
-    log(&format!("request user agent {}",user_agent));
-    attr.insert_string_attribute(REQUEST_USERAGENT, user_agent);
+
+    attr.insert_string_attribute(REQUEST_USERAGENT, headers_in.user_agent_str());
 
 
 
@@ -222,20 +239,12 @@ fn process_request_attribute(request: & ngx_http_request_s, attr: &mut Attribute
 
 fn process_response_attribute(request: &ngx_http_request_s, attr: &mut AttributeWrapper, )  {
 
-
     let headers_out =  request.headers_out;
 
-
-    let response_code = headers_out.status;
-    log(&format!("response code {}",response_code));
-    attr.insert_int64_attribute(RESPONSE_CODE, response_code as i64);
-
-    let content_length = headers_out.content_length_n;
-    log(&format!("content length {}",content_length));
-    attr.insert_int64_attribute(RESPONSE_SIZE, content_length);
+    attr.insert_int64_attribute(RESPONSE_CODE, headers_out.status as i64);
+    attr.insert_int64_attribute(RESPONSE_SIZE, headers_out.content_length_n);
 
     let duration = headers_out.date_time - request.start_sec;
-    log(&format!("response duration {}",duration));
     attr.insert_int64_attribute(RESPONSE_DURATION, 5000);
 
     // fill in the string value

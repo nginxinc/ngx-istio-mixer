@@ -5,6 +5,7 @@ use protobuf::well_known_types::Timestamp;
 use attributes::Attributes;
 use attributes::StringMap;
 
+use nginx_http::log;
 
 // TODO: use defaults
 
@@ -49,15 +50,18 @@ impl AttributeWrapper  {
     pub fn insert_string_attribute(&mut self, key: &str, value: &str) {
         let index = self.string_index(key).clone();
         self.attributes.mut_string_attributes().insert(index,String::from(value));
+        log(&format!("insert string attr: {} value: {}",key,value));
     }
 
     pub fn insert_int64_attribute(&mut self, key: &str, value: i64) {
         let index = self.string_index(key).clone();
+        log(&format!("insert int64 attr: {} value: {}",key,value));
         self.attributes.mut_int64_attributes().insert(index,value);
     }
 
     pub fn insert_time_stamp_attribute(&mut self, key: &str, value: Timestamp) {
         let index = self.string_index(key).clone();
+        log(&format!("insert timestamp attr: {} ",key));
         self.attributes.mut_timestamp_attributes().insert( index, value);
     }
 
@@ -66,5 +70,8 @@ impl AttributeWrapper  {
         let mut request_value_map = StringMap::new();
         request_value_map.set_map(value);
         self.attributes.mut_stringMap_attributes().insert(index,request_value_map);
+        log(&format!("insert string map: {}", key));
+
+
     }
 }
