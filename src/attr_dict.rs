@@ -46,25 +46,25 @@ impl AttributeWrapper  {
     }
 
     // insert string attributes
-    pub fn insertStringAttribute(&mut self, key: &str, value: &str) {
+    pub fn insert_string_attribute(&mut self, key: &str, value: &str) {
         let index = self.string_index(key).clone();
         self.attributes.mut_string_attributes().insert(index,String::from(value));
     }
 
-    pub fn insertInt64Attribute(&mut self, key: &str, value: i64) {
+    pub fn insert_int64_attribute(&mut self, key: &str, value: i64) {
         let index = self.string_index(key).clone();
         self.attributes.mut_int64_attributes().insert(index,value);
     }
 
-    pub fn insertTimeStampAttribute(&mut self, key: &str, value: Timestamp) {
+    pub fn insert_time_stamp_attribute(&mut self, key: &str, value: Timestamp) {
         let index = self.string_index(key).clone();
         self.attributes.mut_timestamp_attributes().insert( index, value);
     }
 
-    pub fn insertStringMap(&mut self, key: &str, value: HashMap<i32,String>) {
+    pub fn insert_string_map(&mut self, key: &str, value: HashMap<i32,String>) {
         let index = self.string_index(key).clone();
-        let mut requestValueMap = StringMap::new();
-        requestValueMap.set_map(value);
-        self.attributes.mut_stringMap_attributes().insert(index,requestValueMap);
+        let mut request_value_map = StringMap::new();
+        request_value_map.set_map(value);
+        self.attributes.mut_stringMap_attributes().insert(index,request_value_map);
     }
 }

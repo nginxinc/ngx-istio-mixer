@@ -40,7 +40,7 @@ static char *ngx_http_mixer_merge_loc_conf(ngx_conf_t *cf, void *parent,
 static void *ngx_http_mixer_create_main_conf(ngx_conf_t *cf);    
 
 
-char  *mixer_client(ngx_http_request_t *r,ngx_str_t *server,ngx_uint_t);
+void  mixer_client(ngx_http_request_t *r, ngx_http_mixer_main_conf_t *main_conf;);
 
 static ngx_http_output_header_filter_pt ngx_http_next_header_filter;
 
@@ -149,7 +149,7 @@ static ngx_int_t ngx_http_istio_mixer_filter(ngx_http_request_t *r)
     ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "using server: %*s",main_conf->mixer_server.len,main_conf->mixer_server.data);
 
     // invoke mix client
-    mixer_client(r,&main_conf->mixer_server,main_conf->mixer_port);
+    mixer_client(r,main_conf);
 
     ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "finish calling istio filter");
 

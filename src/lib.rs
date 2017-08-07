@@ -3,6 +3,9 @@ extern crate futures_cpupool;
 extern crate protobuf;
 extern crate grpc;
 extern crate tls_api;
+#[macro_use]
+extern crate lazy_static;
+
 
 pub mod check;
 pub mod attributes;

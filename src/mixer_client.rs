@@ -22,6 +22,7 @@ use bindings::ngx_http_headers_out_t;
 use nginx_http::list_iterator;
 use nginx_http::log;
 use bindings::ngx_str_t;
+use bindings::ngx_int_t;
 use attr_dict::AttributeWrapper;
 
 
@@ -71,36 +72,53 @@ public extern fn ngx_int_t ngx_http_istio_mixer_filter(request: *const ngx_http_
 
 
 
-#[no_mangle] 
-pub extern fn mixer_client(request: & ngx_http_request_s,ng_server: & ngx_str_t,port: u32) -> *const u8 {
+#[repr(C)]
+pub struct ngx_http_mixer_main_conf_t {
+    mixer_server: ngx_str_t,
+    mixer_port: ngx_int_t
+}
 
-    let server_name = ng_server.to_str()  ;
 
-    log(&format!("server port {}",port));
+static mut req_index: i64 = 0;
 
- 
-    let client = MixerClient::new_plain(server_name, port as u16, Default::default()).expect("init");
+fn send(main_config: &ngx_http_mixer_main_conf_t, mut req: ReportRequest)  {
+
+    unsafe {
+        req.set_request_index(req_index);
+        req_index = req_index + 1;
+    }
 
     let mut requests = Vec::new();
+    requests.push(req);
+
+    let server_name = main_config.mixer_server.to_str();
+    let server_port = main_config.mixer_port as u16;
+
+    log(&format!("server: {}, port {}",server_name, server_port));
+
+    let  client = MixerClient::new_plain( server_name, server_port , Default::default()).expect("init");
+
+    let resp = client.report(grpc::RequestOptions::new(), grpc::StreamingRequest::iter(requests));
+
+    resp.wait_drop_metadata().count();
+
+}
+
+
+
+#[no_mangle] 
+pub extern fn mixer_client(request: &ngx_http_request_s,main_config: &ngx_http_mixer_main_conf_t)  {
+
     let mut req = ReportRequest::new();
     let mut attr = AttributeWrapper::new();
-    //attr.set_string_attributes("")
-    req.set_request_index(0);
-
 
     process_request_attribute(request, &mut attr);
     process_response_attribute(request, &mut attr);
 
     req.set_attribute_update(attr.attributes);
 
-    requests.push(req);
+    send(main_config, req);
 
-
-    let resp = client.report(grpc::RequestOptions::new(), grpc::StreamingRequest::iter(requests));
-
-    resp.wait_drop_metadata().count();
-
-    "Hello, world!\0".as_ptr()
 }
 
 
@@ -117,38 +135,38 @@ fn process_request_attribute(request: & ngx_http_request_s, attr: &mut Attribute
 
     let host = headers_in.host_str();
     log(&format!("request host {}",host));
-    attr.insertStringAttribute(REQUEST_HOST,host);
+    attr.insert_string_attribute(REQUEST_HOST, host);
 
     let method = request.method_name.to_str();
     log(&format!("request method {}",method));
-    attr.insertStringAttribute(REQUEST_METHOD, method);
+    attr.insert_string_attribute(REQUEST_METHOD, method);
 
     let path = request.uri.to_str();
     log(&format!("request path {}",path));
-    attr.insertStringAttribute(REQUEST_PATH,path);
+    attr.insert_string_attribute(REQUEST_PATH, path);
 
     let referer = headers_in.referer_str();
     if let Some(refererStr) = referer {
         log(&format!("request referrer {}",refererStr));
-        attr.insertStringAttribute(REQUEST_REFER,refererStr);
+        attr.insert_string_attribute(REQUEST_REFER, refererStr);
     }
 
     let scheme = request.http_protocol.to_str();
     log(&format!("request scheme {}",scheme));
-    attr.insertStringAttribute(REQUEST_SCHEME,"http"); // hard code now
+    attr.insert_string_attribute(REQUEST_SCHEME, "http"); // hard code now
 
     let request_size = request.request_length;
     log(&format!("request size {}",request_size));
-    attr.insertInt64Attribute(REQUEST_SIZE,request_size);
+    attr.insert_int64_attribute(REQUEST_SIZE, request_size);
 
     let mut request_time = Timestamp::new();
     request_time.set_seconds(request.start_sec);
     request_time.set_nanos(request.start_msec as i32);
-    attr.insertTimeStampAttribute(REQUEST_TIME, request_time);
+    attr.insert_time_stamp_attribute(REQUEST_TIME, request_time);
 
     let user_agent = headers_in.user_agent_str();
     log(&format!("request user agent {}",user_agent));
-    attr.insertStringAttribute(REQUEST_USERAGENT,user_agent);
+    attr.insert_string_attribute(REQUEST_USERAGENT, user_agent);
 
 
 
@@ -164,7 +182,7 @@ fn process_request_attribute(request: & ngx_http_request_s, attr: &mut Attribute
         }
     }
 
-    attr.insertStringMap(REQUEST_HEADER,map);
+    attr.insert_string_map(REQUEST_HEADER, map);
 
 }
 
@@ -179,15 +197,15 @@ fn process_response_attribute(request: &ngx_http_request_s, attr: &mut Attribute
 
     let response_code = headers_out.status;
     log(&format!("response code {}",response_code));
-    attr.insertInt64Attribute(RESPONSE_CODE,response_code as i64);
+    attr.insert_int64_attribute(RESPONSE_CODE, response_code as i64);
 
     let content_length = headers_out.content_length_n;
     log(&format!("content length {}",content_length));
-    attr.insertInt64Attribute(RESPONSE_SIZE,content_length);
+    attr.insert_int64_attribute(RESPONSE_SIZE, content_length);
 
     let duration = headers_out.date_time - request.start_sec;
     log(&format!("response duration {}",duration));
-    attr.insertInt64Attribute(RESPONSE_DURATION,5000);
+    attr.insert_int64_attribute(RESPONSE_DURATION, 5000);
 
     // fill in the string value
     let mut map: HashMap<i32,String> = HashMap::new();
@@ -201,6 +219,6 @@ fn process_response_attribute(request: &ngx_http_request_s, attr: &mut Attribute
         }
     }
 
-    attr.insertStringMap(RESPONSE_HEADERS,map);
+    attr.insert_string_map(RESPONSE_HEADERS, map);
 
 }
