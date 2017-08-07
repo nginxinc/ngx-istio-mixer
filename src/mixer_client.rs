@@ -8,6 +8,9 @@ use std::mem;
 use std::ptr;
 use std::str;
 use std::slice;
+use std::{thread, time};
+use std::sync::mpsc;
+use std::time::Duration;
 use std::collections::HashMap;
 use service_grpc::MixerClient;
 use report::ReportRequest;
@@ -19,10 +22,13 @@ use protobuf::well_known_types::Timestamp;
 use bindings::ngx_http_request_s;
 use bindings::ngx_http_headers_in_t;
 use bindings::ngx_http_headers_out_t;
+use bindings::ngx_cycle_t;
+use bindings::ngx_int_t;
+use bindings::ngx_str_t;
+use bindings::NGX_OK;
 use nginx_http::list_iterator;
 use nginx_http::log;
-use bindings::ngx_str_t;
-use bindings::ngx_int_t;
+
 use attr_dict::AttributeWrapper;
 
 
@@ -79,6 +85,48 @@ pub struct ngx_http_mixer_main_conf_t {
 }
 
 
+#[no_mangle]
+pub extern fn mixer_client(request: &ngx_http_request_s,main_config: &ngx_http_mixer_main_conf_t)  {
+
+    let mut req = ReportRequest::new();
+    let mut attr = AttributeWrapper::new();
+
+    process_request_attribute(request, &mut attr);
+    process_response_attribute(request, &mut attr);
+
+    req.set_attribute_update(attr.attributes);
+
+    send(main_config, req);
+
+}
+
+
+// init mixer
+#[no_mangle]
+pub extern fn mixer_init(cycle: &ngx_cycle_t) -> ngx_int_t {
+
+    log(&format!("init mixer start "));
+    thread::spawn(|| {
+        let mut i = 0;
+        loop {
+            log(&format!("mixer thread sleeping: {}",i));
+            let second = time::Duration::new(5,0);
+            thread::sleep(second);
+            log(&format!("mixer wake from sleep "));
+            i = i + 1;
+        }
+
+    });
+    log(&format!("init mixer end "));
+    return NGX_OK as ngx_int_t;
+}
+
+#[no_mangle]
+pub extern fn mixer_exit() {
+    log(&format!("mixer exit "));
+}
+
+
 static mut req_index: i64 = 0;
 
 fn send(main_config: &ngx_http_mixer_main_conf_t, mut req: ReportRequest)  {
@@ -101,23 +149,6 @@ fn send(main_config: &ngx_http_mixer_main_conf_t, mut req: ReportRequest)  {
     let resp = client.report(grpc::RequestOptions::new(), grpc::StreamingRequest::iter(requests));
 
     resp.wait_drop_metadata().count();
-
-}
-
-
-
-#[no_mangle] 
-pub extern fn mixer_client(request: &ngx_http_request_s,main_config: &ngx_http_mixer_main_conf_t)  {
-
-    let mut req = ReportRequest::new();
-    let mut attr = AttributeWrapper::new();
-
-    process_request_attribute(request, &mut attr);
-    process_response_attribute(request, &mut attr);
-
-    req.set_attribute_update(attr.attributes);
-
-    send(main_config, req);
 
 }
 

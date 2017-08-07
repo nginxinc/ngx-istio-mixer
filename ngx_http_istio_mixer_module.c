@@ -40,7 +40,9 @@ static char *ngx_http_mixer_merge_loc_conf(ngx_conf_t *cf, void *parent,
 static void *ngx_http_mixer_create_main_conf(ngx_conf_t *cf);    
 
 
-void  mixer_client(ngx_http_request_t *r, ngx_http_mixer_main_conf_t *main_conf;);
+void  mixer_client(ngx_http_request_t *r, ngx_http_mixer_main_conf_t *main_conf);
+ngx_int_t  mixer_init(ngx_cycle_t *cycle);
+void  mixer_exit();
 
 static ngx_http_output_header_filter_pt ngx_http_next_header_filter;
 
@@ -103,7 +105,7 @@ ngx_module_t ngx_http_istio_mixer_module = {
     NGX_HTTP_MODULE, /* module type */
     NULL, /* init master */
     NULL, /* init module */
-    NULL, /* init process */
+    mixer_init, /* init process */
     NULL, /* init thread */
     NULL, /* exit thread */
     NULL, /* exit process */
@@ -116,7 +118,6 @@ static ngx_int_t ngx_http_mixer_filter_init(ngx_conf_t *cf) {
 
     ngx_http_next_header_filter = ngx_http_top_header_filter;
     ngx_http_top_header_filter = ngx_http_istio_mixer_filter;
-
 
     return NGX_OK;   
 }
@@ -204,6 +205,7 @@ static void *ngx_http_mixer_create_main_conf(ngx_conf_t *cf)
   }
 
   conf->mixer_port = NGX_CONF_UNSET_UINT;
+
 
   return conf;
 }
