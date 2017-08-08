@@ -18,6 +18,7 @@ tls-api         = "0.1.8"
 httpbis         = "0.4.1"
 libc            = "0.2.26"
 lazy_static     = "0.2.8"
+time            = "0.1.38"
 
 [build-dependencies]
 protoc-rust-grpc = { path = "../grpc-rust/protoc-rust-grpc" }

@@ -14,6 +14,8 @@ use std::sync::Mutex;
 use std::time::Duration;
 use std::collections::HashMap;
 
+use time::get_time;
+
 
 use service_grpc::MixerClient;
 use report::ReportRequest;
@@ -49,6 +51,8 @@ const RESPONSE_CODE: &str = "response.code";
 const RESPONSE_DURATION: &str = "response.duration";
 const RESPONSE_SIZE: &str = "response.size";
 const RESPONSE_HEADERS: &str = "response.headers";
+const TARGET_IP: &str = "target.ip";
+const TARGET_UID: &str = "target.uid";
 
 
 
@@ -88,21 +92,6 @@ pub struct ngx_http_mixer_main_conf_t {
 }
 
 
-#[no_mangle]
-pub extern fn mixer_client(request: &ngx_http_request_s,main_config: &ngx_http_mixer_main_conf_t)  {
-
-    let mut req = ReportRequest::new();
-    let mut attr = AttributeWrapper::new();
-
-    process_request_attribute(request, &mut attr);
-    process_response_attribute(request, &mut attr);
-
-    req.set_attribute_update(attr.attributes);
-
-    send(main_config, req);
-
-}
-
 
 // init mixer
 #[no_mangle]
@@ -122,8 +111,6 @@ pub extern fn mixer_exit() {
 }
 
 
-static mut req_index: i64 = 0;
-
 struct Channels<T> {
     pub tx: Mutex<Sender<T>>,
     pub rx: Mutex<Receiver<T>>
@@ -132,7 +119,7 @@ struct Channels<T> {
 
 // initialize channel that can be shared
 lazy_static! {
-    static ref CHANNELS: Channels<i64> = {
+    static ref CHANNELS: Channels<Attributes> = {
         let (tx, rx) = channel();
 
         Channels {
@@ -144,45 +131,99 @@ lazy_static! {
 
 // background actity handle mixer connection
 fn mixer_background()  {
-    let mut i = 0;
+
+    let  client = MixerClient::new_plain( "localhost", 9091 , Default::default()).expect("init");
+
+    let mut req_index: i64 = 0;
     let rx = CHANNELS.rx.lock().unwrap();
     loop {
-        log(&format!("mixer thread waiting: {}",i));
-        let second = time::Duration::new(5,0);
-        let msg = rx.recv().unwrap();
-        log(&format!("mixer wake from wait: {} ",msg));
-        i = i + 1;
+        log(&format!("mixer thread waiting: {}",req_index));
+        let mut attr = rx.recv().unwrap();
+        log(&format!("mixer wake from wait"));
+        //fillInAttributes(&mut attributeWrapper);
+
+        let mut requests = Vec::new();
+        let mut req = ReportRequest::new();
+        req.set_request_index(0);
+        req.set_attribute_update(attr);
+        requests.push(req);
+
+        let resp = client.report(grpc::RequestOptions::new(), grpc::StreamingRequest::iter(requests));
+
+        resp.wait_drop_metadata().count();
+
+        log(&format!("finished sending to mixer"));
+
+        req_index = req_index + 1;
     }
 }
 
-fn send(main_config: &ngx_http_mixer_main_conf_t, mut req: ReportRequest)  {
+/*
+fn fillInAttributes(attr: &mut AttributeWrapper) {
 
-    unsafe {
-        req.set_request_index(req_index);
-        req_index = req_index + 1;
-    }
+    attr.insert_string_attribute(REQUEST_HOST,"35.202.158.195");
+    attr.insert_string_attribute( TARGET_IP,"10.40.7.6");
+    attr.insert_string_attribute(REQUEST_METHOD,"GET");
+    attr.insert_string_attribute(TARGET_UID,"kubernetes://productpage-v1-3990756607-plqt5.default");
+
+
+    let mut request_time = Timestamp::new();
+    let current_time = get_time();
+    request_time.set_seconds(current_time.sec);
+    request_time.set_nanos(current_time.nsec as i32);
+    attr.insert_time_stamp_attribute(REQUEST_TIME, request_time);
+
+
+
+    // fill in the string value
+    let mut map: HashMap<i32,String> = HashMap::new();
+    let index  = attr.string_index("content-length");
+    map.insert(index,String::from("10"));
+    attr.insert_string_map(REQUEST_HEADER, map);
+
+}
+*/
+
+fn send(main_config: &ngx_http_mixer_main_conf_t, attr: Attributes)  {
 
     let tx = CHANNELS.tx.lock().unwrap().clone();
-    tx.send(10);
+    tx.send(attr.clone());
 
-    let mut requests = Vec::new();
-    requests.push(req);
 
     let server_name = main_config.mixer_server.to_str();
     let server_port = main_config.mixer_port as u16;
 
-    log(&format!("server: {}, port {}",server_name, server_port));
+   // log(&format!("server: {}, port {}",server_name, server_port));
 
-    let  client = MixerClient::new_plain( server_name, server_port , Default::default()).expect("init");
-
-    let resp = client.report(grpc::RequestOptions::new(), grpc::StreamingRequest::iter(requests));
-
-    resp.wait_drop_metadata().count();
+    log(&format!("send attribute to mixer delegate"));
 
 }
 
 
 
+#[no_mangle]
+pub extern fn mixer_client(request: &ngx_http_request_s,main_config: &ngx_http_mixer_main_conf_t)  {
+
+
+    let mut attr = AttributeWrapper::new();
+
+    attr.insert_string_attribute(REQUEST_HOST,"35.202.158.195");
+    attr.insert_string_attribute( TARGET_IP,"10.40.7.6");
+    attr.insert_string_attribute(TARGET_UID,"kubernetes://productpage-v1-3990756607-plqt5.default");
+    attr.insert_string_attribute(REQUEST_SCHEME,"http");
+    attr.insert_string_attribute(REQUEST_USERAGENT,"curl/7.51.0");
+    attr.insert_string_attribute(REQUEST_PATH, "/product");
+    attr.insert_int64_attribute(REQUEST_SIZE,10);
+    attr.insert_int64_attribute(RESPONSE_CODE,200);
+
+
+
+    process_request_attribute(request, &mut attr);
+    process_response_attribute(request, &mut attr);
+
+    send(main_config, attr.attributes);
+
+}
 
 
 // process request attribute,
