@@ -117,9 +117,16 @@ struct Channels<T> {
 }
 
 
+#[derive(Clone, Debug)]
+struct MixerInfo  {
+    server_name: String,
+    server_port: u16,
+    attributes: Attributes
+}
+
 // initialize channel that can be shared
 lazy_static! {
-    static ref CHANNELS: Channels<Attributes> = {
+    static ref CHANNELS: Channels<MixerInfo> = {
         let (tx, rx) = channel();
 
         Channels {
@@ -132,20 +139,20 @@ lazy_static! {
 // background actity handle mixer connection
 fn mixer_background()  {
 
-    let  client = MixerClient::new_plain( "localhost", 9091 , Default::default()).expect("init");
-
     let mut req_index: i64 = 0;
     let rx = CHANNELS.rx.lock().unwrap();
+
     loop {
-        log(&format!("mixer thread waiting: {}",req_index));
-        let mut attr = rx.recv().unwrap();
-        log(&format!("mixer wake from wait"));
-        //fillInAttributes(&mut attributeWrapper);
+        log(&format!("mixer send thread waiting: {}",req_index));
+        let mut info = rx.recv().unwrap();
+        log(&format!("mixer send thread woke up"));
+
+        let client = MixerClient::new_plain( &info.server_name, info.server_port , Default::default()).expect("init");
 
         let mut requests = Vec::new();
         let mut req = ReportRequest::new();
         req.set_request_index(0);
-        req.set_attribute_update(attr);
+        req.set_attribute_update(info.attributes);
         requests.push(req);
 
         let resp = client.report(grpc::RequestOptions::new(), grpc::StreamingRequest::iter(requests));
@@ -186,12 +193,13 @@ fn fillInAttributes(attr: &mut AttributeWrapper) {
 
 fn send(main_config: &ngx_http_mixer_main_conf_t, attr: Attributes)  {
 
-    let tx = CHANNELS.tx.lock().unwrap().clone();
-    tx.send(attr.clone());
-
-
     let server_name = main_config.mixer_server.to_str();
     let server_port = main_config.mixer_port as u16;
+
+    let tx = CHANNELS.tx.lock().unwrap().clone();
+    let info = MixerInfo { server_name: String::from(server_name), server_port: server_port, attributes: attr};
+    tx.send(info.clone());
+
 
    // log(&format!("server: {}, port {}",server_name, server_port));
 
@@ -207,16 +215,9 @@ pub extern fn mixer_client(request: &ngx_http_request_s,main_config: &ngx_http_m
 
     let mut attr = AttributeWrapper::new();
 
-    attr.insert_string_attribute(REQUEST_HOST,"35.202.158.195");
+  //  attr.insert_string_attribute(REQUEST_HOST,"35.202.158.195");
     attr.insert_string_attribute( TARGET_IP,"10.40.7.6");
     attr.insert_string_attribute(TARGET_UID,"kubernetes://productpage-v1-3990756607-plqt5.default");
-    attr.insert_string_attribute(REQUEST_SCHEME,"http");
-    attr.insert_string_attribute(REQUEST_USERAGENT,"curl/7.51.0");
-    attr.insert_string_attribute(REQUEST_PATH, "/product");
-    attr.insert_int64_attribute(REQUEST_SIZE,10);
-    attr.insert_int64_attribute(RESPONSE_CODE,200);
-
-
 
     process_request_attribute(request, &mut attr);
     process_response_attribute(request, &mut attr);
