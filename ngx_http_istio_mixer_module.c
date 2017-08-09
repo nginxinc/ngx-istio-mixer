@@ -16,7 +16,10 @@
 
 
 typedef struct {
-    ngx_flag_t         enable;              // for every location, we need flag to enable/disable mixer
+    ngx_flag_t    enable;              // for every location, we need flag to enable/disable mixer
+    ngx_str_t     target_ip;           // target ip
+    ngx_str_t     target_uid;          // target uid
+
 } ngx_http_mixer_loc_conf_t;
 
 
@@ -40,7 +43,7 @@ static char *ngx_http_mixer_merge_loc_conf(ngx_conf_t *cf, void *parent,
 static void *ngx_http_mixer_create_main_conf(ngx_conf_t *cf);    
 
 
-void  mixer_client(ngx_http_request_t *r, ngx_http_mixer_main_conf_t *main_conf);
+void  mixer_client(ngx_http_request_t *r, ngx_http_mixer_main_conf_t *main_conf,ngx_http_mixer_loc_conf_t  *loc_conf);
 ngx_int_t  mixer_init(ngx_cycle_t *cycle);
 void  mixer_exit();
 
@@ -61,6 +64,22 @@ static ngx_command_t ngx_http_istio_mixer_commands[] = {
       offsetof(ngx_http_mixer_loc_conf_t, enable),  // store in the location configuration
       NULL},
 
+    {
+      ngx_string("mixer_target_ip"), /* target ip */
+      NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,
+      ngx_conf_set_str_slot,
+      NGX_HTTP_LOC_CONF_OFFSET,
+      offsetof(ngx_http_mixer_loc_conf_t, target_ip),  // store in the location configuration
+      NULL
+    },
+    {
+      ngx_string("mixer_target_uid"),               /* target ui */
+      NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,
+      ngx_conf_set_str_slot,
+      NGX_HTTP_LOC_CONF_OFFSET,
+      offsetof(ngx_http_mixer_loc_conf_t, target_uid),  // store in the location configuration
+      NULL
+    },
     { 
       ngx_string("mixer_server"), /* directive */
       NGX_HTTP_MAIN_CONF|NGX_CONF_TAKE1,  // server takes 1 //
@@ -76,11 +95,9 @@ static ngx_command_t ngx_http_istio_mixer_commands[] = {
       NGX_HTTP_MAIN_CONF_OFFSET, 
       offsetof(ngx_http_mixer_main_conf_t,mixer_port),
       NULL
-    },  
-
+    },
     ngx_null_command /* command termination */
 };
-
 
 
 /* The module context. */
@@ -150,7 +167,7 @@ static ngx_int_t ngx_http_istio_mixer_filter(ngx_http_request_t *r)
     ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "using server: %*s",main_conf->mixer_server.len,main_conf->mixer_server.data);
 
     // invoke mix client
-    mixer_client(r,main_conf);
+    mixer_client(r,main_conf,loc_conf);
 
     ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "finish calling istio filter");
 
@@ -171,6 +188,7 @@ static void *ngx_http_mixer_create_loc_conf(ngx_conf_t *cf) {
 
     conf->enable = NGX_CONF_UNSET;
 
+
     ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "set up  mixer location config");
 
     return conf;
@@ -185,6 +203,9 @@ ngx_http_mixer_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
     ngx_http_mixer_loc_conf_t  *conf = child;
 
     ngx_conf_merge_value(conf->enable, prev->enable, 0);
+    ngx_conf_merge_str_value(conf->target_ip,prev->target_ip,"");
+    ngx_conf_merge_str_value(conf->target_uid,prev->target_uid,"");
+
 
     return NGX_CONF_OK;
 }

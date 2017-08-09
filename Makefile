@@ -36,11 +36,15 @@ loc-configure:
 # local build
 build:
 	cd ${MODULE_SRC}/nginx-${NGINX_VER}; \
-	make modulesi;  \
+	make modules;  \
 	sudo cp objs/ngx_http_istio_mixer_module.so /usr/local/nginx/modules; \
 	sudo /usr/local/nginx/sbin/nginx -s stop; \
 	sudo /usr/local/nginx/sbin/nginx; \
 	curl localhost/test2
+
+mclean:
+	cd ${MODULE_SRC}/nginx-${NGINX_VER}; \
+	make clean
 
 restart:
 	sudo /usr/local/nginx/sbin/nginx -s stop
@@ -51,6 +55,7 @@ start:
 setup:
 	cp /usr/local/nginx/conf/nginx.conf conf
 
+
 clean:
 	cargo clean
 	rm -f src/attributes.rs
@@ -60,6 +65,7 @@ clean:
 	rm -f src/service_grpc.rs
 	rm -f src/bindings.rs
 
+super_clean: clean mclean
 
 report:
 	cargo build --bin report_client

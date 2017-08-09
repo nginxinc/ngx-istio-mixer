@@ -31,6 +31,7 @@ use bindings::ngx_cycle_t;
 use bindings::ngx_int_t;
 use bindings::ngx_str_t;
 use bindings::NGX_OK;
+use bindings::ngx_flag_t;
 use nginx_http::list_iterator;
 use nginx_http::log;
 
@@ -90,6 +91,15 @@ pub struct ngx_http_mixer_main_conf_t {
     mixer_server: ngx_str_t,
     mixer_port: ngx_int_t
 }
+
+#[repr(C)]
+pub struct ngx_http_mixer_loc_conf_t {
+    enable: ngx_flag_t,              // for every location, we need flag to enable/disable mixer
+    target_ip: ngx_str_t,         // target ip
+    target_uid: ngx_str_t        // target uid
+
+}
+
 
 
 
@@ -210,14 +220,17 @@ fn send(main_config: &ngx_http_mixer_main_conf_t, attr: Attributes)  {
 
 
 #[no_mangle]
-pub extern fn mixer_client(request: &ngx_http_request_s,main_config: &ngx_http_mixer_main_conf_t)  {
+pub extern fn mixer_client(request: &ngx_http_request_s,main_config: &ngx_http_mixer_main_conf_t, loc_conf: &ngx_http_mixer_loc_conf_t)  {
 
 
     let mut attr = AttributeWrapper::new();
 
+    let target_ip = loc_conf.target_ip.to_str();
+    let target_uid = loc_conf.target_uid.to_str();
   //  attr.insert_string_attribute(REQUEST_HOST,"35.202.158.195");
-    attr.insert_string_attribute( TARGET_IP,"10.40.7.6");
-    attr.insert_string_attribute(TARGET_UID,"kubernetes://productpage-v1-3990756607-plqt5.default");
+    attr.insert_string_attribute( TARGET_IP,target_ip);
+    attr.insert_string_attribute(TARGET_UID,target_uid);
+
 
     process_request_attribute(request, &mut attr);
     process_response_attribute(request, &mut attr);
