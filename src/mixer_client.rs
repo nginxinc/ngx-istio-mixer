@@ -89,15 +89,17 @@ public extern fn ngx_int_t ngx_http_istio_mixer_filter(request: *const ngx_http_
 #[repr(C)]
 pub struct ngx_http_mixer_main_conf_t {
     mixer_server: ngx_str_t,
-    mixer_port: ngx_int_t
+    mixer_port: ngx_int_t,
+    target_ip: ngx_str_t,
+    target_uid: ngx_str_t,
+    source_ip: ngx_str_t,
+    source_uid: ngx_str_t
+
 }
 
 #[repr(C)]
 pub struct ngx_http_mixer_loc_conf_t {
     enable: ngx_flag_t,              // for every location, we need flag to enable/disable mixer
-    target_ip: ngx_str_t,         // target ip
-    target_uid: ngx_str_t        // target uid
-
 }
 
 
@@ -220,16 +222,30 @@ fn send(main_config: &ngx_http_mixer_main_conf_t, attr: Attributes)  {
 
 
 #[no_mangle]
-pub extern fn mixer_client(request: &ngx_http_request_s,main_config: &ngx_http_mixer_main_conf_t, loc_conf: &ngx_http_mixer_loc_conf_t)  {
+pub extern fn mixer_client(request: &ngx_http_request_s,main_config: &ngx_http_mixer_main_conf_t)  {
 
 
     let mut attr = AttributeWrapper::new();
 
-    let target_ip = loc_conf.target_ip.to_str();
-    let target_uid = loc_conf.target_uid.to_str();
-  //  attr.insert_string_attribute(REQUEST_HOST,"35.202.158.195");
-    attr.insert_string_attribute( TARGET_IP,target_ip);
-    attr.insert_string_attribute(TARGET_UID,target_uid);
+
+    let target_ip = main_config.target_ip.to_str();
+    if target_ip.len() > 0 {
+        log(&format!("target ip founded!"));
+        attr.insert_string_attribute( TARGET_IP,target_ip);
+    } else {
+        log(&format!("no target ip founded"));
+    }
+
+
+    let target_uid = main_config.target_uid.to_str();
+    if(target_uid.len() > 0) {
+        attr.insert_string_attribute(TARGET_UID,target_uid);
+    } else {
+        log(&format!("no target uid founded"));
+    }
+
+    // need to send out source
+
 
 
     process_request_attribute(request, &mut attr);

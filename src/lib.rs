@@ -4,6 +4,8 @@ extern crate protobuf;
 extern crate grpc;
 extern crate tls_api;
 extern crate time;
+extern crate base64;
+
 #[macro_use]
 extern crate lazy_static;
 
@@ -19,6 +21,7 @@ pub mod mixer_client;
 pub mod bindings;
 pub mod nginx_http;
 pub mod attr_dict;
+pub mod encode;
 
 
 

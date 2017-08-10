@@ -3,7 +3,9 @@ RUST_COMPILER_TAG = 0.1
 RUST_TOOL = gcr.io/$(GCLOUD_PROJECT)/ngx-mixer-dev:${RUST_COMPILER_TAG}
 NGINX_VER = 1.11.13
 MODULE_SRC=/Users/sehyochang/git/istio
-
+MODULE_NAME=ngx_http_istio_mixer_module
+MODULE_LIB=${MODULE_SRC}/nginx-${NGINX_VER}/objs/${MODULE_NAME}.so
+NGX_LOCAL=/usr/local/nginx
 
 compiler:
 	docker run -it -v ${MODULE_SRC}:/src ${RUST_TOOL}  /bin/bash
@@ -37,10 +39,15 @@ loc-configure:
 build:
 	cd ${MODULE_SRC}/nginx-${NGINX_VER}; \
 	make modules;  \
-	sudo cp objs/ngx_http_istio_mixer_module.so /usr/local/nginx/modules; \
-	sudo /usr/local/nginx/sbin/nginx -s stop; \
-	sudo /usr/local/nginx/sbin/nginx; \
+
+
+local-test:	build
+	sudo cp ${MODULE_LIB} ${NGX_LOCAL}/modules
+	sudo ${NGX_LOCAL}/sbin/nginx -s stop
+	sudo ${NGX_LOCAL}/sbin/nginx
 	curl localhost/test2
+
+
 
 mclean:
 	cd ${MODULE_SRC}/nginx-${NGINX_VER}; \
@@ -70,5 +77,5 @@ super_clean: clean mclean
 report:
 	cargo build --bin report_client
 
-
-
+test:	
+	cargo test -- --nocapture
