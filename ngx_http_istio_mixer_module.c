@@ -30,8 +30,7 @@ typedef struct {
 
     ngx_str_t target_ip;           // target ip
     ngx_str_t target_uid;          // target uid
-    ngx_str_t source_ip;           // this will be send out
-    ngx_str_t source_uid;           // this will be send out to target
+
 
 } ngx_http_mixer_main_conf_t;
 
@@ -83,22 +82,6 @@ static ngx_command_t ngx_http_istio_mixer_commands[] = {
       ngx_conf_set_str_slot,
       NGX_HTTP_MAIN_CONF_OFFSET,
       offsetof(ngx_http_mixer_main_conf_t, target_uid),  // store in the location configuration
-      NULL
-    },
-    {
-      ngx_string("mixer_source_uid"),
-      NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE1,
-      ngx_conf_set_str_slot,
-      NGX_HTTP_MAIN_CONF_OFFSET,
-      offsetof(ngx_http_mixer_main_conf_t, source_uid),  // store in the location configuration
-      NULL
-    },
-    {
-      ngx_string("mixer_source_ip"),
-      NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE1,
-      ngx_conf_set_str_slot,
-      NGX_HTTP_MAIN_CONF_OFFSET,
-      offsetof(ngx_http_mixer_main_conf_t, source_ip),  // store in the location configuration
       NULL
     },
 
@@ -245,19 +228,6 @@ static void *ngx_http_mixer_create_main_conf(ngx_conf_t *cf)
 
   conf->mixer_port = NGX_CONF_UNSET_UINT;
 
-  /*
-  conf->mixer_server.len = NGX_CONF_UNSET_SIZE;
-  conf->mixer_server.data = NGX_CONF_UNSET_PTR;
-
-  conf->target_ip.len = NGX_CONF_UNSET_SIZE;
-  conf->target_ip.data = NGX_CONF_UNSET_PTR;
-  conf->target_uid.len = NGX_CONF_UNSET_SIZE;
-  conf->target_uid.data = NGX_CONF_UNSET_PTR;
-  conf->source_ip.len = NGX_CONF_UNSET_SIZE;
-  conf->source_ip.data = NGX_CONF_UNSET_PTR;
-  conf->source_uid.len = NGX_CONF_UNSET_UINT;
-  conf->source_uid.data = NGX_CONF_UNSET_PTR;
-  */
 
   return conf;
 }

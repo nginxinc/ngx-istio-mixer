@@ -6,6 +6,7 @@ MODULE_SRC=/Users/sehyochang/git/istio
 MODULE_NAME=ngx_http_istio_mixer_module
 MODULE_LIB=${MODULE_SRC}/nginx-${NGINX_VER}/objs/${MODULE_NAME}.so
 NGX_LOCAL=/usr/local/nginx
+TEST_URL=localhost/test2
 
 compiler:
 	docker run -it -v ${MODULE_SRC}:/src ${RUST_TOOL}  /bin/bash
@@ -40,14 +41,17 @@ build:
 	cd ${MODULE_SRC}/nginx-${NGINX_VER}; \
 	make modules;  \
 
-
-local-test:	build
+local-restart:	build
 	sudo cp ${MODULE_LIB} ${NGX_LOCAL}/modules
 	sudo ${NGX_LOCAL}/sbin/nginx -s stop
 	sudo ${NGX_LOCAL}/sbin/nginx
-	curl localhost/test2
 
 
+local-test:
+	curl --header "X-ISTIO-SRC-IP: 10.43.252.73" --header "X-ISTIO-SRC-UID: kubernetes://productpage-v1-3990756607-0d23m.default" ${TEST_URL}
+
+
+local-test-all: local-restart local-test
 
 mclean:
 	cd ${MODULE_SRC}/nginx-${NGINX_VER}; \
