@@ -36,6 +36,7 @@ use nginx_http::list_iterator;
 use nginx_http::log;
 
 use attr_dict::AttributeWrapper;
+use encode:: { encode_istio_header, decode_istio_header };
 
 
 const REQUEST_HEADER: &str = "request.headers";
@@ -52,6 +53,8 @@ const RESPONSE_CODE: &str = "response.code";
 const RESPONSE_DURATION: &str = "response.duration";
 const RESPONSE_SIZE: &str = "response.size";
 const RESPONSE_HEADERS: &str = "response.headers";
+const SOURCE_IP: &str = "source.ip";
+const SOURCE_UID: &str = "source.uid";
 const TARGET_IP: &str = "target.ip";
 const TARGET_UID: &str = "target.uid";
 
@@ -227,27 +230,7 @@ pub extern fn mixer_client(request: &ngx_http_request_s,main_config: &ngx_http_m
 
     let mut attr = AttributeWrapper::new();
 
-
-    let target_ip = main_config.target_ip.to_str();
-    if target_ip.len() > 0 {
-        log(&format!("target ip founded!"));
-        attr.insert_string_attribute( TARGET_IP,target_ip);
-    } else {
-        log(&format!("no target ip founded"));
-    }
-
-
-    let target_uid = main_config.target_uid.to_str();
-    if(target_uid.len() > 0) {
-        attr.insert_string_attribute(TARGET_UID,target_uid);
-    } else {
-        log(&format!("no target uid founded"));
-    }
-
-    // need to send out source
-
-
-
+    process_istio_attr(request,main_config,&mut attr);
     process_request_attribute(request, &mut attr);
     process_response_attribute(request, &mut attr);
 
@@ -256,10 +239,34 @@ pub extern fn mixer_client(request: &ngx_http_request_s,main_config: &ngx_http_m
 }
 
 
+const ISTIO_ATTRIBUTE: &str = "x-istio-attributes";
+
+/*
+ * Istio attributes such as source.ip are passed as http header and also send out source headewr
+ */
+fn process_istio_attr(request: & ngx_http_request_s, main_config: &ngx_http_mixer_main_conf_t, attr: &mut AttributeWrapper) {
+
+    // fill in target attributes
+    let target_ip = main_config.target_ip.to_str();
+    if target_ip.len() > 0 {
+        log(&format!("target ip founded!"));
+        attr.insert_string_attribute( TARGET_IP,target_ip);
+    }
+
+    let target_uid = main_config.target_uid.to_str();
+    if(target_uid.len() > 0) {
+        log(&format!("target uid founded!"));
+        attr.insert_string_attribute(TARGET_UID,target_uid);
+    }
+
+
+}
+
+
 // process request attribute,
 // loop over request header and add to dictionary
 // then use that to build new string map
-fn process_request_attribute(request: & ngx_http_request_s, attr: &mut AttributeWrapper, )  {
+fn process_request_attribute(request: & ngx_http_request_s, attr: &mut AttributeWrapper )  {
 
     let headers_in = request.headers_in;
 
@@ -304,8 +311,6 @@ fn process_request_attribute(request: & ngx_http_request_s, attr: &mut Attribute
     attr.insert_string_map(REQUEST_HEADER, map);
 
 }
-
-
 
 
 fn process_response_attribute(request: &ngx_http_request_s, attr: &mut AttributeWrapper, )  {
