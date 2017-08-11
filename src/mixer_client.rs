@@ -36,6 +36,7 @@ use nginx_http::list_iterator;
 use nginx_http::log;
 
 use attr_dict::AttributeWrapper;
+use encode:: { encode_istio_header, decode_istio_header };
 
 
 const REQUEST_HEADER: &str = "request.headers";
@@ -52,6 +53,8 @@ const RESPONSE_CODE: &str = "response.code";
 const RESPONSE_DURATION: &str = "response.duration";
 const RESPONSE_SIZE: &str = "response.size";
 const RESPONSE_HEADERS: &str = "response.headers";
+const SOURCE_IP: &str = "source.ip";
+const SOURCE_UID: &str = "source.uid";
 const TARGET_IP: &str = "target.ip";
 const TARGET_UID: &str = "target.uid";
 
@@ -89,15 +92,15 @@ public extern fn ngx_int_t ngx_http_istio_mixer_filter(request: *const ngx_http_
 #[repr(C)]
 pub struct ngx_http_mixer_main_conf_t {
     mixer_server: ngx_str_t,
-    mixer_port: ngx_int_t
+    mixer_port: ngx_int_t,
+    target_ip: ngx_str_t,
+    target_uid: ngx_str_t
+
 }
 
 #[repr(C)]
 pub struct ngx_http_mixer_loc_conf_t {
     enable: ngx_flag_t,              // for every location, we need flag to enable/disable mixer
-    target_ip: ngx_str_t,         // target ip
-    target_uid: ngx_str_t        // target uid
-
 }
 
 
@@ -220,18 +223,12 @@ fn send(main_config: &ngx_http_mixer_main_conf_t, attr: Attributes)  {
 
 
 #[no_mangle]
-pub extern fn mixer_client(request: &ngx_http_request_s,main_config: &ngx_http_mixer_main_conf_t, loc_conf: &ngx_http_mixer_loc_conf_t)  {
+pub extern fn mixer_client(request: &ngx_http_request_s,main_config: &ngx_http_mixer_main_conf_t)  {
 
 
     let mut attr = AttributeWrapper::new();
 
-    let target_ip = loc_conf.target_ip.to_str();
-    let target_uid = loc_conf.target_uid.to_str();
-  //  attr.insert_string_attribute(REQUEST_HOST,"35.202.158.195");
-    attr.insert_string_attribute( TARGET_IP,target_ip);
-    attr.insert_string_attribute(TARGET_UID,target_uid);
-
-
+    process_istio_attr(request,main_config,&mut attr);
     process_request_attribute(request, &mut attr);
     process_response_attribute(request, &mut attr);
 
@@ -240,10 +237,36 @@ pub extern fn mixer_client(request: &ngx_http_request_s,main_config: &ngx_http_m
 }
 
 
+/*
+ * Istio attributes such as source.ip are passed as http header and also send out source headewr
+ */
+fn process_istio_attr(request: & ngx_http_request_s, main_config: &ngx_http_mixer_main_conf_t, attr: &mut AttributeWrapper) {
+
+    // fill in target attributes
+    let target_ip = main_config.target_ip.to_str();
+    if target_ip.len() > 0 {
+        log(&format!("target ip founded!"));
+        attr.insert_string_attribute( TARGET_IP,target_ip);
+    }
+
+    let target_uid = main_config.target_uid.to_str();
+    if target_uid.len() > 0 {
+        log(&format!("target uid founded!"));
+        attr.insert_string_attribute(TARGET_UID,target_uid);
+    }
+
+
+}
+
+
+const SRC_IP_HEADER: &str = "X-ISTIO-SRC-IP";
+const SRC_UID_HEADER: &str = "X-ISTIO-SRC-UID";
+
+
 // process request attribute,
 // loop over request header and add to dictionary
 // then use that to build new string map
-fn process_request_attribute(request: & ngx_http_request_s, attr: &mut AttributeWrapper, )  {
+fn process_request_attribute(request: & ngx_http_request_s, attr: &mut AttributeWrapper )  {
 
     let headers_in = request.headers_in;
 
@@ -268,27 +291,40 @@ fn process_request_attribute(request: & ngx_http_request_s, attr: &mut Attribute
     request_time.set_nanos(request.start_msec as i32);
     attr.insert_time_stamp_attribute(REQUEST_TIME, request_time);
 
-
     attr.insert_string_attribute(REQUEST_USERAGENT, headers_in.user_agent_str());
-
 
 
     // fill in the string value
     let mut map: HashMap<i32,String> = HashMap::new();
     {
         for (name,value) in headers_in.headers_iterator()   {
-            log(&format!("header name: {}, value: {}",&name,&value));
+            log(&format!("in header name: {}, value: {}",&name,&value));
 
-            let index  = attr.string_index(&name[..]);
-            map.insert(index,value);
-               //     log(&format!("match existing index: {}",index));
+            // TODO: remove header
+            match name.as_ref()  {
+
+                SRC_IP_HEADER  => {
+                    log(&format!("source IP received {}",&value));
+                    attr.insert_string_attribute( SOURCE_IP,&value);
+                },
+
+                SRC_UID_HEADER => {
+                    log(&format!("source UID received {}",&value));
+                    attr.insert_string_attribute( SOURCE_UID,&value);
+                },
+                _ => {
+                    let index  = attr.string_index(&name[..]);
+                    map.insert(index,value);
+                }
+            }
+
+
         }
     }
 
     attr.insert_string_map(REQUEST_HEADER, map);
 
 }
-
 
 
 
@@ -306,7 +342,7 @@ fn process_response_attribute(request: &ngx_http_request_s, attr: &mut Attribute
     let mut map: HashMap<i32,String> = HashMap::new();
     {
         for (name,value) in headers_out.headers_iterator()   {
-            log(&format!("out header name: {}, value: {}",&name,&value));
+            log(&format!("processing out header name: {}, value: {}",&name,&value));
 
             let index  = attr.string_index(&name[..]);
             map.insert(index,value);

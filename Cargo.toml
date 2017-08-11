@@ -19,6 +19,7 @@ httpbis         = "0.4.1"
 libc            = "0.2.26"
 lazy_static     = "0.2.8"
 time            = "0.1.38"
+base64          = "0.6.0"
 
 [build-dependencies]
 protoc-rust-grpc = { path = "../grpc-rust/protoc-rust-grpc" }

@@ -3,13 +3,17 @@ RUST_COMPILER_TAG = 0.1
 RUST_TOOL = gcr.io/$(GCLOUD_PROJECT)/ngx-mixer-dev:${RUST_COMPILER_TAG}
 NGINX_VER = 1.11.13
 MODULE_SRC=/Users/sehyochang/git/istio
+MODULE_NAME=ngx_http_istio_mixer_module
+MODULE_LIB=${MODULE_SRC}/nginx-${NGINX_VER}/objs/${MODULE_NAME}.so
+NGX_LOCAL=/usr/local/nginx
+TEST_URL=localhost/test2
 
-
-compiler:
+# start docker based compiler tools chain, source is mounted /src
+lx-compiler:
 	docker run -it -v ${MODULE_SRC}:/src ${RUST_TOOL}  /bin/bash
 
-# run inside compiler tool
-configure:
+# run nginx configure steps, this must be run after lx-compiler
+lx-configure:
 	cd /src/nginx-${NGINX_VER}; \
 	./configure --add-dynamic-module=../ngx-http-istio-mixer  \
 	    --with-compat --with-file-aio --with-threads --with-http_addition_module \
@@ -22,25 +26,34 @@ configure:
 	    --with-cc-opt='-g -O2 -fstack-protector-strong -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2 -fPIC' \
 	    --with-ld-opt='-Wl,-Bsymbolic-functions -Wl,-z,relro -Wl,-z,now -Wl,--as-needed -pie'
 
-# run inside compiler tool
-module:
+# generate module. this will produce .so which will used by agent build
+lx-gen-module:
 	cd /src/nginx-${NGINX_VER}; \
 	make modules
 
 
-loc-configure:
+darwin-configure:
 	cd ${MODULE_SRC}/nginx-${NGINX_VER}; \
 	./configure --add-dynamic-module=../ngx-http-istio-mixer
 
 
-# local build
-build:
+# build module locally in mac
+darwin-gen-module:
 	cd ${MODULE_SRC}/nginx-${NGINX_VER}; \
 	make modules;  \
-	sudo cp objs/ngx_http_istio_mixer_module.so /usr/local/nginx/modules; \
-	sudo /usr/local/nginx/sbin/nginx -s stop; \
-	sudo /usr/local/nginx/sbin/nginx; \
-	curl localhost/test2
+
+# restart local nginx in the mac
+darwin-restart:	build
+	sudo cp ${MODULE_LIB} ${NGX_LOCAL}/modules
+	sudo ${NGX_LOCAL}/sbin/nginx -s stop
+	sudo ${NGX_LOCAL}/sbin/nginx
+
+# run simple test against local ninx
+darwin-test:
+	curl --header "X-ISTIO-SRC-IP: 10.43.252.73" --header "X-ISTIO-SRC-UID: kubernetes://productpage-v1-3990756607-0d23m.default" ${TEST_URL}
+
+# build and run test in mac
+darwin-test-all: local-restart local-test
 
 mclean:
 	cd ${MODULE_SRC}/nginx-${NGINX_VER}; \
@@ -70,5 +83,5 @@ super_clean: clean mclean
 report:
 	cargo build --bin report_client
 
-
-
+test:	
+	cargo test -- --nocapture
