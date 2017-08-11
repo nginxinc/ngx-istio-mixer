@@ -30,6 +30,7 @@ typedef struct {
 
     ngx_str_t target_ip;           // target ip
     ngx_str_t target_uid;          // target uid
+    ngx_str_t target_service;       // target service
 
 
 } ngx_http_mixer_main_conf_t;
@@ -82,6 +83,14 @@ static ngx_command_t ngx_http_istio_mixer_commands[] = {
       ngx_conf_set_str_slot,
       NGX_HTTP_MAIN_CONF_OFFSET,
       offsetof(ngx_http_mixer_main_conf_t, target_uid),  // store in the location configuration
+      NULL
+    },
+    {
+      ngx_string("mixer_target_service"),
+      NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE1,
+      ngx_conf_set_str_slot,
+      NGX_HTTP_MAIN_CONF_OFFSET,
+      offsetof(ngx_http_mixer_main_conf_t, target_service),  // store in the location configuration
       NULL
     },
 

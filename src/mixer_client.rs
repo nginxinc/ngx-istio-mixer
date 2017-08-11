@@ -94,7 +94,8 @@ pub struct ngx_http_mixer_main_conf_t {
     mixer_server: ngx_str_t,
     mixer_port: ngx_int_t,
     target_ip: ngx_str_t,
-    target_uid: ngx_str_t
+    target_uid: ngx_str_t,
+    target_service: ngx_str_t
 
 }
 
@@ -255,6 +256,11 @@ fn process_istio_attr(request: & ngx_http_request_s, main_config: &ngx_http_mixe
         attr.insert_string_attribute(TARGET_UID,target_uid);
     }
 
+    let target_service = main_config.target_service.to_str();
+    if target_service.len() > 0 {
+        log(&format!("target service founded!"));
+        attr.insert_string_attribute(TARGET_SERVICE,target_service);
+    }
 
 }
 

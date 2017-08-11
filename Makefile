@@ -43,7 +43,7 @@ darwin-gen-module:
 	make modules;  \
 
 # restart local nginx in the mac
-darwin-restart:	build
+darwin-restart:	darwin-gen-module
 	sudo cp ${MODULE_LIB} ${NGX_LOCAL}/modules
 	sudo ${NGX_LOCAL}/sbin/nginx -s stop
 	sudo ${NGX_LOCAL}/sbin/nginx
@@ -53,7 +53,7 @@ darwin-test:
 	curl --header "X-ISTIO-SRC-IP: 10.43.252.73" --header "X-ISTIO-SRC-UID: kubernetes://productpage-v1-3990756607-0d23m.default" ${TEST_URL}
 
 # build and run test in mac
-darwin-test-all: local-restart local-test
+darwin-test-all: darwin-restart darwin-test
 
 mclean:
 	cd ${MODULE_SRC}/nginx-${NGINX_VER}; \
