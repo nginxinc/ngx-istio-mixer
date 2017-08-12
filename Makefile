@@ -6,6 +6,7 @@ MODULE_SRC=/Users/sehyochang/git/istio
 MODULE_NAME=ngx_http_istio_mixer_module
 MODULE_LIB=${MODULE_SRC}/nginx-${NGINX_VER}/objs/${MODULE_NAME}.so
 NGX_LOCAL=/usr/local/nginx
+NGX_DEBUG="--with-debug"
 TEST_URL=localhost/test2
 
 # start docker based compiler tools chain, source is mounted /src
@@ -32,9 +33,14 @@ lx-gen-module:
 	make modules
 
 
-darwin-configure:
+darwin-module-configure:
 	cd ${MODULE_SRC}/nginx-${NGINX_VER}; \
 	./configure --add-dynamic-module=../ngx-http-istio-mixer
+
+
+drawin-static-configure:
+	cd ${MODULE_SRC}/nginx-${NGINX_VER}; \
+	./configure --add-module=../ngx-http-istio-mixer ${NGX_DEBUG}
 
 
 # build module locally in mac
@@ -75,6 +81,7 @@ clean:
 	rm -f src/status.rs
 	rm -f src/check.rs
 	rm -f src/quota.rs
+	rm -r src/report.rs
 	rm -f src/service_grpc.rs
 	rm -f src/bindings.rs
 
