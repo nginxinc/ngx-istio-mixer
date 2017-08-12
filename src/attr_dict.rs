@@ -5,7 +5,7 @@ use protobuf::well_known_types::Timestamp;
 use attributes::Attributes;
 use attributes::StringMap;
 
-use nginx_http::log;
+use ngx_rust::nginx_http::log;
 
 // TODO: use defaults
 

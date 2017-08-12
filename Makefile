@@ -2,21 +2,29 @@ GCLOUD_PROJECT = istio-stuff
 RUST_COMPILER_TAG = 0.1
 RUST_TOOL = gcr.io/$(GCLOUD_PROJECT)/ngx-mixer-dev:${RUST_COMPILER_TAG}
 NGINX_VER = 1.11.13
-MODULE_SRC=/Users/sehyochang/git/istio
 MODULE_NAME=ngx_http_istio_mixer_module
 MODULE_LIB=${MODULE_SRC}/nginx-${NGINX_VER}/objs/${MODULE_NAME}.so
 NGX_LOCAL=/usr/local/nginx
 NGX_DEBUG="--with-debug"
+DARWIN_NGINX=nginx-darwin
+LINUX_NGINX=nginx-linux
+export ROOT_DIR=$(shell dirname $$PWD)
+MODULE_PROJ_NAME=ngx-http-istio-mixer
 TEST_URL=localhost/test2
 
-# start docker based compiler tools chain, source is mounted /src
-lx-compiler:
-	docker run -it -v ${MODULE_SRC}:/src ${RUST_TOOL}  /bin/bash
+linux-source:
+	wget http://nginx.org/download/nginx-${NGINX_VER}.tar.gz
+	tar zxf nginx-${NGINX_VER}.tar.gz
+	mv nginx-${NGINX_VER} ${LINUX_NGINX}
+	mv ${LINUX_NGINX} nginx
+	rm nginx-${NGINX_VER}.tar.gz*
+
+
 
 # run nginx configure steps, this must be run after lx-compiler
-lx-configure:
-	cd /src/nginx-${NGINX_VER}; \
-	./configure --add-dynamic-module=../ngx-http-istio-mixer  \
+docker-lx-configure:
+	cd nginx/${LINUX_NGINX}; \
+	./configure --add-dynamic-module=../../module  \
 	    --with-compat --with-file-aio --with-threads --with-http_addition_module \
 	    --with-http_auth_request_module --with-http_dav_module --with-http_flv_module \
 	    --with-http_gunzip_module --with-http_gzip_static_module --with-http_mp4_module \
@@ -27,26 +35,38 @@ lx-configure:
 	    --with-cc-opt='-g -O2 -fstack-protector-strong -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2 -fPIC' \
 	    --with-ld-opt='-Wl,-Bsymbolic-functions -Wl,-z,relro -Wl,-z,now -Wl,--as-needed -pie'
 
+linux-configure:
+	docker run -it -v ${ROOT_DIR}:/src -w /src/${MODULE_PROJ_NAME} ${RUST_TOOL} make docker-lx-configure
+
+
 # generate module. this will produce .so which will used by agent build
-lx-gen-module:
-	cd /src/nginx-${NGINX_VER}; \
+docker-lx-gen-module:
+	cd nginx/${LINUX_NGINX}; \
 	make modules
 
 
-darwin-module-configure:
-	cd ${MODULE_SRC}/nginx-${NGINX_VER}; \
-	./configure --add-dynamic-module=../ngx-http-istio-mixer
+linux-module:
+	docker run -it -v ${ROOT_DIR}:/src -w /src/${MODULE_PROJ_NAME} ${RUST_TOOL} make docker-lx-gen-module
 
+darwin-source:
+	wget http://nginx.org/download/nginx-${NGINX_VER}.tar.gz
+	tar zxf nginx-${NGINX_VER}.tar.gz
+	mv nginx-${NGINX_VER} ${DARWIN_NGINX}
+	mv ${DARWIN_NGINX} nginx
+	rm nginx-${NGINX_VER}.tar.gz*
 
-drawin-static-configure:
-	cd ${MODULE_SRC}/nginx-${NGINX_VER}; \
-	./configure --add-module=../ngx-http-istio-mixer ${NGX_DEBUG}
+darwin-configure:
+	cd nginx/${DARWIN_NGINX}; \
+    ./configure --add-dynamic-module=../../module
+
+darwin-setup:   darwin-source darwin-configure
 
 
 # build module locally in mac
-darwin-gen-module:
-	cd ${MODULE_SRC}/nginx-${NGINX_VER}; \
-	make modules;  \
+darwin-module:
+	cd nginx/${DARWIN_NGINX}; \
+	make modules;
+
 
 # restart local nginx in the mac
 darwin-restart:	darwin-gen-module
@@ -81,9 +101,9 @@ clean:
 	rm -f src/status.rs
 	rm -f src/check.rs
 	rm -f src/quota.rs
-	rm -r src/report.rs
+	rm -f src/report.rs
 	rm -f src/service_grpc.rs
-	rm -f src/bindings.rs
+
 
 super_clean: clean mclean
 
