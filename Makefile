@@ -3,7 +3,7 @@ RUST_COMPILER_TAG = 0.1
 RUST_TOOL = gcr.io/$(GCLOUD_PROJECT)/ngx-mixer-dev:${RUST_COMPILER_TAG}
 NGINX_VER = 1.11.13
 MODULE_NAME=ngx_http_istio_mixer_module
-MODULE_LIB=${MODULE_SRC}/nginx-${NGINX_VER}/objs/${MODULE_NAME}.so
+MODULE_LIB=objs/${MODULE_NAME}.so
 NGX_LOCAL=/usr/local/nginx
 NGX_DEBUG="--with-debug"
 DARWIN_NGINX=nginx-darwin
@@ -69,21 +69,20 @@ darwin-module:
 
 
 # restart local nginx in the mac
-darwin-restart:	darwin-gen-module
-	sudo cp ${MODULE_LIB} ${NGX_LOCAL}/modules
+darwin-test-setup:
+	sudo cp nginx/${DARWIN_NGINX}/${MODULE_LIB} ${NGX_LOCAL}/modules
 	sudo ${NGX_LOCAL}/sbin/nginx -s stop
 	sudo ${NGX_LOCAL}/sbin/nginx
+
+
 
 # run simple test against local ninx
 darwin-test:
 	curl --header "X-ISTIO-SRC-IP: 10.43.252.73" --header "X-ISTIO-SRC-UID: kubernetes://productpage-v1-3990756607-0d23m.default" ${TEST_URL}
 
 # build and run test in mac
-darwin-test-all: darwin-restart darwin-test
+darwin-test-all: darwin-module darwin-test-setup
 
-mclean:
-	cd ${MODULE_SRC}/nginx-${NGINX_VER}; \
-	make clean
 
 restart:
 	sudo /usr/local/nginx/sbin/nginx -s stop
@@ -105,7 +104,9 @@ clean:
 	rm -f src/service_grpc.rs
 
 
-super_clean: clean mclean
+super_clean: clean
+	rm -rf nginx/*
+
 
 report:
 	cargo build --bin report_client
