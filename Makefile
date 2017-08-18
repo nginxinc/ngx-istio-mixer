@@ -1,6 +1,5 @@
-GCLOUD_PROJECT = istio-stuff
-RUST_COMPILER_TAG = 0.1
-RUST_TOOL = gcr.io/$(GCLOUD_PROJECT)/ngx-mixer-dev:${RUST_COMPILER_TAG}
+RUST_COMPILER_TAG = 1.19.0
+RUST_TOOL = gcr.io/$(GCLOUD_PROJECT)/ngx-rust-tool:${RUST_COMPILER_TAG}
 NGINX_VER = 1.11.13
 MODULE_NAME=ngx_http_istio_mixer_module
 MODULE_LIB=objs/${MODULE_NAME}.so
@@ -12,7 +11,7 @@ export ROOT_DIR=$(shell dirname $$PWD)
 MODULE_PROJ_NAME=ngx-http-istio-mixer
 TEST_URL=localhost/test2
 
-linux-source:
+linux-source:can
 	wget http://nginx.org/download/nginx-${NGINX_VER}.tar.gz
 	tar zxf nginx-${NGINX_VER}.tar.gz
 	mv nginx-${NGINX_VER} ${LINUX_NGINX}
@@ -37,6 +36,9 @@ docker-lx-configure:
 
 linux-configure:
 	docker run -it -v ${ROOT_DIR}:/src -w /src/${MODULE_PROJ_NAME} ${RUST_TOOL} make docker-lx-configure
+
+
+linux-setup:	linux-source linux-configure
 
 
 # generate module. this will produce .so which will used by agent build
