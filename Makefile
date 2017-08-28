@@ -11,7 +11,7 @@ export ROOT_DIR=$(shell dirname $$PWD)
 MODULE_PROJ_NAME=ngx-http-istio-mixer
 TEST_URL=localhost/test2
 
-linux-source:can
+linux-source:
 	wget http://nginx.org/download/nginx-${NGINX_VER}.tar.gz
 	tar zxf nginx-${NGINX_VER}.tar.gz
 	mv nginx-${NGINX_VER} ${LINUX_NGINX}
