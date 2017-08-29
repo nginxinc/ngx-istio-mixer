@@ -63,14 +63,14 @@ make and install
 
 ### Creating mixer as dynamic module
 
-cd nginx
-./auto/configure --add-dynamic-module=../ngx-http-istio-mixer
+`cd nginx`
+`./auto/configure --add-dynamic-module=../ngx-http-istio-mixer`
 
-make linux-setup
-make linux-module
-sudo cp objs/ngx_http_istio_mixer_module.so /usr/local/nginx/modules/
-sudo /usr/local/nginx/sbin/nginx -s stop
-/usr/local/nginx/sbin/nginx
+`make linux-setup`
+`make linux-module`
+`sudo cp objs/ngx_http_istio_mixer_module.so /usr/local/nginx/modules/`
+`sudo /usr/local/nginx/sbin/nginx -s stop`
+`/usr/local/nginx/sbin/nginx`
 
 
 
@@ -82,4 +82,4 @@ This send dummy data to mixer in order to excercise grpc interfaces
 
 
 
-* test4
+`* test4`
