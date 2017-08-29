@@ -63,30 +63,6 @@ const TARGET_UID: &str = "target.uid";
 
 
 
-/**
-  filter nginx
- */
-/*
-#[no_mangle]
-public extern fn ngx_int_t ngx_http_istio_mixer_filter(request: *const ngx_http_request_s) -> ngx_int_t {
-{
-
-    log(&format!("start invoking istio mixer filter");
-
-    ngx_http_mixer_main_conf_t *conf = *rngx_http_istio_mixer_module);
-
-    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "using server: %*s",conf->mixer_server.len,conf->mixer_server.data);
-
-    // invoke mix client
-    mixer_client(r);
-
-    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "finish calling istio filter");
-
-    return ngx_http_next_header_filter(r);
-
-} */
-
-
 
 
 #[repr(C)]
@@ -179,31 +155,7 @@ fn mixer_background()  {
     }
 }
 
-/*
-fn fillInAttributes(attr: &mut AttributeWrapper) {
 
-    attr.insert_string_attribute(REQUEST_HOST,"35.202.158.195");
-    attr.insert_string_attribute( TARGET_IP,"10.40.7.6");
-    attr.insert_string_attribute(REQUEST_METHOD,"GET");
-    attr.insert_string_attribute(TARGET_UID,"kubernetes://productpage-v1-3990756607-plqt5.default");
-
-
-    let mut request_time = Timestamp::new();
-    let current_time = get_time();
-    request_time.set_seconds(current_time.sec);
-    request_time.set_nanos(current_time.nsec as i32);
-    attr.insert_time_stamp_attribute(REQUEST_TIME, request_time);
-
-
-
-    // fill in the string value
-    let mut map: HashMap<i32,String> = HashMap::new();
-    let index  = attr.string_index("content-length");
-    map.insert(index,String::from("10"));
-    attr.insert_string_map(REQUEST_HEADER, map);
-
-}
-*/
 
 fn send(main_config: &ngx_http_mixer_main_conf_t, attr: Attributes)  {
 
