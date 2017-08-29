@@ -19,13 +19,17 @@ rustup default 1.18.0`
 Install Clang at: https://rust-lang-nursery.github.io/rust-bindgen/requirements.html
 
 
-### Install gRpc compiler
-`brew install --with-plugins grpc
-brew install --with-plugins grpc`
+// ### Install gRpc compiler
+// `brew install --with-plugins grpc
+// brew install --with-plugins grpc`
+
+Checkout rust-grpc, same level as mixer:
+https://github.com/stepancheg/grpc-rust
+
+## Creating Nginx module --------???
+`git clone https://github.com/nginxinc/ngx-http-istio-mixer.git`
 
 
-## Creating Nginx module
-`git clone https://github.com/nginxinc/mixer.git`
 
 
 ### Check out mixer module
@@ -42,7 +46,7 @@ The low level nginx rust wrappr is created automatically from rust bindgen utili
 the nginx repositry must be accessible from mixer module.
 
 `cd mixer
-ln -s ../nginx-1.11.13 nginx`
+ln -s ../nginx nginx`
 
 ### Creating mixer as static module
 
@@ -59,13 +63,15 @@ make and install
 
 ### Creating mixer as dynamic module
 
-`cd nginx-1.11.13
-./configure --add-dynamic-module=../ngx-http-istio-mixer
-make modules
+cd nginx
+./auto/configure --add-dynamic-module=../ngx-http-istio-mixer
+
+make linux-setup
+make linux-module
 sudo cp objs/ngx_http_istio_mixer_module.so /usr/local/nginx/modules/
 sudo /usr/local/nginx/sbin/nginx -s stop
-/usr/local/nginx/sbin/ginx
-`
+/usr/local/nginx/sbin/nginx
+
 
 
 ### Run mixer test.
@@ -77,4 +83,3 @@ This send dummy data to mixer in order to excercise grpc interfaces
 
 
 * test4
-
