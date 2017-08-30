@@ -1,85 +1,84 @@
 # Nginx Mixer Module
 
-## Development Set up for Mac
+To integrate with Istio Mixer
+
+## Usage
+
+<TBD>
+
+## Check out Nginx Rust Module
+
+```bash
+giut clone git@github.com:nginxinc/ngx-rust.git
+```
+
+Rust module needs to be check out at same level as this project.
+Follow instruction in Rust module and configure for each of the target OS.
 
 
-### Install Rust 1.18.0
+## Install CLang for bindgen
 
-Current rust version 1.19.0 has issue with linking in Mac.  Use 1.18.0 until this issue is sorted out.
+Install Clang at 
 
-First install rust at:  https://www.rust-lang.org/en-US/install.html
-
-Then switch to Rust 1.18.0:
-
-`rustup install 1.18.0
-rustup default 1.18.0`
-
-### Install CLang for bindgen
-
-Install Clang at: https://rust-lang-nursery.github.io/rust-bindgen/requirements.html
+https://rust-lang-nursery.github.io/rust-bindgen/requirements.html
 
 
-// ### Install gRpc compiler
-// `brew install --with-plugins grpc
-// brew install --with-plugins grpc`
+## Checkout Rust GRPC project
 
-Checkout rust-grpc, same level as mixer:
-https://github.com/stepancheg/grpc-rust
+Provides gRpc compile
 
-## Creating Nginx module --------???
-`git clone https://github.com/nginxinc/ngx-http-istio-mixer.git`
+Checkout rust-grpc, which must be check out at the same level as this project
 
-
+```bash
+giut clone git@github.com:stepancheg/grpc-rust.git
+```
 
 
-### Check out mixer module
+## Configure and Build
 
-Check out nginx source code.  This refers to open source, but it also applies to NginxPlus.
+Before building, it must be configured for each of the target OS.
 
-In this example, nginx source repository is checked out at same directory level as mixer module.
+### For Linux
 
-`git clone https://github.com/nginx/nginx.git`
+To configure:
 
-###  Link nginx repo under mixer module.
+```bash
+make linux-setup
+```
 
-The low level nginx rust wrappr is created automatically from rust bindgen utility,.  In order do that,
-the nginx repositry must be accessible from mixer module.
-
-`cd mixer
-ln -s ../nginx nginx`
-
-### Creating mixer as static module
-
-goto nginx module
-
-`cd nginx-1.11.13`
+Generating module:
 
 
-`./configure --add-module=../ngx-http-istio-mixer`
+```bash
+make linux-module
+```
 
-make and install
+Generated module is founded at:
 
-`sudo make install`
-
-### Creating mixer as dynamic module
-
-`cd nginx`
-`./auto/configure --add-dynamic-module=../ngx-http-istio-mixer`
-
-`make linux-setup`
-`make linux-module`
-`sudo cp objs/ngx_http_istio_mixer_module.so /usr/local/nginx/modules/`
-`sudo /usr/local/nginx/sbin/nginx -s stop`
-`/usr/local/nginx/sbin/nginx`
+```bash
+ls nginx/nginx-linux/objs/ngx_http_istio_mixer_module.so
+```
 
 
+### For Mac
 
-### Run mixer test.
+To configure:
 
-This send dummy data to mixer in order to excercise grpc interfaces
+```bash
+make darwin-setup
+```
+
+Generating module:
+
+
+```bash
+make darwin-module
+```
+
+
+### Run mixer unit test.
+
+Configuration step must be done before.
 
 `cargo run --bin report_client`
 
-
-
-`* test4`
