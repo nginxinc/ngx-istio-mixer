@@ -1,6 +1,6 @@
 # Nginx Mixer Module
 
-To integrate with Istio Mixer
+This repo implements NGINX modules for integrating with Mixer for Istio
 
 ## Usage
 
