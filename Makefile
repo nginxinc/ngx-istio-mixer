@@ -1,4 +1,4 @@
-RUST_COMPILER_TAG = 1.19.0
+RUST_COMPILER_TAG = 1.20.0
 RUST_TOOL = nginmesh/ngx-rust-tool:${RUST_COMPILER_TAG}
 NGINX_VER = 1.11.13
 MODULE_NAME=ngx_http_istio_mixer_module
