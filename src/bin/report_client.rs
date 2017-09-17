@@ -6,7 +6,6 @@
 extern crate mixer;
 extern crate grpc;
 extern crate futures;
-extern crate libc;
 
 use std::collections::HashMap;
 use mixer::service_grpc::MixerClient;
