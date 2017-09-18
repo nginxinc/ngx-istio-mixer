@@ -1,24 +1,7 @@
 MODULE_NAME=ngx_http_istio_mixer_module
 MODULE_PROJ_NAME=ngx-http-istio-mixer
 NGX_DEBUG="--with-debug"
-
-
-linux-setup:
-	make -f nginx.mk MODULE_PROJ_NAME=$(MODULE_PROJ_NAME) linux-setup
-
-
-linux-module:
-	make -f nginx.mk MODULE_PROJ_NAME=$(MODULE_PROJ_NAME) linux-module
-
-linux-shell:
-	make -f nginx.mk MODULE_PROJ_NAME=$(MODULE_PROJ_NAME) linux-shell
-
-
-nginx-setup:
-	make -f nginx.mk MODULE_PROJ_NAME=$(MODULE_PROJ_NAME) nginx-setup
-
-nginx-module:
-	make -f nginx.mk MODULE_PROJ_NAME=$(MODULE_PROJ_NAME) nginx-module
+include nginx.mk
 
 
 clean:

@@ -68,12 +68,3 @@ linux-setup:
 linux-module:
 	${DOCKER_TOOL} make nginx-module
 
-
-
-clean:
-	cargo clean
-	rm -f src/bindings.rs
-
-
-super_clean: clean
-	rm -rf nginx
