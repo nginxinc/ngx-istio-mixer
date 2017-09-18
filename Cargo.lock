@@ -8,7 +8,7 @@ dependencies = [
  "grpc 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "httpbis 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "ngx-rust 1.11.13",
+ "ngx-rust 1.13.5",
  "protobuf 1.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "protoc-rust-grpc 0.2.1",
  "time 0.1.38 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -347,7 +347,7 @@ dependencies = [
 
 [[package]]
 name = "ngx-rust"
-version = "1.11.13"
+version = "1.13.5"
 dependencies = [
  "bindgen 0.30.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
