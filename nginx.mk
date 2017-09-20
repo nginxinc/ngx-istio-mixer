@@ -21,7 +21,7 @@ NGX_DEBUG="--with-debug"
 RUST_COMPILER_TAG = 1.20.0
 RUST_TOOL = nginmesh/ngx-rust-tool:${RUST_COMPILER_TAG}
 export ROOT_DIR=$(shell dirname $$PWD)
-DOCKER_TOOL=docker run -it -v ${ROOT_DIR}:/src -w /src/${MODULE_PROJ_NAME} ${RUST_TOOL}
+DOCKER_TOOL=docker run -it --rm -v ${ROOT_DIR}:/src -w /src/${MODULE_PROJ_NAME} ${RUST_TOOL}
 
 
 nginx-build:
