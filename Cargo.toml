@@ -5,7 +5,7 @@ authors = ["Sehyo Chang   sehyo@nginx.com"]
 
 [lib]
 doctest = false
-test = false
+test = true
 crate-type = ["staticlib","rlib"]
 
 
@@ -29,6 +29,3 @@ protoc-rust-grpc = { path = "../grpc-rust/protoc-rust-grpc" }
 name = "report_client"
 test = false
 
-[[test]]
-name = "attr_test"
-path = "tests/attr_dict_test.rs"

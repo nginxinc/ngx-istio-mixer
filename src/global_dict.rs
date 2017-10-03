@@ -171,7 +171,6 @@ pub struct GlobalDictionary   {
     global_dict: HashMap<String,i32>,
 
     top_index: i32
-
 }
 
 impl GlobalDictionary  {

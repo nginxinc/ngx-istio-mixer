@@ -23,5 +23,10 @@ pub mod global_dict;
 pub mod message_dict;
 pub mod encode;
 
+#[cfg(test)]
+#[path = "./global_dict_test.rs"]
+mod global_test_dict;
 
-
+#[cfg(test)]
+#[path = "./message_dict_test.rs"]
+mod message_dict_test;

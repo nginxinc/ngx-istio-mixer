@@ -8,6 +8,11 @@ pub struct MessageDictionary {
     message_dict:  HashMap<String,i32>
 }
 
+// return public index of the message which is negative per API
+fn message_dict_index( idx: i32) -> i32 {
+    return -(idx + 1);
+}
+
 impl MessageDictionary  {
 
     pub fn new(global_dict: GlobalDictionary) -> MessageDictionary  {
@@ -28,14 +33,14 @@ impl MessageDictionary  {
         }
 
         if let Some(index) = self.message_dict.get(name) {
-           return *index;
+           return message_dict_index(*index);
         }
 
-        let index = self.message_words.len();
+        let index  = self.message_words.len() as i32;
         self.message_words.push(String::from(name));
         self.message_dict.insert(String::from(name),index as i32 );
 
-        return index as i32;
+        message_dict_index(index)
 
     }
 
