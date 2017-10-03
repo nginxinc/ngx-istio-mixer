@@ -18,7 +18,7 @@ pub mod report;
 pub mod service_grpc;
 
 pub mod mixer_client;
-pub mod attr_dict;
+pub mod attr_wrapper;
 pub mod global_dict;
 pub mod message_dict;
 pub mod encode;
@@ -30,3 +30,7 @@ mod global_test_dict;
 #[cfg(test)]
 #[path = "./message_dict_test.rs"]
 mod message_dict_test;
+
+#[cfg(test)]
+#[path = "./attr_wrapper_test.rs"]
+mod attr_wrapper_test;

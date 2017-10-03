@@ -24,7 +24,7 @@ use ngx_rust::bindings::NGX_OK;
 use ngx_rust::bindings::ngx_flag_t;
 use ngx_rust::nginx_http::log;
 
-use attr_dict::AttributeWrapper;
+use attr_wrapper::AttributeWrapper;
 use global_dict::GlobalDictionary;
 use message_dict::MessageDictionary;
 
@@ -174,8 +174,8 @@ pub extern fn mixer_client(request: &ngx_http_request_s,main_config: &ngx_http_m
     process_response_attribute(request, &mut attr);
 
 
-    let message_dict = MessageDictionary::new(GlobalDictionary::new());
-    send(main_config, attr.as_attributes(message_dict));
+    let mut message_dict = MessageDictionary::new(GlobalDictionary::new());
+    send(main_config, attr.as_attributes(&mut message_dict));
 
 }
 

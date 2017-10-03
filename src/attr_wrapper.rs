@@ -15,10 +15,10 @@ enum AttrValue  {
     I64(i64),
     Double(f64),
     Bool(bool),
-    Timestamp(Timestamp)
+    Timestamp(Timestamp),
+    StringMap(HashMap<String,String>)
 }
 
-// TODO: use defaults
 
 pub struct AttributeWrapper {
 
@@ -38,7 +38,6 @@ impl AttributeWrapper  {
     }
 
 
-
     // insert string attributes
     fn insert_value(&mut self, key: &str, value: AttrValue) {
         self.values.insert(String::from(key),value);
@@ -53,16 +52,25 @@ impl AttributeWrapper  {
         self.insert_value(key,AttrValue::I64(value));
     }
 
+    pub fn insert_f64_attribute(&mut self, key: &str, value: f64) {
+        self.insert_value(key,AttrValue::Double(value));
+    }
+
+    pub fn insert_bool_attribute(&mut self, key: &str, value: bool) {
+        self.insert_value(key,AttrValue::Bool(value));
+    }
+
+
     pub fn insert_time_stamp_attribute(&mut self, key: &str, value: Timestamp) {
         self.insert_value(key,AttrValue::Timestamp(value));
     }
 
     pub fn insert_string_map(&mut self, key: &str, value: HashMap<String,String>) {
-
+        self.insert_value(key,AttrValue::StringMap(value));
     }
 
         // generate mixer attributes
-    pub fn as_attributes(&mut self,mut dict:  MessageDictionary) -> Attributes  {
+    pub fn as_attributes(&self, dict: &mut MessageDictionary) -> Attributes  {
 
         let mut attrs = Attributes::new();
 
@@ -83,7 +91,10 @@ impl AttributeWrapper  {
                     attrs.mut_bools().insert(index,b_value);
                 },
                 &AttrValue::Timestamp(ref t_value) => {
-                   // attrs.mut_timestamps().insert(index,tValue);
+                   attrs.mut_timestamps().insert(index,t_value.clone());
+                },
+                &AttrValue::StringMap(ref str_value) => {
+                    attrs.mut_string_maps().insert(index, map_string_map(str_value,  dict));
                 }
 
             }
@@ -92,4 +103,16 @@ impl AttributeWrapper  {
 
         return attrs;
     }
+}
+
+// convert rust hashmap of string to stringmap
+fn map_string_map(string_map: &HashMap<String,String> , dict: &mut MessageDictionary) -> StringMap {
+
+    let mut msg = StringMap::new();
+    for (key, value) in string_map.iter()  {
+        msg.mut_entries().insert(dict.index_of(key),dict.index_of(value));
+    }
+
+    return msg;
+
 }
