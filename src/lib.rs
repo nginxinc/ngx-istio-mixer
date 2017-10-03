@@ -13,13 +13,14 @@ extern crate lazy_static;
 pub mod check;
 pub mod attributes;
 pub mod status;
-pub mod quota;
 pub mod report;
 
 pub mod service_grpc;
 
 pub mod mixer_client;
 pub mod attr_dict;
+pub mod global_dict;
+pub mod message_dict;
 pub mod encode;
 
 

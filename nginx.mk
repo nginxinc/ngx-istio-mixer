@@ -18,11 +18,18 @@ ifeq ($(UNAME_S),Darwin)
     NGX_OPT= $(NGX_MODULES)
 endif
 NGX_DEBUG="--with-debug"
+export ROOT_DIR=$(shell dirname $$PWD)
+export MODULE_DIR=${PWD}
+DOCKER_USER=101
 RUST_COMPILER_TAG = 1.20.0
 RUST_TOOL = nginmesh/ngx-rust-tool:${RUST_COMPILER_TAG}
-export ROOT_DIR=$(shell dirname $$PWD)
+MODULE_SO_DIR=nginx/nginx-linux/objs
+MODULE_SO_BIN=${MODULE_SO_DIR}/${MODULE_NAME}.so
 DOCKER_TOOL=docker run -it --rm -v ${ROOT_DIR}:/src -w /src/${MODULE_PROJ_NAME} ${RUST_TOOL}
-
+DOCKER_NGINX_NAME=nginx-test
+DOCKER_NGINX_EXEC=docker exec -it ${DOCKER_NGINX_NAME}
+DOCKER_NGINX_EXECD=docker exec -d ${DOCKER_NGINX_NAME}
+DOCKER_NGINX_DAEMON=docker run -d -p 8000:8000 --privileged --name ${DOCKER_NGINX_NAME} -v ${ROOT_DIR}:/src -w /src/${MODULE_PROJ_NAME} ${RUST_TOOL}
 
 nginx-build:
 	cd nginx/${NGINX_SRC}; \
@@ -33,6 +40,8 @@ nginx-build:
 
 setup-nginx:
 	mkdir -p nginx
+
+
 
 nginx-source:	setup-nginx
 	rm -rf nginx/${NGINX_SRC}
@@ -56,6 +65,14 @@ nginx-module:
 	cd nginx/${NGINX_SRC}; \
 	make modules;
 
+
+# copy test configuration and restart
+nginx-test-restart:
+	docker exec -it ${DOCKER_NGINX_NAME}
+
+
+
+
 # need to run inside container
 linux-shell:
 	${DOCKER_TOOL} /bin/bash
@@ -68,3 +85,36 @@ linux-setup:
 linux-module:
 	${DOCKER_TOOL} make nginx-module
 
+linux-copy-restart:
+	cp config/nginx.conf /etc/nginx
+	rm -rf /etc/nginx/conf.d/*
+	cp config/mesh.conf /etc/nginx/conf.d
+	cp ${MODULE_SO_BIN} /etc/nginx/modules
+	node tests/services/hello.js 9100 > u1.log 2> u1.err &
+	node tests/services/tcp-invoke.js 9000 dest > u1.log 2> u1.err &
+	tests/prepare_proxy.sh -p 15001 -u ${DOCKER_USER} &
+	nginx -s reload
+
+
+linux-test-stop:
+	docker stop ${DOCKER_NGINX_NAME} | xargs docker rm
+
+
+linux-test-start:   linux-module linux-test-stop
+	$(DOCKER_NGINX_DAEMON)
+	$(DOCKER_NGINX_EXECD) make linux-copy-restart
+	sleep 2
+
+linux-test-run:
+	$(DOCKER_NGINX_EXEC) cargo test
+
+
+linux-test: linux-test-start linux-test-run
+	docker stop ${DOCKER_NGINX_NAME} | xargs docker rm
+
+linux-test-log:
+	docker logs -f nginx-test
+
+# open tcp connection to nginx in the containner
+linux-test-nc:
+	nc localhost 8000

@@ -3,41 +3,30 @@ extern crate futures;
 extern crate ngx_rust;
 
 
-use std::env;
-use std::mem;
-use std::ptr;
 use std::str;
-use std::slice;
-use std::{thread, time};
+use std::{thread };
 use std::sync::mpsc::{channel,Sender,Receiver};
 use std::sync::Mutex;
-use std::time::Duration;
 use std::collections::HashMap;
-
-use time::get_time;
-
 
 use service_grpc::MixerClient;
 use report::ReportRequest;
 use attributes::Attributes;
-use attributes::StringMap;
 use service_grpc::Mixer;
 
 use protobuf::well_known_types::Timestamp;
+use protobuf::RepeatedField;
 use ngx_rust::bindings::ngx_http_request_s;
-use ngx_rust::bindings::ngx_http_headers_in_t;
-use ngx_rust::bindings::ngx_http_headers_out_t;
 use ngx_rust::bindings::ngx_cycle_t;
 use ngx_rust::bindings::ngx_int_t;
 use ngx_rust::bindings::ngx_str_t;
 use ngx_rust::bindings::NGX_OK;
 use ngx_rust::bindings::ngx_flag_t;
-use ngx_rust::nginx_http::list_iterator;
 use ngx_rust::nginx_http::log;
 
 use attr_dict::AttributeWrapper;
-use encode:: { encode_istio_header, decode_istio_header };
-
+use global_dict::GlobalDictionary;
+use message_dict::MessageDictionary;
 
 const REQUEST_HEADER: &str = "request.headers";
 const TARGET_SERVICE: &str = "target.service";
@@ -134,20 +123,19 @@ fn mixer_background()  {
 
     loop {
         log(&format!("mixer send thread waiting: {}",req_index));
-        let mut info = rx.recv().unwrap();
+        let info = rx.recv().unwrap();
         log(&format!("mixer send thread woke up"));
 
         let client = MixerClient::new_plain( &info.server_name, info.server_port , Default::default()).expect("init");
 
-        let mut requests = Vec::new();
         let mut req = ReportRequest::new();
-        req.set_request_index(0);
-        req.set_attribute_update(info.attributes);
-        requests.push(req);
+        let mut rf = RepeatedField::default();
+        rf.push(info.attributes);
+        req.set_attributes(rf);
 
-        let resp = client.report(grpc::RequestOptions::new(), grpc::StreamingRequest::iter(requests));
+        let resp = client.report(grpc::RequestOptions::new(), req);
 
-        resp.wait_drop_metadata().count();
+        let result = resp.wait();
 
         log(&format!("finished sending to mixer"));
 
@@ -185,7 +173,9 @@ pub extern fn mixer_client(request: &ngx_http_request_s,main_config: &ngx_http_m
     process_request_attribute(request, &mut attr);
     process_response_attribute(request, &mut attr);
 
-    send(main_config, attr.attributes);
+
+    let message_dict = MessageDictionary::new(GlobalDictionary::new());
+    send(main_config, attr.as_attributes(message_dict));
 
 }
 
@@ -234,8 +224,8 @@ fn process_request_attribute(request: & ngx_http_request_s, attr: &mut Attribute
     attr.insert_string_attribute(REQUEST_PATH, request.uri.to_str());
 
     let referer = headers_in.referer_str();
-    if let Some(refererStr) = referer {
-        attr.insert_string_attribute(REQUEST_REFER, refererStr);
+    if let Some(ref_str) = referer {
+        attr.insert_string_attribute(REQUEST_REFER, ref_str);
     }
 
     let scheme = request.http_protocol.to_str();
@@ -253,7 +243,7 @@ fn process_request_attribute(request: & ngx_http_request_s, attr: &mut Attribute
 
 
     // fill in the string value
-    let mut map: HashMap<i32,String> = HashMap::new();
+    let mut map: HashMap<String,String> = HashMap::new();
     {
         for (name,value) in headers_in.headers_iterator()   {
             log(&format!("in header name: {}, value: {}",&name,&value));
@@ -271,8 +261,7 @@ fn process_request_attribute(request: & ngx_http_request_s, attr: &mut Attribute
                     attr.insert_string_attribute( SOURCE_UID,&value);
                 },
                 _ => {
-                    let index  = attr.string_index(&name[..]);
-                    map.insert(index,value);
+                    map.insert(name,value);
                 }
             }
 
@@ -297,13 +286,12 @@ fn process_response_attribute(request: &ngx_http_request_s, attr: &mut Attribute
     attr.insert_int64_attribute(RESPONSE_DURATION, 5000);
 
     // fill in the string value
-    let mut map: HashMap<i32,String> = HashMap::new();
+    let mut map: HashMap<String,String> = HashMap::new();
     {
         for (name,value) in headers_out.headers_iterator()   {
             log(&format!("processing out header name: {}, value: {}",&name,&value));
 
-            let index  = attr.string_index(&name[..]);
-            map.insert(index,value);
+            map.insert(name,value);
 
         }
     }
