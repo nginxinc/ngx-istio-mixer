@@ -118,11 +118,10 @@ lazy_static! {
 // background actity handle mixer connection
 fn mixer_background()  {
 
-    let mut req_index: i64 = 0;
     let rx = CHANNELS.rx.lock().unwrap();
 
     loop {
-        log(&format!("mixer send thread waiting: {}",req_index));
+        log(&format!("mixer send thread waiting"));
         let info = rx.recv().unwrap();
         log(&format!("mixer send thread woke up"));
 
@@ -138,8 +137,6 @@ fn mixer_background()  {
         let result = resp.wait();
 
         log(&format!("finished sending to mixer"));
-
-        req_index = req_index + 1;
     }
 }
 

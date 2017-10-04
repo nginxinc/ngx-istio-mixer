@@ -6,6 +6,7 @@ NGX_MODULES = --with-compat  --with-threads --with-http_addition_module \
      --with-http_slice_module  --with-http_stub_status_module --with-http_sub_module \
      --with-stream --with-stream_realip_module --with-stream_ssl_preread_module
 
+
 ifeq ($(UNAME_S),Linux)
     NGINX_SRC += nginx-linux
     NGX_OPT= $(NGX_MODULES) \
@@ -29,7 +30,7 @@ DOCKER_TOOL=docker run -it --rm -v ${ROOT_DIR}:/src -w /src/${MODULE_PROJ_NAME} 
 DOCKER_NGINX_NAME=nginx-test
 DOCKER_NGINX_EXEC=docker exec -it ${DOCKER_NGINX_NAME}
 DOCKER_NGINX_EXECD=docker exec -d ${DOCKER_NGINX_NAME}
-DOCKER_NGINX_DAEMON=docker run -d -p 8000:8000 --privileged --name ${DOCKER_NGINX_NAME} -v ${ROOT_DIR}:/src -w /src/${MODULE_PROJ_NAME} ${RUST_TOOL}
+DOCKER_NGINX_DAEMON=docker run -d -p 8000:8000 --network host --privileged --name ${DOCKER_NGINX_NAME} -v ${ROOT_DIR}:/src -w /src/${MODULE_PROJ_NAME} ${RUST_TOOL}
 
 nginx-build:
 	cd nginx/${NGINX_SRC}; \
@@ -88,11 +89,10 @@ linux-module:
 linux-copy-restart:
 	cp config/nginx.conf /etc/nginx
 	rm -rf /etc/nginx/conf.d/*
-	cp config/mesh.conf /etc/nginx/conf.d
+	cp config/http.conf /etc/nginx/conf.d
 	cp ${MODULE_SO_BIN} /etc/nginx/modules
-	node tests/services/hello.js 9100 > u1.log 2> u1.err &
-	node tests/services/tcp-invoke.js 9000 dest > u1.log 2> u1.err &
-	tests/prepare_proxy.sh -p 15001 -u ${DOCKER_USER} &
+	node tests/services/http.js 9100 > u1.log 2> u1.err &
+#	tests/prepare_proxy.sh -p 15001 -u ${DOCKER_USER} &
 	nginx -s reload
 
 
@@ -117,4 +117,4 @@ linux-test-log:
 
 # open tcp connection to nginx in the containner
 linux-test-nc:
-	nc localhost 8000
+	curl localhost 8000
