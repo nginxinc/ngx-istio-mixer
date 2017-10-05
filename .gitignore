@@ -2,3 +2,5 @@ target
 .idea
 .vscode
 nginx
+u1.*
+make.out

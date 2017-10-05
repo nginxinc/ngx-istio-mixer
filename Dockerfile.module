@@ -1,0 +1,7 @@
+FROM nginmesh/ngx_http_istio_mixer_module-base:latest
+
+MAINTAINER Sehyo Chang "sehyo@nginx.com"
+
+ADD ./src /modules/mixer/src
+ADD ./module /modules/mixer/module
+RUN cd /modules/mixer;make nginx-module

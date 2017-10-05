@@ -12,6 +12,7 @@ clean:
 	rm -f src/quota.rs
 	rm -f src/report.rs
 	rm -f src/service_grpc.rs
+	rm -f module/*.so
 
 
 super_clean: clean
