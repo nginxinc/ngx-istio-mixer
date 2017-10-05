@@ -80,8 +80,8 @@ nginx-module:
 test-nginx-setup:
 	cp config/nginx.conf /etc/nginx
 	rm -rf /etc/nginx/conf.d/*
-	cp config/http.conf /etc/nginx/conf.d
-	nohup node tests/services/http.js 9100 > u1.log 2> u1.err &
+	cp config/conf.d/* /etc/nginx/conf.d
+	node tests/services/http.js 9100 > u1.log 2> u1.err &
 #	tests/prepare_proxy.sh -p 15001 -u ${DOCKER_USER} &
 	nginx -s reload
 
@@ -101,15 +101,21 @@ test-nginx-log:
 	docker logs -f nginx-test
 
 
-# open tcp connection to nginx in the containner
-test-nc:
+# invoke http service
+test-http:
 	curl localhost 8000
 
-# build module and deposit in the module directory
-build-module:
-	docker build -f Dockerfile.module -t ${DOCKER_MODULE_IMAGE}:latest .
-	docker run -it --rm  ${DOCKER_MODULE_IMAGE}:latest cat /modules/mixer/${MODULE_SO_BIN} > ${MODULE_SO_HOST}
 
+copy-module:
+	docker create --name ngx-copy ${DOCKER_MODULE_IMAGE}:latest
+	docker cp ngx-copy:/modules/mixer/${MODULE_SO_BIN} ${MODULE_SO_HOST}
+	docker rm -v ngx-copy
+
+build-module-docker:
+	docker build -f Dockerfile.module -t ${DOCKER_MODULE_IMAGE}:latest .
+
+# build module and deposit in the module directory
+build-module: build-module-docker copy-module
 
 # build base container image that pre-compiles rust and nginx modules
 build-base:
