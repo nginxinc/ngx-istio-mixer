@@ -2,6 +2,7 @@
 name = "mixer"
 version = "0.0.16"
 authors = ["Sehyo Chang   sehyo@nginx.com"]
+build = "build/build.rs"
 
 [lib]
 doctest = false

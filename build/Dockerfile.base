@@ -13,6 +13,6 @@ ADD ./nginx.mk /modules/mixer
 ADD ./src /modules/mixer/src
 ADD ./module /modules/mixer/module
 RUN cd /modules/mixer;make nginx-setup
-ADD ./ngx-rust-tar.zip /modules
-ADD ./protoc.zip /modules
+ADD ./build/vendor/ngx-rust-tar.zip /modules
+ADD ./build/vendor/protoc.zip /modules
 RUN cd /modules/mixer;cargo build

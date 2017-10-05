@@ -25,6 +25,10 @@ impl MessageDictionary  {
 
     }
 
+    pub fn get_words(&self) -> &Vec<String>  {
+        return &self.message_words;
+    }
+
     //find index, try look up in the global, otherwise look up in the local
     pub fn index_of(&mut self, name: &str) -> i32  {
 

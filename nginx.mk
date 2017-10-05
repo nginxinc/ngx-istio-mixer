@@ -101,6 +101,8 @@ test-nginx-log:
 	docker logs -f nginx-test
 
 
+test-nginx-full:	build-module test-nginx-only
+
 # invoke http service
 test-http:
 	curl localhost 8000
@@ -112,14 +114,14 @@ copy-module:
 	docker rm -v ngx-copy
 
 build-module-docker:
-	docker build -f Dockerfile.module -t ${DOCKER_MODULE_IMAGE}:latest .
+	docker build -f ./build/Dockerfile.module -t ${DOCKER_MODULE_IMAGE}:latest .
 
 # build module and deposit in the module directory
 build-module: build-module-docker copy-module
 
 # build base container image that pre-compiles rust and nginx modules
 build-base:
-	docker build -f Dockerfile.base -t ${DOCKER_MODULE_BASE_IMAGE}:${GIT_COMMIT} .
+	docker build -f ./build/Dockerfile.base -t ${DOCKER_MODULE_BASE_IMAGE}:${GIT_COMMIT} .
 	docker tag ${DOCKER_MODULE_BASE_IMAGE}:${GIT_COMMIT} ${DOCKER_MODULE_BASE_IMAGE}:latest
 
 

@@ -101,6 +101,10 @@ impl AttributeWrapper  {
 
         }
 
+        for word in dict.get_words() {
+            attrs.mut_words().push(word.clone());
+        }
+
         return attrs;
     }
 }

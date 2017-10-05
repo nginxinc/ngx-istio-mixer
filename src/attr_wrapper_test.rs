@@ -5,6 +5,7 @@ use global_dict::GlobalDictionary;
 use message_dict::MessageDictionary;
 use attr_wrapper::AttributeWrapper;
 
+const TEST_AGENT: &str = "mac123";
 
 #[test]
 fn simple_string_mapping() {
@@ -90,6 +91,7 @@ fn simple_time_stamp() {
 }
 
 
+
 #[test]
 fn simple_stringmap_mapping() {
     let global_dict = GlobalDictionary::new();
@@ -98,18 +100,17 @@ fn simple_stringmap_mapping() {
 
     let mut string_map: HashMap<String,String> = HashMap::new();
     string_map.insert(String::from("request.scheme"), String::from("http"));
-    string_map.insert(String::from("request.useragent"), String::from("mac"));
+    string_map.insert(String::from("request.useragent"), String::from(TEST_AGENT));
     attr_wrapper.insert_string_map("request.headers", string_map);
 
     let attributes = attr_wrapper.as_attributes(&mut dict);
 
+    let str_map = attributes.get_string_maps().get(&dict.index_of("request.headers")).unwrap();
+    let str_http_index = str_map.get_entries().get(&dict.index_of("request.scheme")).unwrap();
+    assert_eq!(*str_http_index, dict.index_of("http"));
 
-    let scheme_index = dict.index_of("request.scheme");
-    let user_agent_index = dict.index_of("request.useragent");
-    let http_index = dict.index_of("http");
-    let header_index = dict.index_of("request.headers");
-
-    let str_map = attributes.get_string_maps().get(&header_index).unwrap();
-    let str_http_index = str_map.get_entries().get(&scheme_index).unwrap();
-    assert_eq!(*str_http_index, http_index);
+    let mac_index = dict.index_of(TEST_AGENT);
+    println!("mac index: {}",mac_index);
+    println!("words:  {:?}",attributes.get_words());
+    assert_eq!(attributes.get_words().get( (mac_index * -1  -1 ) as usize ).unwrap(),TEST_AGENT);
 }

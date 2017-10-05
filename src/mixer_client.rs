@@ -258,6 +258,7 @@ fn process_request_attribute(request: & ngx_http_request_s, attr: &mut Attribute
                     attr.insert_string_attribute( SOURCE_UID,&value);
                 },
                 _ => {
+                    log(&format!("other source header {}",&name));
                     map.insert(name,value);
                 }
             }
