@@ -1,84 +1,55 @@
 # Nginx Mixer Module
 
-This repo implements NGINX modules for integrating with Mixer for Istio
+Nginx module for integrating with Istio Mixer as part of Sidecar Proxy.
 
-## Usage
+The module is written using both C and R.  It depends on Nginx Rust module which provides 
+Rust wrapper for Nginx core.
 
-<TBD>
+## Requirements
 
-## Check out Nginx Rust Module
-
-```bash
-giut clone git@github.com:nginxinc/ngx-rust.git
-```
-
-Rust module needs to be check out at same level as this project.
-Follow instruction in Rust module and configure for each of the target OS.
-
-
-## Install CLang for bindgen
-
-Install Clang at 
+Clang is used for generating gRpc client.
 
 https://rust-lang-nursery.github.io/rust-bindgen/requirements.html
 
 
-## Checkout Rust GRPC project
-
-Provides gRpc compile
-
-Checkout rust-grpc, which must be check out at the same level as this project
+## Build
 
 ```bash
-giut clone git@github.com:stepancheg/grpc-rust.git
+make setup
 ```
 
+This install Nginx and gRpc compiler crates necessary for building this crate.
 
-## Configure and Build
-
-Before building, it must be configured for each of the target OS.
-
-### For Linux
-
-To configure:
+## Unit Tests
 
 ```bash
-make linux-setup
+cargo test
 ```
 
-Generating module:
+Run unit tests for rust code only.  
 
+### Building and generating Nginx module
+
+Module generation is done using Docker to speed up build.
 
 ```bash
-make linux-module
+make build-base
 ```
 
-Generated module is founded at:
+This build base image which contains all the dependent crates and nginx core.  
+It should be rebuilt if dependent crates, nginx or protobuf definition changes
 
 ```bash
-ls nginx/nginx-linux/objs/ngx_http_istio_mixer_module.so
+make build-module
 ```
 
+Generate Nginx dyanmic module which will be saved in the 'config/modules'.
 
-### For Mac
 
-To configure:
+### Integration Test
 
 ```bash
-make darwin-setup
+make test-nginx-only
 ```
 
-Generating module:
-
-
-```bash
-make darwin-module
-```
-
-
-### Run mixer unit test.
-
-Configuration step must be done before.
-
-`cargo run --bin report_client`
-
+This launches docker container with nginx configuration that can connect to outside mixer.
