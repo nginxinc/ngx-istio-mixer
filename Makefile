@@ -13,6 +13,8 @@ clean:
 	rm -f src/report.rs
 	rm -f src/service_grpc.rs
 	rm -f module/*.so
+	rm -rf build/crate
+	rm -rf build/context
 
 
 super_clean: clean

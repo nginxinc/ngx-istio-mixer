@@ -2,17 +2,19 @@ FROM nginmesh/ngx-rust-tool:1.20.0-C
 
 MAINTAINER Sehyo Chang "sehyo@nginx.com"
 
-RUN mkdir /modules
-RUN mkdir /modules/mixer
-RUN mkdir /modules/mixer/src
-RUN mkdir /modules/mixer/module
-ADD ./Cargo.toml /modules/mixer
-ADD ./Cargo.lock /modules/mixer
-ADD ./Makefile /modules/mixer
-ADD ./nginx.mk /modules/mixer
-ADD ./src /modules/mixer/src
-ADD ./module /modules/mixer/module
-RUN cd /modules/mixer;make nginx-setup
-ADD ./build/vendor/ngx-rust-tar.zip /modules
-ADD ./build/vendor/protoc.zip /modules
-RUN cd /modules/mixer;cargo build
+
+RUN mkdir /src
+ADD ./Cargo.toml /src
+ADD ./Cargo.lock /src
+ADD ./Makefile /src
+ADD ./nginx.mk /src
+RUN mkdir /src/src
+ADD ./src /src/src
+RUN mkdir /src/protobuf
+ADD ./protobuf /src/protobuf
+ADD ./module /src/module
+RUN mkdir /src/build
+ADD ./build /src/build
+RUN cd /src;make setup
+RUN cd /src;make nginx-setup
+RUN cd /src;cargo build

@@ -40,6 +40,14 @@ DOCKER_NGINX_DAEMON=docker run -d -p 8000:8000  --privileged --name  ${DOCKER_NG
 	-v ${MODULE_DIR}:/src  -w /src   ${DOCKER_NGIX_IMAGE}
 
 
+# this need to be invoked before any build steps
+# set up dependencies
+setup:
+	rm -rf build/crates
+	mkdir build/crates
+	tar zxf build/vendor/protoc.zip -C build/crates
+	tar zxf build/vendor/ngx-rust-tar.zip -C build/crates
+
 nginx-build:
 	cd nginx/${NGINX_SRC}; \
 	./configure --prefix=${PWD}/nginx/install $(NGX_OPT); \
@@ -109,18 +117,26 @@ test-http:
 
 
 copy-module:
+	docker rm -v ngx-copy || true
 	docker create --name ngx-copy ${DOCKER_MODULE_IMAGE}:latest
-	docker cp ngx-copy:/modules/mixer/${MODULE_SO_BIN} ${MODULE_SO_HOST}
+	docker cp ngx-copy:/src/${MODULE_SO_BIN} ${MODULE_SO_HOST}
 	docker rm -v ngx-copy
 
+# build module using docker
+# we copy only necessary context to docker daemon (src and module directory)
 build-module-docker:
-	docker build -f ./build/Dockerfile.module -t ${DOCKER_MODULE_IMAGE}:latest .
+	rm -rf build/context
+	mkdir build/context
+	cp build/Dockerfile.module build/context
+	cp -r src build/context
+	cp -r module build/context
+	docker build -f ./build/context/Dockerfile.module -t ${DOCKER_MODULE_IMAGE}:latest ./build/context
 
 # build module and deposit in the module directory
 build-module: build-module-docker copy-module
 
 # build base container image that pre-compiles rust and nginx modules
-build-base:
+build-base:	super_clean
 	docker build -f ./build/Dockerfile.base -t ${DOCKER_MODULE_BASE_IMAGE}:${GIT_COMMIT} .
 	docker tag ${DOCKER_MODULE_BASE_IMAGE}:${GIT_COMMIT} ${DOCKER_MODULE_BASE_IMAGE}:latest
 
