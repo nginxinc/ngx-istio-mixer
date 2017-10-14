@@ -2,8 +2,8 @@
 use std::collections::HashMap;
 
 use protobuf::well_known_types::Timestamp;
-use attributes::Attributes;
-use attributes::StringMap;
+use mixer::attributes::Attributes;
+use mixer::attributes::StringMap;
 
 use ngx_rust::nginx_http::log;
 

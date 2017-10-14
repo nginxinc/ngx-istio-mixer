@@ -9,10 +9,10 @@ use std::sync::mpsc::{channel,Sender,Receiver};
 use std::sync::Mutex;
 use std::collections::HashMap;
 
-use service_grpc::MixerClient;
-use report::ReportRequest;
-use attributes::Attributes;
-use service_grpc::Mixer;
+use mixer::service_grpc::MixerClient;
+use mixer::report::ReportRequest;
+use mixer::attributes::Attributes;
+use mixer::service_grpc::Mixer;
 
 use protobuf::well_known_types::Timestamp;
 use protobuf::RepeatedField;

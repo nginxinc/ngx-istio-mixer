@@ -47,12 +47,17 @@ setup:
 	mkdir build/crates
 	tar zxf build/vendor/protoc.zip -C build/crates
 	tar zxf build/vendor/ngx-rust-tar.zip -C build/crates
+	tar zxf build/vendor/mixerclient.zip -C build/crates
 
 nginx-build:
 	cd nginx/${NGINX_SRC}; \
 	./configure --prefix=${PWD}/nginx/install $(NGX_OPT); \
 	make; \
 	make install
+
+
+mixer-client:
+	cd build/crates/mixerclient; bazel build mixer_client_lib	
 
 
 setup-nginx:
@@ -130,6 +135,7 @@ build-module-docker:
 	cp build/Dockerfile.module build/context
 	cp -r src build/context
 	cp -r module build/context
+	cp build/build.rs build/context
 	docker build -f ./build/context/Dockerfile.module -t ${DOCKER_MODULE_IMAGE}:latest ./build/context
 
 # build module and deposit in the module directory
@@ -141,10 +147,13 @@ build-base:	super_clean
 	docker tag ${DOCKER_MODULE_BASE_IMAGE}:${GIT_COMMIT} ${DOCKER_MODULE_BASE_IMAGE}:latest
 
 
+base-tool: 
+	docker run -it --rm  ${DOCKER_MODULE_BASE_IMAGE}:latest /bin/bash
+
 # copy dependent modules that must be load locally. they are assume to be checked as peer directory
 # later, they should be clone directly from github repo
 zip-dependent-modules:
-	cd ..;tar -zcvf  ngx-rust-tar.zip ngx-rust
-	cd ..;tar -zcvf  protoc.zip  grpc-rust
+	cd ..;tar --exclude ".git" --exclude ".idea" -zcvf  ngx-rust-tar.zip ngx-rust
+	cd ..;tar --exclude ".git" --exclude ".idea" -zcvf  protoc.zip  grpc-rust
 	cp ../ngx-rust-tar.zip .
 	cp ../protoc.zip .

@@ -10,12 +10,8 @@ extern crate ngx_rust;
 #[macro_use]
 extern crate lazy_static;
 
-pub mod check;
-pub mod attributes;
-pub mod status;
-pub mod report;
+pub mod mixer;
 
-pub mod service_grpc;
 
 pub mod mixer_client;
 pub mod attr_wrapper;
