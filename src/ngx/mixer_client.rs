@@ -24,9 +24,9 @@ use ngx_rust::bindings::NGX_OK;
 use ngx_rust::bindings::ngx_flag_t;
 use ngx_rust::nginx_http::log;
 
-use attr_wrapper::AttributeWrapper;
-use global_dict::GlobalDictionary;
-use message_dict::MessageDictionary;
+use ngx::attr_wrapper::AttributeWrapper;
+use ngx::global_dict::GlobalDictionary;
+use ngx::message_dict::MessageDictionary;
 
 const REQUEST_HEADER: &str = "request.headers";
 const TARGET_SERVICE: &str = "target.service";

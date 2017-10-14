@@ -1,5 +1,5 @@
-use global_dict::GlobalDictionary;
-use message_dict::MessageDictionary;
+use ngx::global_dict::GlobalDictionary;
+use ngx::message_dict::MessageDictionary;
 
 // test for accessing global dictionary
 #[test]

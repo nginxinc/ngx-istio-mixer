@@ -5,9 +5,7 @@ use protobuf::well_known_types::Timestamp;
 use mixer::attributes::Attributes;
 use mixer::attributes::StringMap;
 
-use ngx_rust::nginx_http::log;
-
-use message_dict::MessageDictionary;
+use ngx::message_dict::MessageDictionary;
 
 
 enum AttrValue  {

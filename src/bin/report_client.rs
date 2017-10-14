@@ -26,7 +26,6 @@ fn main() {
     let client = MixerClient::new_plain("localhost", 9091, Default::default()).expect("init");
 
 
-    let mut req =  ReportRequest::new();
   //  let mut rf = RepeatedField::default();
     let mut attr = Attributes::new();
     //attr.set_string_attributes("")
