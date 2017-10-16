@@ -166,7 +166,7 @@ pub extern fn mixer_client(request: &ngx_http_request_s,main_config: &ngx_http_m
 
     let mut attr = AttributeWrapper::new();
 
-    process_istio_attr(request,main_config,&mut attr);
+    process_istio_attr(main_config,&mut attr);
     process_request_attribute(request, &mut attr);
     process_response_attribute(request, &mut attr);
 
@@ -180,7 +180,7 @@ pub extern fn mixer_client(request: &ngx_http_request_s,main_config: &ngx_http_m
 /*
  * Istio attributes such as source.ip are passed as http header and also send out source headewr
  */
-fn process_istio_attr(request: & ngx_http_request_s, main_config: &ngx_http_mixer_main_conf_t, attr: &mut AttributeWrapper) {
+fn process_istio_attr(main_config: &ngx_http_mixer_main_conf_t, attr: &mut AttributeWrapper) {
 
     // fill in target attributes
     let target_ip = main_config.target_ip.to_str();
@@ -225,7 +225,7 @@ fn process_request_attribute(request: & ngx_http_request_s, attr: &mut Attribute
         attr.insert_string_attribute(REQUEST_REFER, ref_str);
     }
 
-    let scheme = request.http_protocol.to_str();
+    //let scheme = request.http_protocol.to_str();
     attr.insert_string_attribute(REQUEST_SCHEME, "http"); // hard code now
 
 

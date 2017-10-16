@@ -1,5 +1,5 @@
 
-struct CheckCache {
+pub struct CheckCache {
 
     
 

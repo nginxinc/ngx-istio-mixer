@@ -36,7 +36,7 @@ typedef struct {
 } ngx_http_mixer_main_conf_t;
 
 
-static ngx_int_t ngx_http_istio_mixer_filter(ngx_http_request_t *r);
+static ngx_int_t ngx_http_istio_mixer_filter_handler(ngx_http_request_t *r);
 static ngx_int_t ngx_http_mixer_filter_init(ngx_conf_t *cf);
 
 // create configuration
@@ -51,7 +51,6 @@ void  mixer_client(ngx_http_request_t *r, ngx_http_mixer_main_conf_t *main_conf)
 ngx_int_t  mixer_init(ngx_cycle_t *cycle);
 void  mixer_exit();
 
-static ngx_http_output_header_filter_pt ngx_http_next_header_filter;
 
 
 /**
@@ -144,11 +143,24 @@ ngx_module_t ngx_http_istio_mixer_module = {
     NGX_MODULE_V1_PADDING
 };
 
+// install log phase handler for mixer
 static ngx_int_t ngx_http_mixer_filter_init(ngx_conf_t *cf) {
 
 
-    ngx_http_next_header_filter = ngx_http_top_header_filter;
-    ngx_http_top_header_filter = ngx_http_istio_mixer_filter;
+    ngx_http_handler_pt        *h;
+    ngx_http_core_main_conf_t  *cmcf;
+
+    cmcf = ngx_http_conf_get_module_main_conf(cf, ngx_http_core_module);
+
+    h = ngx_array_push(&cmcf->phases[NGX_HTTP_LOG_PHASE].handlers);
+    if (h == NULL) {
+        return NGX_ERROR;
+    }
+
+    *h = ngx_http_istio_mixer_filter_handler;
+
+    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "registering mixer filter");
+    
 
     return NGX_OK;   
 }
@@ -161,7 +173,7 @@ static ngx_int_t ngx_http_mixer_filter_init(ngx_conf_t *cf) {
  * @return
  *   The status of the response generation.
  */
-static ngx_int_t ngx_http_istio_mixer_filter(ngx_http_request_t *r)
+static ngx_int_t ngx_http_istio_mixer_filter_handler(ngx_http_request_t *r)
 {
     ngx_http_mixer_loc_conf_t  *loc_conf;
     ngx_http_mixer_main_conf_t *main_conf;
@@ -172,7 +184,7 @@ static ngx_int_t ngx_http_istio_mixer_filter(ngx_http_request_t *r)
 
     if (!loc_conf->enable) {
         ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "mixer not enabled, just passing header");
-        return ngx_http_next_header_filter(r);
+        return NGX_OK;
     }
 
 
@@ -186,7 +198,7 @@ static ngx_int_t ngx_http_istio_mixer_filter(ngx_http_request_t *r)
     ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "finish calling istio filter");
 
 
-   return ngx_http_next_header_filter(r);
+   return NGX_OK;
 
 } 
 

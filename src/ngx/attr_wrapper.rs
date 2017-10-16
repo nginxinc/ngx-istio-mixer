@@ -22,7 +22,6 @@ pub struct AttributeWrapper {
 
     values: HashMap<String,AttrValue>,       // map of value
 
-    string_map: HashMap<String,String>      // map of string to integer
 }
 
 
@@ -30,8 +29,7 @@ impl AttributeWrapper  {
 
     pub fn new() -> AttributeWrapper {
         AttributeWrapper {
-            values: HashMap::new(),
-            string_map: HashMap::new()
+            values: HashMap::new()
         }
     }
 

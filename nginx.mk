@@ -118,7 +118,7 @@ test-nginx-full:	build-module test-nginx-only
 
 # invoke http service
 test-http:
-	curl localhost 8000
+	curl localhost:8000
 
 
 copy-module:
@@ -157,3 +157,7 @@ zip-dependent-modules:
 	cd ..;tar --exclude ".git" --exclude ".idea" -zcvf  protoc.zip  grpc-rust
 	cp ../ngx-rust-tar.zip .
 	cp ../protoc.zip .
+
+
+watch-mixer:
+	 kubectl logs -f $(kubectl get pod -l istio=mixer -n istio-system -o jsonpath='{.items[0].metadata.name}')  -n istio-system -c mixer	
