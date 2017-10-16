@@ -66,7 +66,8 @@ pub struct ngx_http_mixer_main_conf_t {
 
 #[repr(C)]
 pub struct ngx_http_mixer_loc_conf_t {
-    enable: ngx_flag_t,              // for every location, we need flag to enable/disable mixer
+    enable_report: ngx_flag_t,              // for every location, we need flag to enable/disable mixer
+    enable_check: ngx_flag_t
 }
 
 
