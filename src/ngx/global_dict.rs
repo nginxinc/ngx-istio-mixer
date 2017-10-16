@@ -3,6 +3,26 @@ use std::collections::HashMap;
 
 // This is from global_dictionary.yaml
 
+
+pub const REQUEST_HEADER: &str = "request.headers";
+pub const TARGET_SERVICE: &str = "target.service";
+pub const REQUEST_HOST: &str = "request.host";
+pub const REQUEST_METHOD: &str = "request.method";
+pub const REQUEST_PATH: &str =  "request.path";
+pub const REQUEST_REFER: &str = "request.referer";
+pub const REQUEST_SCHEME: &str = "request.scheme";
+pub const REQUEST_SIZE: &str = "request.size";
+pub const REQUEST_TIME: &str = "request.time";
+pub const REQUEST_USERAGENT: &str = "request.useragent";
+pub const RESPONSE_CODE: &str = "response.code";
+pub const RESPONSE_DURATION: &str = "response.duration";
+pub const RESPONSE_SIZE: &str = "response.size";
+pub const RESPONSE_HEADERS: &str = "response.headers";
+pub const SOURCE_IP: &str = "source.ip";
+pub const SOURCE_UID: &str = "source.uid";
+pub const TARGET_IP: &str = "target.ip";
+pub const TARGET_UID: &str = "target.uid";
+
 pub const GLOBAL_LIST: [&'static str; 159] = [
     "source.ip",
     "source.port",

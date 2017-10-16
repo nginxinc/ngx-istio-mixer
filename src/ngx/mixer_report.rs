@@ -27,24 +27,25 @@ use ngx::message_dict::MessageDictionary;
 
 use ngx::mixer_location::ngx_http_mixer_main_conf_t;
 
-const REQUEST_HEADER: &str = "request.headers";
-const TARGET_SERVICE: &str = "target.service";
-const REQUEST_HOST: &str = "request.host";
-const REQUEST_METHOD: &str = "request.method";
-const REQUEST_PATH: &str =  "request.path";
-const REQUEST_REFER: &str = "request.referer";
-const REQUEST_SCHEME: &str = "request.scheme";
-const REQUEST_SIZE: &str = "request.size";
-const REQUEST_TIME: &str = "request.time";
-const REQUEST_USERAGENT: &str = "request.useragent";
-const RESPONSE_CODE: &str = "response.code";
-const RESPONSE_DURATION: &str = "response.duration";
-const RESPONSE_SIZE: &str = "response.size";
-const RESPONSE_HEADERS: &str = "response.headers";
-const SOURCE_IP: &str = "source.ip";
-const SOURCE_UID: &str = "source.uid";
-const TARGET_IP: &str = "target.ip";
-const TARGET_UID: &str = "target.uid";
+use ngx::global_dict::REQUEST_HEADER;
+use ngx::global_dict::TARGET_SERVICE;
+use ngx::global_dict::REQUEST_HOST;
+use ngx::global_dict::REQUEST_METHOD;
+use ngx::global_dict::REQUEST_PATH;
+use ngx::global_dict::REQUEST_REFER;
+use ngx::global_dict::REQUEST_SCHEME;
+use ngx::global_dict::REQUEST_SIZE;
+use ngx::global_dict::REQUEST_TIME;
+use ngx::global_dict::REQUEST_USERAGENT;
+use ngx::global_dict::RESPONSE_CODE;
+use ngx::global_dict::RESPONSE_DURATION;
+use ngx::global_dict::RESPONSE_SIZE;
+use ngx::global_dict::RESPONSE_HEADERS;
+use ngx::global_dict::SOURCE_IP;
+use ngx::global_dict::SOURCE_UID;
+use ngx::global_dict::TARGET_IP;
+use ngx::global_dict::TARGET_UID;
+
 
 
 
