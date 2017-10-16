@@ -17,8 +17,6 @@ use mixer::service_grpc::Mixer;
 use protobuf::well_known_types::Timestamp;
 use protobuf::RepeatedField;
 use ngx_rust::bindings::ngx_http_request_s;
-use ngx_rust::bindings::ngx_int_t;
-use ngx_rust::bindings::NGX_OK;
 use ngx_rust::nginx_http::log;
 
 use ngx::attr_wrapper::AttributeWrapper;
@@ -46,44 +44,9 @@ use ngx::global_dict::SOURCE_UID;
 use ngx::global_dict::TARGET_IP;
 use ngx::global_dict::TARGET_UID;
 
+use ngx::message::Channels;
+use ngx::message::MixerInfo;
 
-
-
-
-
-
-
-
-// init mixer
-#[no_mangle]
-pub extern fn nginmesh_mixer_init() -> ngx_int_t {
-
-    log(&format!("init mixer start "));
-    thread::spawn(|| {
-        mixer_background();
-    });
-    log(&format!("init mixer end "));
-    return NGX_OK as ngx_int_t;
-}
-
-#[no_mangle]
-pub extern fn nginmesh_mixer_exit() {
-    log(&format!("mixer exit "));
-}
-
-
-struct Channels<T> {
-    pub tx: Mutex<Sender<T>>,
-    pub rx: Mutex<Receiver<T>>
-}
-
-
-#[derive(Clone, Debug)]
-struct MixerInfo  {
-    server_name: String,
-    server_port: u16,
-    attributes: Attributes
-}
 
 // initialize channel that can be shared
 lazy_static! {
@@ -97,8 +60,9 @@ lazy_static! {
     };
 }
 
-// background actity handle mixer connection
-fn mixer_background()  {
+// background activy for report.
+// receives report attributes and send out to mixer
+pub fn mixer_report_background()  {
 
     let rx = CHANNELS.rx.lock().unwrap();
 

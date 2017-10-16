@@ -14,6 +14,8 @@ pub mod global_dict;
 pub mod message_dict;
 pub mod encode;
 mod mixer_location;
+mod message;
+mod mixer_thread;
 
 
 #[cfg(test)]
