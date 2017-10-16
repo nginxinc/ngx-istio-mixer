@@ -49,10 +49,13 @@ static char *ngx_http_mixer_merge_loc_conf(ngx_conf_t *cf, void *parent,
 
 static void *ngx_http_mixer_create_main_conf(ngx_conf_t *cf);    
 
+// handlers in rust
 
-void  mixer_client(ngx_http_request_t *r, ngx_http_mixer_main_conf_t *main_conf);
-ngx_int_t  mixer_init(ngx_cycle_t *cycle);
-void  mixer_exit();
+void  nginmesh_mixer_report_handler(ngx_http_request_t *r, ngx_http_mixer_main_conf_t *main_conf);
+ngx_int_t nginmesh_mixer_check_handler(ngx_http_request_t *r, ngx_http_mixer_main_conf_t *main_conf);
+
+ngx_int_t  nginmesh_mixer_init(ngx_cycle_t *cycle);
+void  nginmesh_mixer_exit();
 
 
 
@@ -147,7 +150,7 @@ ngx_module_t ngx_http_istio_mixer_module = {
     NGX_HTTP_MODULE, /* module type */
     NULL, /* init master */
     NULL, /* init module */
-    mixer_init, /* init process */
+    nginmesh_mixer_init, /* init process */
     NULL, /* init thread */
     NULL, /* exit thread */
     NULL, /* exit process */
@@ -214,7 +217,7 @@ static ngx_int_t ngx_http_istio_mixer_report_handler(ngx_http_request_t *r)
     ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "using mixer server: %*s",main_conf->mixer_server.len,main_conf->mixer_server.data);
 
     // invoke mix client
-    mixer_client(r,main_conf);
+    nginmesh_mixer_report_handler(r,main_conf);
 
     ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "finish calling mixer report handler");
 
@@ -230,7 +233,7 @@ static ngx_int_t ngx_http_istio_mixer_report_handler(ngx_http_request_t *r)
 static ngx_int_t ngx_http_istio_mixer_check_handler(ngx_http_request_t *r)
 {
     ngx_http_mixer_loc_conf_t  *loc_conf;
-    //ngx_http_mixer_main_conf_t *main_conf;
+    ngx_http_mixer_main_conf_t *main_conf;
 
     ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "start invoking mixer_check handler");
 
@@ -242,13 +245,12 @@ static ngx_int_t ngx_http_istio_mixer_check_handler(ngx_http_request_t *r)
         return NGX_OK;
     }
 
-  // main_conf = ngx_http_get_module_main_conf(r, ngx_http_istio_mixer_module);
 
+    
+    main_conf = ngx_http_get_module_main_conf(r, ngx_http_istio_mixer_module);
 
-   ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "finish calling mixer check");
+    return nginmesh_mixer_check_handler(r,main_conf);
 
-
-  return NGX_OK;
 
 } 
 

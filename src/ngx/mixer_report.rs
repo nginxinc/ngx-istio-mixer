@@ -17,16 +17,15 @@ use mixer::service_grpc::Mixer;
 use protobuf::well_known_types::Timestamp;
 use protobuf::RepeatedField;
 use ngx_rust::bindings::ngx_http_request_s;
-use ngx_rust::bindings::ngx_cycle_t;
 use ngx_rust::bindings::ngx_int_t;
-use ngx_rust::bindings::ngx_str_t;
 use ngx_rust::bindings::NGX_OK;
-use ngx_rust::bindings::ngx_flag_t;
 use ngx_rust::nginx_http::log;
 
 use ngx::attr_wrapper::AttributeWrapper;
 use ngx::global_dict::GlobalDictionary;
 use ngx::message_dict::MessageDictionary;
+
+use ngx::mixer_location::ngx_http_mixer_main_conf_t;
 
 const REQUEST_HEADER: &str = "request.headers";
 const TARGET_SERVICE: &str = "target.service";
@@ -54,28 +53,9 @@ const TARGET_UID: &str = "target.uid";
 
 
 
-#[repr(C)]
-pub struct ngx_http_mixer_main_conf_t {
-    mixer_server: ngx_str_t,
-    mixer_port: ngx_int_t,
-    target_ip: ngx_str_t,
-    target_uid: ngx_str_t,
-    target_service: ngx_str_t
-
-}
-
-#[repr(C)]
-pub struct ngx_http_mixer_loc_conf_t {
-    enable_report: ngx_flag_t,              // for every location, we need flag to enable/disable mixer
-    enable_check: ngx_flag_t
-}
-
-
-
-
 // init mixer
 #[no_mangle]
-pub extern fn mixer_init(cycle: &ngx_cycle_t) -> ngx_int_t {
+pub extern fn nginmesh_mixer_init() -> ngx_int_t {
 
     log(&format!("init mixer start "));
     thread::spawn(|| {
@@ -86,7 +66,7 @@ pub extern fn mixer_init(cycle: &ngx_cycle_t) -> ngx_int_t {
 }
 
 #[no_mangle]
-pub extern fn mixer_exit() {
+pub extern fn nginmesh_mixer_exit() {
     log(&format!("mixer exit "));
 }
 
@@ -162,7 +142,7 @@ fn send(main_config: &ngx_http_mixer_main_conf_t, attr: Attributes)  {
 
 
 #[no_mangle]
-pub extern fn mixer_client(request: &ngx_http_request_s,main_config: &ngx_http_mixer_main_conf_t)  {
+pub extern fn nginmesh_mixer_report_handler(request: &ngx_http_request_s,main_config: &ngx_http_mixer_main_conf_t)  {
 
 
     let mut attr = AttributeWrapper::new();

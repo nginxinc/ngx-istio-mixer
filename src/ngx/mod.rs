@@ -7,11 +7,13 @@ extern crate time;
 extern crate base64;
 extern crate ngx_rust;
 
-pub mod mixer_client;
+pub mod mixer_report;
+pub mod mixer_check;
 pub mod attr_wrapper;
 pub mod global_dict;
 pub mod message_dict;
 pub mod encode;
+mod mixer_location;
 
 
 #[cfg(test)]
