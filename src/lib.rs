@@ -10,6 +10,11 @@ extern crate ngx_rust;
 #[macro_use]
 extern crate lazy_static;
 
-pub mod ngx;
+mod ngx;
 pub mod mixer;
-pub mod istio_client;
+mod istio_client;
+
+pub use ngx::mixer_thread::nginmesh_mixer_init;
+pub use ngx::mixer_thread::nginmesh_mixer_exit;
+pub use ngx::mixer_check::nginmesh_mixer_check_handler;
+pub use ngx::mixer_report::nginmesh_mixer_report_handler;

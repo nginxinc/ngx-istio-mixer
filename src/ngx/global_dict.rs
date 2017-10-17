@@ -22,6 +22,9 @@ pub const SOURCE_IP: &str = "source.ip";
 pub const SOURCE_UID: &str = "source.uid";
 pub const TARGET_IP: &str = "target.ip";
 pub const TARGET_UID: &str = "target.uid";
+pub const SRC_IP_HEADER: &str = "X-ISTIO-SRC-IP";
+pub const SRC_UID_HEADER: &str = "X-ISTIO-SRC-UID";
+
 
 pub const GLOBAL_LIST: [&'static str; 159] = [
     "source.ip",

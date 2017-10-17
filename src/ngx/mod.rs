@@ -9,13 +9,15 @@ extern crate ngx_rust;
 
 pub mod mixer_report;
 pub mod mixer_check;
-pub mod attr_wrapper;
-pub mod global_dict;
-pub mod message_dict;
-pub mod encode;
+pub mod mixer_thread;
+mod attr_wrapper;
+mod global_dict;
+mod message_dict;
+mod encode;
 mod mixer_location;
 mod message;
-mod mixer_thread;
+mod request;
+
 
 
 #[cfg(test)]
