@@ -10,27 +10,11 @@ extern crate ngx_rust;
 #[macro_use]
 extern crate lazy_static;
 
-pub mod check;
-pub mod attributes;
-pub mod status;
-pub mod report;
+mod ngx;
+pub mod mixer;
+mod istio_client;
 
-pub mod service_grpc;
-
-pub mod mixer_client;
-pub mod attr_wrapper;
-pub mod global_dict;
-pub mod message_dict;
-pub mod encode;
-
-#[cfg(test)]
-#[path = "./global_dict_test.rs"]
-mod global_test_dict;
-
-#[cfg(test)]
-#[path = "./message_dict_test.rs"]
-mod message_dict_test;
-
-#[cfg(test)]
-#[path = "./attr_wrapper_test.rs"]
-mod attr_wrapper_test;
+pub use ngx::mixer_thread::nginmesh_mixer_init;
+pub use ngx::mixer_thread::nginmesh_mixer_exit;
+pub use ngx::mixer_check::nginmesh_mixer_check_handler;
+pub use ngx::mixer_report::nginmesh_mixer_report_handler;

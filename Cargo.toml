@@ -1,8 +1,9 @@
 [package]
-name = "mixer"
-version = "0.0.16"
+name = "ngx-mixer-module"
+version = "0.0.27"
 authors = ["Sehyo Chang   sehyo@nginx.com"]
 build = "build/build.rs"
+
 
 [lib]
 doctest = false
@@ -24,9 +25,6 @@ ngx-rust        =  { path = "./build/crates/ngx-rust" , version = "1.13.5" }
 
 [build-dependencies]
 protoc-rust-grpc = { path = "./build/crates/grpc-rust/protoc-rust-grpc" }
+bindgen = "0.30.0"
 
-
-[[bin]]
-name = "report_client"
-test = false
 

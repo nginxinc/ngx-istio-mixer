@@ -1,9 +1,9 @@
 use protobuf::well_known_types::Timestamp;
 use std::collections::HashMap;
 
-use global_dict::GlobalDictionary;
-use message_dict::MessageDictionary;
-use attr_wrapper::AttributeWrapper;
+use ngx::global_dict::GlobalDictionary;
+use ngx::message_dict::MessageDictionary;
+use ngx::attr_wrapper::AttributeWrapper;
 
 const TEST_AGENT: &str = "mac123";
 

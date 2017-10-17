@@ -3,16 +3,16 @@
  */
 
 
-extern crate mixer;
+extern crate ngx_mixer_module;
 extern crate grpc;
 extern crate futures;
 
 use std::collections::HashMap;
-use mixer::service_grpc::MixerClient;
-use mixer::report::ReportRequest;
-use mixer::attributes::Attributes;
-use mixer::service_grpc::Mixer;
-//use protobuf::RepeatedField;
+// use ngx_mixer_module::mixer::service_grpc::MixerClient;
+// use ngx_mixer_module::mixer::report::ReportRequest;
+// use ngx_mixer_module::mixer::attributes::Attributes;
+//use ngx_mixer_module::mixer::service_grpc::Mixer;
+
 
 static REQUEST_HEADER: i32 = 0;
 static TARGET_SERVICE: i32 = 1;
@@ -23,12 +23,11 @@ fn main() {
 
     println!("creating mixer client at local host");
 
-    let client = MixerClient::new_plain("localhost", 9091, Default::default()).expect("init");
+    //let client = MixerClient::new_plain("localhost", 9091, Default::default()).expect("init");
 
 
-    let mut req =  ReportRequest::new();
   //  let mut rf = RepeatedField::default();
-    let mut attr = Attributes::new();
+   // let attr = Attributes::new();
     //attr.set_string_attributes("")
 
     let mut dict_values: HashMap<i32,String> = HashMap::new();

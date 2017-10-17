@@ -16,7 +16,8 @@
 
 
 typedef struct {
-    ngx_flag_t    enable;              // for every location, we need flag to enable/disable mixer
+    ngx_flag_t    enable_report;              // for every location, we need flag to enable/disable mixer
+    ngx_flag_t    enable_check;               // enable/disable check
 
 } ngx_http_mixer_loc_conf_t;
 
@@ -36,7 +37,9 @@ typedef struct {
 } ngx_http_mixer_main_conf_t;
 
 
-static ngx_int_t ngx_http_istio_mixer_filter(ngx_http_request_t *r);
+static ngx_int_t ngx_http_istio_mixer_report_handler(ngx_http_request_t *r);
+static ngx_int_t ngx_http_istio_mixer_check_handler(ngx_http_request_t *r);
+
 static ngx_int_t ngx_http_mixer_filter_init(ngx_conf_t *cf);
 
 // create configuration
@@ -46,12 +49,14 @@ static char *ngx_http_mixer_merge_loc_conf(ngx_conf_t *cf, void *parent,
 
 static void *ngx_http_mixer_create_main_conf(ngx_conf_t *cf);    
 
+// handlers in rust
 
-void  mixer_client(ngx_http_request_t *r, ngx_http_mixer_main_conf_t *main_conf);
-ngx_int_t  mixer_init(ngx_cycle_t *cycle);
-void  mixer_exit();
+void  nginmesh_mixer_report_handler(ngx_http_request_t *r, ngx_http_mixer_main_conf_t *main_conf);
+ngx_int_t nginmesh_mixer_check_handler(ngx_http_request_t *r, ngx_http_mixer_main_conf_t *main_conf);
 
-static ngx_http_output_header_filter_pt ngx_http_next_header_filter;
+ngx_int_t  nginmesh_mixer_init(ngx_cycle_t *cycle);
+void  nginmesh_mixer_exit();
+
 
 
 /**
@@ -61,12 +66,21 @@ static ngx_http_output_header_filter_pt ngx_http_next_header_filter;
 static ngx_command_t ngx_http_istio_mixer_commands[] = {
 
     { 
-      ngx_string("mixer"), /* directive */
+      ngx_string("mixer_report"),   /* report directive */
       NGX_HTTP_LOC_CONF | NGX_CONF_FLAG, 
       ngx_conf_set_flag_slot, /* configuration setup function */
       NGX_HTTP_LOC_CONF_OFFSET, 
-      offsetof(ngx_http_mixer_loc_conf_t, enable),  // store in the location configuration
-      NULL},
+      offsetof(ngx_http_mixer_loc_conf_t, enable_report),  // store in the location configuration
+      NULL
+    },
+    { 
+        ngx_string("mixer_check"), /* directive */
+        NGX_HTTP_LOC_CONF | NGX_CONF_FLAG, 
+        ngx_conf_set_flag_slot, /* configuration setup function */
+        NGX_HTTP_LOC_CONF_OFFSET, 
+        offsetof(ngx_http_mixer_loc_conf_t, enable_check),  // store in the location configuration
+        NULL
+    },
 
     {
       ngx_string("mixer_target_ip"),
@@ -136,7 +150,7 @@ ngx_module_t ngx_http_istio_mixer_module = {
     NGX_HTTP_MODULE, /* module type */
     NULL, /* init master */
     NULL, /* init module */
-    mixer_init, /* init process */
+    nginmesh_mixer_init, /* init process */
     NULL, /* init thread */
     NULL, /* exit thread */
     NULL, /* exit process */
@@ -144,49 +158,99 @@ ngx_module_t ngx_http_istio_mixer_module = {
     NGX_MODULE_V1_PADDING
 };
 
+// install log phase handler for mixer
 static ngx_int_t ngx_http_mixer_filter_init(ngx_conf_t *cf) {
 
 
-    ngx_http_next_header_filter = ngx_http_top_header_filter;
-    ngx_http_top_header_filter = ngx_http_istio_mixer_filter;
+    ngx_http_handler_pt        *h1,*h2;
+    ngx_http_core_main_conf_t  *cmcf;
+    ngx_http_core_loc_conf_t  *clcf;
+
+    cmcf = ngx_http_conf_get_module_main_conf(cf, ngx_http_core_module);
+
+    h1 = ngx_array_push(&cmcf->phases[NGX_HTTP_LOG_PHASE].handlers);
+    if (h1 == NULL) {
+        return NGX_ERROR;
+    }
+    *h1 = ngx_http_istio_mixer_report_handler;
+
+    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "registering mixer_report handler");
+
+    clcf = ngx_http_conf_get_module_loc_conf(cf, ngx_http_core_module);
+    clcf->handler = ngx_http_istio_mixer_check_handler;
+
+    h2 = ngx_array_push(&cmcf->phases[NGX_HTTP_ACCESS_PHASE].handlers);
+    if (h2 == NULL) {
+        return NGX_ERROR;
+    }
+    *h2 = ngx_http_istio_mixer_check_handler;
+
+    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "registering mixer_check handler");
+
+
+    
 
     return NGX_OK;   
 }
 
 /**
- * Content handler.
+ * mixer report handler.
  *
- * @param r
- *   Pointer to the request structure. See http_request.h.
- * @return
- *   The status of the response generation.
  */
-static ngx_int_t ngx_http_istio_mixer_filter(ngx_http_request_t *r)
+static ngx_int_t ngx_http_istio_mixer_report_handler(ngx_http_request_t *r)
 {
     ngx_http_mixer_loc_conf_t  *loc_conf;
     ngx_http_mixer_main_conf_t *main_conf;
 
-    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "start invoking istio mixer filter");
+    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "start invoking istio mixer report handler");
 
     loc_conf = ngx_http_get_module_loc_conf(r, ngx_http_istio_mixer_module);
 
-    if (!loc_conf->enable) {
-        ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "mixer not enabled, just passing header");
-        return ngx_http_next_header_filter(r);
+    if (!loc_conf->enable_report) {
+        ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "mixer_report not enabled, just passing thru");
+        return NGX_OK;
     }
 
 
     main_conf = ngx_http_get_module_main_conf(r, ngx_http_istio_mixer_module);
 
-    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "using server: %*s",main_conf->mixer_server.len,main_conf->mixer_server.data);
+    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "using mixer server: %*s",main_conf->mixer_server.len,main_conf->mixer_server.data);
 
     // invoke mix client
-    mixer_client(r,main_conf);
+    nginmesh_mixer_report_handler(r,main_conf);
 
-    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "finish calling istio filter");
+    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "finish calling mixer report handler");
 
 
-   return ngx_http_next_header_filter(r);
+   return NGX_OK;
+
+} 
+
+
+/**
+ * check handler. this works in pre-access phase
+ */
+static ngx_int_t ngx_http_istio_mixer_check_handler(ngx_http_request_t *r)
+{
+    ngx_http_mixer_loc_conf_t  *loc_conf;
+    ngx_http_mixer_main_conf_t *main_conf;
+
+    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "start invoking mixer_check handler");
+
+    loc_conf = ngx_http_get_module_loc_conf(r, ngx_http_istio_mixer_module);
+
+   
+    if (!loc_conf->enable_check) {
+        ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "mixer check not enabled, passing thru");
+        return NGX_OK;
+    }
+
+
+    
+    main_conf = ngx_http_get_module_main_conf(r, ngx_http_istio_mixer_module);
+
+    return nginmesh_mixer_check_handler(r,main_conf);
+
 
 } 
 
@@ -200,7 +264,8 @@ static void *ngx_http_mixer_create_loc_conf(ngx_conf_t *cf) {
         return NULL;
     }
 
-    conf->enable = NGX_CONF_UNSET;
+    conf->enable_report = NGX_CONF_UNSET;
+    conf->enable_check = NGX_CONF_UNSET;
 
     ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "set up  mixer location config");
 
@@ -215,7 +280,9 @@ ngx_http_mixer_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
     ngx_http_mixer_loc_conf_t  *prev = parent;
     ngx_http_mixer_loc_conf_t  *conf = child;
 
-    ngx_conf_merge_value(conf->enable, prev->enable, 0);
+
+    ngx_conf_merge_value(conf->enable_report, prev->enable_report, 0);
+    ngx_conf_merge_value(conf->enable_check, prev->enable_check, 0);
 
     return NGX_CONF_OK;
 }

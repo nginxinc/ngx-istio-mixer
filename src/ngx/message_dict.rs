@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use global_dict::GlobalDictionary;
+use ngx::global_dict::GlobalDictionary;
 
 pub struct MessageDictionary {
 

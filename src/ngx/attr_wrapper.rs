@@ -2,12 +2,10 @@
 use std::collections::HashMap;
 
 use protobuf::well_known_types::Timestamp;
-use attributes::Attributes;
-use attributes::StringMap;
+use mixer::attributes::Attributes;
+use mixer::attributes::StringMap;
 
-use ngx_rust::nginx_http::log;
-
-use message_dict::MessageDictionary;
+use ngx::message_dict::MessageDictionary;
 
 
 enum AttrValue  {
@@ -24,7 +22,6 @@ pub struct AttributeWrapper {
 
     values: HashMap<String,AttrValue>,       // map of value
 
-    string_map: HashMap<String,String>      // map of string to integer
 }
 
 
@@ -32,8 +29,7 @@ impl AttributeWrapper  {
 
     pub fn new() -> AttributeWrapper {
         AttributeWrapper {
-            values: HashMap::new(),
-            string_map: HashMap::new()
+            values: HashMap::new()
         }
     }
 
