@@ -2,17 +2,14 @@ extern crate grpc;
 extern crate futures;
 extern crate ngx_rust;
 
-use std::str;
 use std::sync::mpsc::{channel};
 use std::sync::Mutex;
-use std::collections::HashMap;
 
 use mixer::service_grpc::MixerClient;
 use mixer::attributes::Attributes;
 use mixer::service_grpc::Mixer;
 use mixer::check::CheckRequest;
 
-use protobuf::well_known_types::Timestamp;
 use ngx_rust::bindings::ngx_http_request_s;
 use ngx_rust::bindings::ngx_int_t;
 use ngx_rust::bindings::NGX_OK;
@@ -29,23 +26,13 @@ use ngx::message::MixerInfo;
 use ngx::request::process_request_attribute;
 
 
-use ngx::global_dict::REQUEST_HEADER;
+
 use ngx::global_dict::TARGET_SERVICE;
-use ngx::global_dict::REQUEST_HOST;
-use ngx::global_dict::REQUEST_METHOD;
-use ngx::global_dict::REQUEST_PATH;
-use ngx::global_dict::REQUEST_REFER;
-use ngx::global_dict::REQUEST_SCHEME;
-use ngx::global_dict::REQUEST_SIZE;
-use ngx::global_dict::REQUEST_TIME;
-use ngx::global_dict::REQUEST_USERAGENT;
-use ngx::global_dict::SOURCE_IP;
-use ngx::global_dict::SOURCE_UID;
 use ngx::global_dict::TARGET_IP;
 use ngx::global_dict::TARGET_UID;
 
 
-
+use istio_client::check_cache::CheckCache;
 
 
 // initialize channel that can be shared
@@ -65,6 +52,7 @@ lazy_static! {
 pub fn mixer_check_background()  {
 
     let rx = CHANNELS.rx.lock().unwrap();
+    let cache = CheckCache::new();
 
     loop {
         log(&format!("mixer check thread waiting"));
@@ -76,13 +64,26 @@ pub fn mixer_check_background()  {
         let mut check_request = CheckRequest::new();
         check_request.set_attributes(info.attributes);
 
-        let resp = client.check(grpc::RequestOptions::new(), check_request);
+        let result = client.check(grpc::RequestOptions::new(), check_request).wait();
 
-        let result = resp.wait();
+     //       log(&format!("mixer check {:?}",result));
+        match result   {
+            Ok(response) =>  {
+                let (m1, check_response, m2) = response;
+                cache.set_reponse(&check_response);
+            },
 
-        log(&format!("mixer check {:?}",result));
+            Err(err)  =>  {
+                 // TODO: fix log error to nginx error logger
+                 log(&format!("error calling check {:?}",err));
+            }
+
+        }
+
+        
     }
 }
+
 
 
 // send to background thread using channels
