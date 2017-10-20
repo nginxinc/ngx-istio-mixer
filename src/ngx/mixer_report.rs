@@ -146,14 +146,14 @@ fn process_istio_attr(main_config: &ngx_http_mixer_main_conf_t, attr: &mut Attri
 
 // Total Upstream response Time Calculation Function Start
 
-fn urt_calc(request:&ngx_http_request_s)->i64{
+fn urt_calc(upstream_states:*mut ngx_array_t)->i64{
 use ngx_rust::bindings::ngx_http_upstream_state_t;
 
 unsafe{
 
-let urt= (*request.upstream_states).elts;
-let urt_n=(*request.upstream_states).nelts as isize;
-let size=(*request.upstream_states).size as isize;
+let urt= (*upstream_states).elts;
+let urt_n=(*upstream_states).nelts as isize;
+let size=(*upstream_states).size as isize;
 let mut upstream_response_time_total:i64=0;
 
    for i in 0..urt_n as isize {
@@ -178,7 +178,7 @@ fn process_response_attribute(request: &ngx_http_request_s, attr: &mut Attribute
 
     attr.insert_int64_attribute(RESPONSE_CODE, headers_out.status as i64);
     attr.insert_int64_attribute(RESPONSE_SIZE, headers_out.content_length_n);
-    attr.insert_int64_attribute(RESPONSE_DURATION, urt_calc(request));
+    attr.insert_int64_attribute(RESPONSE_DURATION, urt_calc(request.upstream_states));
 
     // fill in the string value
     let mut map: HashMap<String,String> = HashMap::new();
