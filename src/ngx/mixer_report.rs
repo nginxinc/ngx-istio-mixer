@@ -144,7 +144,7 @@ fn process_istio_attr(main_config: &ngx_http_mixer_main_conf_t, attr: &mut Attri
 }
 
 
-// <-- Total Upstream response Time Calculation Function Start -->
+// Total Upstream response Time Calculation Function Start
 
 fn urt_calc(request:&ngx_http_request_s)->i64{
 use ngx_rust::bindings::ngx_http_upstream_state_t;
@@ -169,7 +169,7 @@ let mut upstream_response_time_total:i64=0;
     }
 }
 
-// <-- Total Upstream response Time Calculation Function End -->
+//Total Upstream response Time Calculation Function End
 
 
 fn process_response_attribute(request: &ngx_http_request_s, attr: &mut AttributeWrapper, )  {
@@ -178,8 +178,6 @@ fn process_response_attribute(request: &ngx_http_request_s, attr: &mut Attribute
 
     attr.insert_int64_attribute(RESPONSE_CODE, headers_out.status as i64);
     attr.insert_int64_attribute(RESPONSE_SIZE, headers_out.content_length_n);
-
-    let duration = headers_out.date_time - request.start_sec;
     attr.insert_int64_attribute(RESPONSE_DURATION, urt_calc(request));
 
     // fill in the string value
