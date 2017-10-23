@@ -37,7 +37,8 @@ use ngx::global_dict::RESPONSE_SIZE;
 use ngx::global_dict::RESPONSE_HEADERS;
 use ngx::global_dict::TARGET_IP;
 use ngx::global_dict::TARGET_UID;
-
+use ngx_rust::bindings::ngx_array_t;
+use ngx_rust::bindings::ngx_http_upstream_state_t;
 
 
 
@@ -146,26 +147,20 @@ fn process_istio_attr(main_config: &ngx_http_mixer_main_conf_t, attr: &mut Attri
 
 // Total Upstream response Time Calculation Function Start
 
-fn urt_calc(upstream_states:*mut ngx_array_t)->i64{
-use ngx_rust::bindings::ngx_http_upstream_state_t;
+fn upstream_response_time_calculation(upstream_states:*mut ngx_array_t)->i64{
+    unsafe{
+        let upstream_response_time_list= (*upstream_states).elts;
+        let upstream_response_time_n=(*upstream_states).nelts as isize;
+        let upstream_response_time_size=(*upstream_states).size as isize;
+        let mut upstream_response_time_total:i64=0;
 
-unsafe{
+        for i in 0..upstream_response_time_n as isize {
+            let upstream_response_time_ptr=upstream_response_time_list.offset(i*upstream_response_time_size) as *mut ngx_http_upstream_state_t;
+            let upstream_response_time_value= (*upstream_response_time_ptr).response_time as i64;
+            upstream_response_time_total=upstream_response_time_total+upstream_response_time_value;
+        }
 
-let urt= (*upstream_states).elts;
-let urt_n=(*upstream_states).nelts as isize;
-let size=(*upstream_states).size as isize;
-let mut upstream_response_time_total:i64=0;
-
-   for i in 0..urt_n as isize {
-   let urt_ptr=urt.offset(i*size) as *mut ngx_http_upstream_state_t;
-                let ms= (*urt_ptr).response_time as i64;
-                            upstream_response_time_total=upstream_response_time_total+ms;
-                                        if i ==urt_n {
-                                                  break;
-                                                   }
-
-                                           };
-        return upstream_response_time_total as i64;
+        return upstream_response_time_total;
     }
 }
 
@@ -178,7 +173,7 @@ fn process_response_attribute(request: &ngx_http_request_s, attr: &mut Attribute
 
     attr.insert_int64_attribute(RESPONSE_CODE, headers_out.status as i64);
     attr.insert_int64_attribute(RESPONSE_SIZE, headers_out.content_length_n);
-    attr.insert_int64_attribute(RESPONSE_DURATION, urt_calc(request.upstream_states));
+    attr.insert_int64_attribute(RESPONSE_DURATION, upstream_response_time_calculation(request.upstream_states));
 
     // fill in the string value
     let mut map: HashMap<String,String> = HashMap::new();
