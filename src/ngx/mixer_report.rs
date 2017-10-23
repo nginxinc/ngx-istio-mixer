@@ -18,6 +18,9 @@ use protobuf::RepeatedField;
 use ngx_rust::bindings::ngx_http_request_s;
 use ngx_rust::nginx_http::log;
 
+use ngx_rust::bindings::ngx_array_t;
+use ngx_rust::bindings::ngx_http_upstream_state_t;
+
 use ngx::attr_wrapper::AttributeWrapper;
 use ngx::global_dict::GlobalDictionary;
 use ngx::message_dict::MessageDictionary;
@@ -37,6 +40,7 @@ use ngx::global_dict::RESPONSE_SIZE;
 use ngx::global_dict::RESPONSE_HEADERS;
 use ngx::global_dict::TARGET_IP;
 use ngx::global_dict::TARGET_UID;
+
 
 
 
@@ -87,11 +91,11 @@ fn send_dispatcher(main_config: &ngx_http_mixer_main_conf_t, attr: Attributes)  
     let server_port = main_config.mixer_port as u16;
 
     let tx = CHANNELS.tx.lock().unwrap().clone();
-    let info = MixerInfo { server_name: String::from(server_name), server_port: server_port, attributes: attr};
+    let info = MixerInfo { server_name: String::from(server_name), server_port: server_port, attributes: attr };
     tx.send(info.clone());
 
 
-   // log(&format!("server: {}, port {}",server_name, server_port));
+   // log(&format!("server: {}, port {}", server_name, server_port));
 
     log(&format!("send attribute to mixer report background task"));
 
@@ -105,9 +109,10 @@ pub extern fn nginmesh_mixer_report_handler(request: &ngx_http_request_s,main_co
 
     let mut attr = AttributeWrapper::new();
 
-    process_istio_attr(main_config,&mut attr);
+    process_istio_attr(main_config, &mut attr);
     process_request_attribute(request, &mut attr);
     process_response_attribute(request, &mut attr);
+
 
 
     let mut message_dict = MessageDictionary::new(GlobalDictionary::new());
@@ -143,7 +148,30 @@ fn process_istio_attr(main_config: &ngx_http_mixer_main_conf_t, attr: &mut Attri
 }
 
 
+// Total Upstream response Time Calculation Function Start
 
+fn upstream_response_time_calculation( upstream_states: *const ngx_array_t ) -> i64 {
+
+    unsafe {
+
+        let upstream_value = *upstream_states;
+        let upstream_response_time_list = upstream_value.elts;
+        let upstream_response_time_n = upstream_value.nelts as isize;
+        let upstream_response_time_size = upstream_value.size as isize;
+        let mut upstream_response_time_total:i64 = 0;
+        for i in 0..upstream_response_time_n as isize {
+
+            let upstream_response_time_ptr = upstream_response_time_list.offset(i*upstream_response_time_size) as *mut ngx_http_upstream_state_t;
+            let upstream_response_time_value = (*upstream_response_time_ptr).response_time as i64;
+            upstream_response_time_total = upstream_response_time_total + upstream_response_time_value;
+
+        }
+
+        return upstream_response_time_total;
+    }
+}
+
+// Total Upstream response Time Calculation Function End
 
 
 fn process_response_attribute(request: &ngx_http_request_s, attr: &mut AttributeWrapper, )  {
@@ -152,9 +180,7 @@ fn process_response_attribute(request: &ngx_http_request_s, attr: &mut Attribute
 
     attr.insert_int64_attribute(RESPONSE_CODE, headers_out.status as i64);
     attr.insert_int64_attribute(RESPONSE_SIZE, headers_out.content_length_n);
-
-    let duration = headers_out.date_time - request.start_sec;
-    attr.insert_int64_attribute(RESPONSE_DURATION, 5000);
+    attr.insert_int64_attribute(RESPONSE_DURATION, upstream_response_time_calculation(request.upstream_states));
 
     // fill in the string value
     let mut map: HashMap<String,String> = HashMap::new();
