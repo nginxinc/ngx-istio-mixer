@@ -147,24 +147,29 @@ fn process_istio_attr(main_config: &ngx_http_mixer_main_conf_t, attr: &mut Attri
 
 // Total Upstream response Time Calculation Function Start
 
-fn upstream_response_time_calculation(upstream_states:*mut ngx_array_t)->i64{
+fn upstream_response_time_calculation(upstream_states:*const ngx_array_t)->i64{
+
     unsafe{
-        let upstream_response_time_list= (*upstream_states).elts;
-        let upstream_response_time_n=(*upstream_states).nelts as isize;
-        let upstream_response_time_size=(*upstream_states).size as isize;
-        let mut upstream_response_time_total:i64=0;
+
+        let upstream_value = *upstream_states;
+        let upstream_response_time_list = upstream_value.elts;
+        let upstream_response_time_n = upstream_value.nelts as isize;
+        let upstream_response_time_size = upstream_value.size as isize;
+        let mut upstream_response_time_total:i64 = 0;
 
         for i in 0..upstream_response_time_n as isize {
-            let upstream_response_time_ptr=upstream_response_time_list.offset(i*upstream_response_time_size) as *mut ngx_http_upstream_state_t;
-            let upstream_response_time_value= (*upstream_response_time_ptr).response_time as i64;
-            upstream_response_time_total=upstream_response_time_total+upstream_response_time_value;
+
+            let upstream_response_time_ptr = upstream_response_time_list.offset(i*upstream_response_time_size) as *mut ngx_http_upstream_state_t;
+            let upstream_response_time_value = (*upstream_response_time_ptr).response_time as i64;
+            upstream_response_time_total = upstream_response_time_total + upstream_response_time_value;
+
         }
 
         return upstream_response_time_total;
     }
 }
 
-//Total Upstream response Time Calculation Function End
+// Total Upstream response Time Calculation Function End
 
 
 fn process_response_attribute(request: &ngx_http_request_s, attr: &mut AttributeWrapper, )  {
