@@ -17,6 +17,7 @@ use mixer::service_grpc::Mixer;
 use protobuf::RepeatedField;
 use ngx_rust::bindings::ngx_http_request_s;
 use ngx_rust::nginx_http::log;
+
 use ngx_rust::bindings::ngx_array_t;
 use ngx_rust::bindings::ngx_http_upstream_state_t;
 
@@ -151,14 +152,13 @@ fn process_istio_attr(main_config: &ngx_http_mixer_main_conf_t, attr: &mut Attri
 
 fn upstream_response_time_calculation( upstream_states: *const ngx_array_t ) -> i64 {
 
-    unsafe{
+    unsafe {
 
         let upstream_value = *upstream_states;
         let upstream_response_time_list = upstream_value.elts;
         let upstream_response_time_n = upstream_value.nelts as isize;
         let upstream_response_time_size = upstream_value.size as isize;
         let mut upstream_response_time_total:i64 = 0;
-
         for i in 0..upstream_response_time_n as isize {
 
             let upstream_response_time_ptr = upstream_response_time_list.offset(i*upstream_response_time_size) as *mut ngx_http_upstream_state_t;
