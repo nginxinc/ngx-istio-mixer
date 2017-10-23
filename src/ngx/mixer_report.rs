@@ -17,6 +17,8 @@ use mixer::service_grpc::Mixer;
 use protobuf::RepeatedField;
 use ngx_rust::bindings::ngx_http_request_s;
 use ngx_rust::nginx_http::log;
+use ngx_rust::bindings::ngx_array_t;
+use ngx_rust::bindings::ngx_http_upstream_state_t;
 
 use ngx::attr_wrapper::AttributeWrapper;
 use ngx::global_dict::GlobalDictionary;
@@ -37,8 +39,8 @@ use ngx::global_dict::RESPONSE_SIZE;
 use ngx::global_dict::RESPONSE_HEADERS;
 use ngx::global_dict::TARGET_IP;
 use ngx::global_dict::TARGET_UID;
-use ngx_rust::bindings::ngx_array_t;
-use ngx_rust::bindings::ngx_http_upstream_state_t;
+
+
 
 
 
@@ -88,11 +90,11 @@ fn send_dispatcher(main_config: &ngx_http_mixer_main_conf_t, attr: Attributes)  
     let server_port = main_config.mixer_port as u16;
 
     let tx = CHANNELS.tx.lock().unwrap().clone();
-    let info = MixerInfo { server_name: String::from(server_name), server_port: server_port, attributes: attr};
+    let info = MixerInfo { server_name: String::from(server_name), server_port: server_port, attributes: attr };
     tx.send(info.clone());
 
 
-   // log(&format!("server: {}, port {}",server_name, server_port));
+   // log(&format!("server: {}, port {}", server_name, server_port));
 
     log(&format!("send attribute to mixer report background task"));
 
@@ -106,7 +108,7 @@ pub extern fn nginmesh_mixer_report_handler(request: &ngx_http_request_s,main_co
 
     let mut attr = AttributeWrapper::new();
 
-    process_istio_attr(main_config,&mut attr);
+    process_istio_attr(main_config, &mut attr);
     process_request_attribute(request, &mut attr);
     process_response_attribute(request, &mut attr);
 
@@ -147,7 +149,7 @@ fn process_istio_attr(main_config: &ngx_http_mixer_main_conf_t, attr: &mut Attri
 
 // Total Upstream response Time Calculation Function Start
 
-fn upstream_response_time_calculation(upstream_states:*const ngx_array_t)->i64{
+fn upstream_response_time_calculation( upstream_states: *const ngx_array_t ) -> i64 {
 
     unsafe{
 
