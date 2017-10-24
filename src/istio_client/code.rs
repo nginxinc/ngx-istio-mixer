@@ -1,10 +1,9 @@
 
-use mixer::status::Status;
 use std::mem;
 
 // https://github.com/google/protobuf/blob/master/src/google/protobuf/stubs/status.h
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub enum StatusCodeEnum {
 
     OK =  0,
@@ -34,5 +33,36 @@ pub fn from_int(code: i32) -> StatusCodeEnum  {
     return unsafe { 
         mem::transmute(code as u8) 
     };
+}
+
+pub struct Status {
+
+    error_code:  StatusCodeEnum,
+    error_message: Option<String>
+}
+
+impl Status  {
+
+    pub fn new() -> Status  {
+        Status  {
+            error_code: StatusCodeEnum::OK,
+            error_message: None
+        }
+    }
+
+    pub fn with(error_code: StatusCodeEnum, error_message: String) -> Status {
+        Status {
+            error_code,
+            error_message: Some(error_message)
+        }
+    }
+
+    pub fn ok(&self) -> bool  {
+        self.error_code == StatusCodeEnum::OK
+    }
+
+    pub fn get_error_code(&self) -> StatusCodeEnum  {
+        self.error_code
+    }
 }
 

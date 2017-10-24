@@ -9,22 +9,22 @@ use protobuf::well_known_types::Timestamp;
 use ngx_rust::bindings::ngx_http_request_s;
 use ngx_rust::nginx_http::log;
 
-use ngx::attr_wrapper::AttributeWrapper;
+use attribute::attr_wrapper::AttributeWrapper;
 
 
-use ngx::global_dict::REQUEST_HEADER;
-use ngx::global_dict::REQUEST_HOST;
-use ngx::global_dict::REQUEST_METHOD;
-use ngx::global_dict::REQUEST_PATH;
-use ngx::global_dict::REQUEST_REFER;
-use ngx::global_dict::REQUEST_SCHEME;
-use ngx::global_dict::REQUEST_SIZE;
-use ngx::global_dict::REQUEST_TIME;
-use ngx::global_dict::REQUEST_USERAGENT;
-use ngx::global_dict::SOURCE_IP;
-use ngx::global_dict::SOURCE_UID;
-use ngx::global_dict::SRC_IP_HEADER;
-use ngx::global_dict::SRC_UID_HEADER;
+use attribute::global_dict::REQUEST_HEADER;
+use attribute::global_dict::REQUEST_HOST;
+use attribute::global_dict::REQUEST_METHOD;
+use attribute::global_dict::REQUEST_PATH;
+use attribute::global_dict::REQUEST_REFER;
+use attribute::global_dict::REQUEST_SCHEME;
+use attribute::global_dict::REQUEST_SIZE;
+use attribute::global_dict::REQUEST_TIME;
+use attribute::global_dict::REQUEST_USERAGENT;
+use attribute::global_dict::SOURCE_IP;
+use attribute::global_dict::SOURCE_UID;
+use attribute::global_dict::SRC_IP_HEADER;
+use attribute::global_dict::SRC_UID_HEADER;
 
 
 

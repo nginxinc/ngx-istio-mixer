@@ -13,7 +13,8 @@ extern crate ngx_rust;
 extern crate lazy_static;
 
 mod ngx;
-pub mod mixer;
+mod mixer;
+mod attribute;
 mod istio_client;
 
 pub use ngx::mixer_thread::nginmesh_mixer_init;

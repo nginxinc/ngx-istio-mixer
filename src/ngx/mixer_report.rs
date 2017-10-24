@@ -18,25 +18,25 @@ use protobuf::RepeatedField;
 use ngx_rust::bindings::ngx_http_request_s;
 use ngx_rust::nginx_http::log;
 
-use ngx::attr_wrapper::AttributeWrapper;
-use ngx::global_dict::GlobalDictionary;
-use ngx::message_dict::MessageDictionary;
+use attribute::attr_wrapper::AttributeWrapper;
+use attribute::global_dict::GlobalDictionary;
+use attribute::message_dict::MessageDictionary;
 
-use ngx::mixer_location::ngx_http_mixer_main_conf_t;
+use super::mixer_location::ngx_http_mixer_main_conf_t;
 
-use ngx::message::Channels;
-use ngx::message::MixerInfo;
-use ngx::request::process_request_attribute;
+use super::message::Channels;
+use super::message::MixerInfo;
+use super::request::process_request_attribute;
 
 
-use ngx::global_dict::TARGET_SERVICE;
+use attribute::global_dict::TARGET_SERVICE;
 
-use ngx::global_dict::RESPONSE_CODE;
-use ngx::global_dict::RESPONSE_DURATION;
-use ngx::global_dict::RESPONSE_SIZE;
-use ngx::global_dict::RESPONSE_HEADERS;
-use ngx::global_dict::TARGET_IP;
-use ngx::global_dict::TARGET_UID;
+use attribute::global_dict::RESPONSE_CODE;
+use attribute::global_dict::RESPONSE_DURATION;
+use attribute::global_dict::RESPONSE_SIZE;
+use attribute::global_dict::RESPONSE_HEADERS;
+use attribute::global_dict::TARGET_IP;
+use attribute::global_dict::TARGET_UID;
 
 
 

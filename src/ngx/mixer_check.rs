@@ -16,23 +16,23 @@ use ngx_rust::bindings::NGX_OK;
 use ngx_rust::nginx_http::log;
 
 
-use ngx::mixer_location::ngx_http_mixer_main_conf_t;
+use super::mixer_location::ngx_http_mixer_main_conf_t;
 
-use ngx::attr_wrapper::AttributeWrapper;
-use ngx::global_dict::GlobalDictionary;
-use ngx::message_dict::MessageDictionary;
-use ngx::message::Channels;
-use ngx::message::MixerInfo;
-use ngx::request::process_request_attribute;
-
-
-
-use ngx::global_dict::TARGET_SERVICE;
-use ngx::global_dict::TARGET_IP;
-use ngx::global_dict::TARGET_UID;
+use attribute::attr_wrapper::AttributeWrapper;
+use attribute::global_dict::GlobalDictionary;
+use attribute::message_dict::MessageDictionary;
+use super::message::Channels;
+use super::message::MixerInfo;
+use super::request::process_request_attribute;
 
 
-use istio_client::check_cache::CheckCache;
+
+use attribute::global_dict::TARGET_SERVICE;
+use attribute::global_dict::TARGET_IP;
+use attribute::global_dict::TARGET_UID;
+
+
+use istio_client::mixer_client_wrapper::MixerClientWrapper;
 
 
 // initialize channel that can be shared
@@ -52,35 +52,15 @@ lazy_static! {
 pub fn mixer_check_background()  {
 
     let rx = CHANNELS.rx.lock().unwrap();
-    let cache = CheckCache::new();
+    let client = MixerClientWrapper::new();
 
     loop {
         log(&format!("mixer check thread waiting"));
         let info = rx.recv().unwrap();
         log(&format!("mixer check thread woke up"));
 
-        let client = MixerClient::new_plain( &info.server_name, info.server_port , Default::default()).expect("init");
+        let result = client.check(&info);
 
-        let mut check_request = CheckRequest::new();
-        check_request.set_attributes(info.attributes);
-
-        let result = client.check(grpc::RequestOptions::new(), check_request).wait();
-
-     //       log(&format!("mixer check {:?}",result));
-        match result   {
-            Ok(response) =>  {
-                let (m1, check_response, m2) = response;
-                cache.set_reponse(&check_response);
-            },
-
-            Err(err)  =>  {
-                 // TODO: fix log error to nginx error logger
-                 log(&format!("error calling check {:?}",err));
-            }
-
-        }
-
-        
     }
 }
 

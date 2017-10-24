@@ -1,4 +1,4 @@
-use ngx::global_dict::GlobalDictionary;
+use super::global_dict::GlobalDictionary;
 
 #[test]
 fn test_global_simple() {
