@@ -2,49 +2,9 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex, MutexGuard };
 use super::status::Status;
 use std::time::{Duration, SystemTime};
+use super::cache_elem::CacheElem;
 
 // simple LRU Cache, index by hash
-
-pub struct CacheElem  {
-    status: Status,
-    expire_time: SystemTime,
-    use_count: u32,
-}
-
-
-impl Clone for CacheElem {
-
-    fn clone(&self) -> Self {
-        CacheElem {
-            status: self.status.clone(),
-            expire_time: self.expire_time.clone(),
-            use_count: self.use_count.clone()
-        }
-    }
-}
-
-
-impl  CacheElem  {
-
-    pub fn new() -> CacheElem  {
-        CacheElem {
-            status: Status::new(),
-            expire_time: SystemTime::now() + Duration::new(3200*24, 0),
-            use_count: 0
-        }
-    }
-
-
-    // check if value is expired
-    pub fn is_expired(&self, time: SystemTime) -> bool  {
-        self.expire_time > time
-    }
-
-    pub fn get_status(&self) -> Status {
-        self.status.clone()
-    }
-
-}
 
 
 pub struct LRUCache {

@@ -5,6 +5,7 @@ use super::options::{ CheckOptions, ReportOptions, QuotaOptions };
 use super::info::MixerServerInfo;
 use super::check_cache::CheckCache;
 use super::quota_cache::QuotaCache;
+use attribute::attr_wrapper::AttributeWrapper;
 
 pub struct MixerClientOptions  {
 
@@ -46,6 +47,7 @@ impl MixerClientWrapper  {
     }
 
     pub fn check(&self, mixer_info: &MixerServerInfo) -> bool  {
+
 
 
         /*

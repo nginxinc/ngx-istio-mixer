@@ -140,8 +140,16 @@ impl CheckResult  {
         self.status.get_error_code() as i32 !=  StatusCodeEnum::UNAVAILABLE as i32
     }
 
+    pub fn get_status(&self) -> Status  {
+        self.status.clone()
+    }
+
     pub fn set_status( &mut self, status: Status) {
         self.status = status;
+    }
+
+    pub fn set_response<F>(&mut self, on_response: F ) where F: Fn() -> Status {
+        self.status = on_response();
     }
 
 
@@ -210,4 +218,14 @@ fn test_cache_result_hit() {
 
     let cache_result = CheckResult::new();
     assert_eq!(cache_result.is_cache_hit(),true);
+}
+
+
+#[test]
+fn test_cache_set_reponse()  {
+
+    let mut cache_result = CheckResult::new();
+    let result_closure = | | Status::with_code(StatusCodeEnum::CANCELLED);
+    cache_result.set_response( result_closure );
+    assert_eq!(cache_result.get_status().get_error_code(), StatusCodeEnum::CANCELLED,"status should be cancelled");
 }
