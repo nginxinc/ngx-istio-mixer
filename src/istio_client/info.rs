@@ -1,4 +1,3 @@
-use mixer::attributes::Attributes;
 use attribute::attr_wrapper::AttributeWrapper;
 
 pub trait MixerServerInfo  {

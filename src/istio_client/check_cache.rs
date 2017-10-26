@@ -1,6 +1,6 @@
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
-use std::time::{Duration, SystemTime};
+#![feature(conservative_impl_trait)]
+
+use std::time::{ SystemTime};
 use std::collections::HashMap;
 use std::clone::Clone;
 
@@ -13,6 +13,8 @@ use super::status::Status;
 use attribute::attr_wrapper::AttributeWrapper;
 use super::lru_cache::LRUCache;
 use super::referenced::Referenced;
+
+
 
 /*
 impl Hash for CheckResponse {
@@ -63,9 +65,24 @@ impl Hash for CheckResponse {
 }
 */
 
+
+fn on_response(check_cache: &CheckCache,status: Status, attributes: &AttributeWrapper, response: &CheckResponse) -> Status {
+
+    if !status.ok() {
+        if check_cache.options.network_fail_open {
+            return Status::new();
+        }  else {
+            return status;
+        }
+    } else {
+        return check_cache.cache_response(attributes,response,SystemTime::now());
+    }
+
+}
+
 pub struct CheckCache {
 
-    check_options: CheckOptions,
+    options: CheckOptions,
     cache: LRUCache,
     referenced_map: HashMap<String,Referenced>
 }
@@ -77,22 +94,37 @@ impl CheckCache  {
 
     pub fn new() -> CheckCache {
         CheckCache {
-            check_options: CheckOptions::new(),
+            options: CheckOptions::new(),
             cache: LRUCache::new(),
             referenced_map: HashMap::new()
         }
     }
 
 
-    pub fn check(&self, attributes: &AttributeWrapper, result: &CheckResult) {
+    pub fn check(&self, attributes: &AttributeWrapper) -> CheckResult{
 
+
+        let mut result =  CheckResult::new(on_response);
+        let status = self.check_attribute_time(attributes, SystemTime::now());
+        if status.get_error_code() != StatusCodeEnum::NOT_FOUND {
+            result.set_status(status);
+        }
+
+        result
+
+    }
+
+
+    fn cache_response(&self, attributes: &AttributeWrapper, response: &CheckResponse, time_now: SystemTime) -> Status {
+        return Status::new()
     }
 
     // check attribute for time
     // Status CheckCache::Check(const Attributes& attributes, Tick time_now)
     fn check_attribute_time(&self, attributes: &AttributeWrapper, tick: SystemTime) -> Status {
 
-        for( key,reference) in &self.referenced_map  {
+
+        for( _key,reference) in &self.referenced_map  {
 
             let some_signature = reference.signature(attributes,"");
 
@@ -120,19 +152,21 @@ impl CheckCache  {
 }
 
 
-struct CheckResult {
 
-    status: Status
+pub struct CheckResult {
+
+    status: Status,
+    on_response: fn(&CheckCache,Status,&AttributeWrapper,&CheckResponse) -> Status
 
 }
 
-impl CheckResult  {
+impl CheckResult {
 
-    pub fn new() -> CheckResult  {
+    pub fn new( on_response: fn(&CheckCache,Status,&AttributeWrapper,&CheckResponse) -> Status) -> CheckResult {
         CheckResult {
-            status: Status::new()
+            status: Status::new(),
+            on_response
         }
-
     }
 
 
@@ -148,10 +182,12 @@ impl CheckResult  {
         self.status = status;
     }
 
-    pub fn set_response<F>(&mut self, on_response: F ) where F: Fn() -> Status {
-        self.status = on_response();
-    }
 
+
+    pub fn set_response(&mut self, cache: &CheckCache,status: Status, attributes: &AttributeWrapper,response: &CheckResponse) {
+        let handler = self.on_response;
+        self.set_status(handler(cache,status,attributes,response));
+    }
 
         /*
         if(response.has_precondition()) {
@@ -211,21 +247,30 @@ impl CheckResult  {
 }
 
 
-
-
-#[test]
-fn test_cache_result_hit() {
-
-    let cache_result = CheckResult::new();
-    assert_eq!(cache_result.is_cache_hit(),true);
+fn test_response1(check_cache: &CheckCache,status: Status, attributes: &AttributeWrapper, response: &CheckResponse) -> Status {
+    Status::new()
 }
 
 
 #[test]
-fn test_cache_set_reponse()  {
+fn test_check_result_cache_hit() {
 
-    let mut cache_result = CheckResult::new();
-    let result_closure = | | Status::with_code(StatusCodeEnum::CANCELLED);
-    cache_result.set_response( result_closure );
-    assert_eq!(cache_result.get_status().get_error_code(), StatusCodeEnum::CANCELLED,"status should be cancelled");
+
+    let cache_result = CheckResult::new(test_response1);
+    assert_eq!(cache_result.is_cache_hit(),true);
+}
+
+fn test_response2(check_cache: &CheckCache,status: Status, attributes: &AttributeWrapper, response: &CheckResponse) -> Status {
+    status
+}
+
+#[test]
+fn test_check_result_set_response()  {
+
+
+
+    let mut check_result = CheckResult::new(test_response2);
+    check_result.set_response( &CheckCache::new(),Status::with_code(StatusCodeEnum::CANCELLED), &AttributeWrapper::new(),&CheckResponse::new());
+
+    assert_eq!(check_result.get_status().get_error_code(), StatusCodeEnum::CANCELLED,"status should be cancelled");
 }

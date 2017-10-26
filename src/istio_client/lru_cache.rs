@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex, MutexGuard };
-use super::status::Status;
-use std::time::{Duration, SystemTime};
 use super::cache_elem::CacheElem;
 
 // simple LRU Cache, index by hash
