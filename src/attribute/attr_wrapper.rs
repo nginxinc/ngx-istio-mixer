@@ -4,6 +4,8 @@ use std::collections::HashMap;
 use protobuf::well_known_types::Timestamp;
 use mixer::attributes::Attributes;
 use mixer::attributes::StringMap;
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
 
 use super::message_dict::MessageDictionary;
 
@@ -31,6 +33,50 @@ impl AttributeWrapper  {
         AttributeWrapper {
             values: HashMap::new()
         }
+    }
+
+
+    pub fn key_exists(&self, key: &str) -> bool  {
+
+        if let Some(value) = self.values.get(key)  {
+            return true;
+        }
+
+        false
+    }
+
+    // hash the value found
+    pub fn hash(&self, key: &str,hashing: &mut DefaultHasher)  {
+
+        if let Some(value) = self.values.get(key)  {
+
+            match value  {
+                &AttrValue::StrValue(ref str_value) => {
+                    str_value.to_string().hash(hashing)
+                },
+                &AttrValue::I64(int_value) => {
+                    int_value.hash(hashing)
+                },
+
+                &AttrValue::Double(d_value) => {
+                    d_value.to_string().hash(hashing)
+                },
+
+                &AttrValue::Bool(b_value) => {
+                    b_value.hash(hashing)
+                },
+                &AttrValue::Timestamp(ref t_value) => {
+                    t_value.get_seconds().hash(hashing)
+                }
+                &AttrValue::StringMap(ref str_value) => {
+                    for (key, value) in str_value.iter() {
+                        value.hash(hashing);
+                    }
+                }
+            }
+
+        }
+
     }
 
 

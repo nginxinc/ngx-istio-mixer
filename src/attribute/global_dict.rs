@@ -26,7 +26,7 @@ pub const SRC_IP_HEADER: &str = "X-ISTIO-SRC-IP";
 pub const SRC_UID_HEADER: &str = "X-ISTIO-SRC-UID";
 
 
-pub const GLOBAL_LIST: [&'static str; 159] = [
+const GLOBAL_LIST: [&'static str; 159] = [
     "source.ip",
     "source.port",
     "source.name",
@@ -187,6 +187,10 @@ pub const GLOBAL_LIST: [&'static str; 159] = [
     "destination.user",
     "source.service",
 ];
+
+pub fn Get_Global_Words() -> [&'static str; 159] {
+    GLOBAL_LIST
+}
 
 
 pub struct GlobalDictionary   {

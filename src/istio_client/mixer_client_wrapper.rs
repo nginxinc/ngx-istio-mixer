@@ -3,6 +3,8 @@
  */
 use super::options::{ CheckOptions, ReportOptions, QuotaOptions };
 use super::info::MixerServerInfo;
+use super::check_cache::CheckCache;
+use super::quota_cache::QuotaCache;
 
 pub struct MixerClientOptions  {
 
@@ -12,14 +14,35 @@ pub struct MixerClientOptions  {
 
 }
 
+impl MixerClientOptions {
+
+    pub fn new() -> MixerClientOptions {
+
+        MixerClientOptions{
+            check_options: CheckOptions::new(),
+            report_options: ReportOptions::new(),
+            quota_options: QuotaOptions::new()
+        }
+    }
+}
+
 pub struct MixerClientWrapper {
 
+    options: MixerClientOptions,
+    check_cache: CheckCache,
+    quota_cache: QuotaCache
 }
+
 
 impl MixerClientWrapper  {
 
     pub fn new() -> MixerClientWrapper {
-        MixerClientWrapper{}
+
+        MixerClientWrapper{
+            options: MixerClientOptions::new(),
+            check_cache: CheckCache::new(),
+            quota_cache: QuotaCache::new()
+        }
     }
 
     pub fn check(&self, mixer_info: &MixerServerInfo) -> bool  {

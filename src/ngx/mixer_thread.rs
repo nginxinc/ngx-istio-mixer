@@ -8,7 +8,7 @@ use ngx_rust::bindings::NGX_OK;
 use ngx_rust::nginx_http::log;
 
 use ngx::mixer_report::mixer_report_background;
-use ngx::mixer_check::mixer_check_background;
+//use ngx::mixer_check::mixer_check_background;
 
 
 
@@ -23,11 +23,7 @@ pub extern fn nginmesh_mixer_init() -> ngx_int_t {
         log(&format!("starting mixer report background task"));
         mixer_report_background();
     });
-    
-    thread::spawn(|| {
-        log(&format!("starting mixer check background task"));
-        mixer_check_background();
-    });
+
     
     log(&format!("init mixer end "));
     return NGX_OK as ngx_int_t;

@@ -1,29 +1,16 @@
-extern crate grpc;
-extern crate futures;
-extern crate ngx_rust;
-
-use std::sync::mpsc::{channel};
-use std::sync::Mutex;
-
-use mixer::service_grpc::MixerClient;
-use mixer::attributes::Attributes;
-use mixer::service_grpc::Mixer;
-use mixer::check::CheckRequest;
 
 use ngx_rust::bindings::ngx_http_request_s;
 use ngx_rust::bindings::ngx_int_t;
-use ngx_rust::bindings::NGX_OK;
+use ngx_rust::bindings::{ NGX_OK, NGX_DECLINED };
 use ngx_rust::nginx_http::log;
 
 
 use super::mixer_location::ngx_http_mixer_main_conf_t;
 
 use attribute::attr_wrapper::AttributeWrapper;
-use attribute::global_dict::GlobalDictionary;
-use attribute::message_dict::MessageDictionary;
-use super::message::Channels;
-use super::message::MixerInfo;
 use super::request::process_request_attribute;
+use istio_client::info::MixerServerInfo;
+
 
 
 
@@ -34,6 +21,7 @@ use attribute::global_dict::TARGET_UID;
 
 use istio_client::mixer_client_wrapper::MixerClientWrapper;
 
+/*
 
 // initialize channel that can be shared
 lazy_static! {
@@ -63,23 +51,55 @@ pub fn mixer_check_background()  {
 
     }
 }
+*/
+
+
+struct MixerInfo  {
+    pub server_name: String,
+    pub server_port: u16,
+    pub attributes: AttributeWrapper
+}
 
 
 
-// send to background thread using channels
-fn send_dispatcher(main_config: &ngx_http_mixer_main_conf_t, attr: Attributes)  {
+impl MixerServerInfo for MixerInfo  {
+
+
+    fn get_server_name(&self) -> &str {
+        &self.server_name
+    }
+
+    fn get_server_port(&self) -> u16 {
+        self.server_port
+    }
+
+    fn get_attributes(&self) -> &AttributeWrapper {
+        &self.attributes
+    }
+}
+
+
+lazy_static! {
+    static ref DEFAULT_MIXER_CLIENT: MixerClientWrapper = MixerClientWrapper::new();
+}
+
+
+
+// perform check
+fn check(main_config: &ngx_http_mixer_main_conf_t, attr: AttributeWrapper) -> bool {
 
     let server_name = main_config.mixer_server.to_str();
     let server_port = main_config.mixer_port as u16;
 
-    let tx = CHANNELS.tx.lock().unwrap().clone();
     let info = MixerInfo { server_name: String::from(server_name), server_port: server_port, attributes: attr};
-    tx.send(info.clone());
+    let result = DEFAULT_MIXER_CLIENT.check(&info);
 
 
    // log(&format!("server: {}, port {}",server_name, server_port));
 
     log(&format!("send attribute to mixer check background task"));
+
+    true
 
 }
 
@@ -90,13 +110,13 @@ pub extern fn nginmesh_mixer_check_handler(request: &ngx_http_request_s,main_con
     log(&format!("rust mixer function called "));
 
 
-    let mut attr_wrapper = AttributeWrapper::new();
-    process_istio_attr(main_config,&mut attr_wrapper);
-    process_request_attribute(request, &mut attr_wrapper);
+    let mut attributes = AttributeWrapper::new();
+    process_istio_attr(main_config,&mut attributes);
+    process_request_attribute(request, &mut attributes);
 
-    let mut message_dict = MessageDictionary::new(GlobalDictionary::new());
-    let attributes = attr_wrapper.as_attributes(&mut message_dict);
-    send_dispatcher(main_config, attributes);
+    if !check(main_config,attributes) {
+        return NGX_DECLINED as ngx_int_t;
+    }
 
     return NGX_OK as ngx_int_t;
 }

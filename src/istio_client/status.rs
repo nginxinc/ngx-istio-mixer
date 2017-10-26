@@ -35,6 +35,7 @@ pub fn from_int(code: i32) -> StatusCodeEnum  {
     };
 }
 
+#[derive(Clone)]
 pub struct Status {
 
     error_code:  StatusCodeEnum,
@@ -46,6 +47,14 @@ impl Status  {
     pub fn new() -> Status  {
         Status  {
             error_code: StatusCodeEnum::OK,
+            error_message: None
+        }
+    }
+
+
+    pub fn with_code( code: StatusCodeEnum) -> Status {
+        Status {
+            error_code: code,
             error_message: None
         }
     }
