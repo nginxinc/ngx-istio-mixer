@@ -2,11 +2,16 @@
  * mixer client, based on Istio mixer client implementation
  */
 use super::options::{ CheckOptions, ReportOptions, QuotaOptions };
-use super::info::MixerServerInfo;
+use super::common::MixerServerInfo;
 use super::check_cache::CheckCache;
-use super::check_cache::CheckResult;
 use super::quota_cache::QuotaCache;
 use super::status:: { Status, StatusCodeEnum };
+use mixer::check::CheckRequest;
+use mixer::check::CheckResponse;
+use attribute::global_dict::GlobalDictionary;
+use attribute::message_dict::MessageDictionary;
+
+use ngx_rust::nginx_http::log;
 
 pub struct MixerClientOptions  {
 
@@ -47,74 +52,34 @@ impl MixerClientWrapper  {
         }
     }
 
-    pub fn check(&self, mixer_info: &MixerServerInfo) -> Status  {
+    pub fn check(&self, mixer_info: &MixerServerInfo,
+                 transport: fn(request: CheckRequest, info: &MixerServerInfo)) -> Status  {
 
 
-        let result = self.check_cache.check(mixer_info.get_attributes());
+        let attribute_wrapper = mixer_info.get_attributes();
+        let result = self.check_cache.check(attribute_wrapper);
         if result.is_cache_hit() && !result.get_status().ok() {
             // on_done(check_result->status());
             return Status::with_code(StatusCodeEnum::NOT_FOUND);
 
         }
 
-        /*
-        converter_.Convert(attributes, request.mutable_attributes());
-        request.set_global_word_count(converter_.global_word_count());
-        request.set_deduplication_id(deduplication_id_base_ +
-            std::to_string(deduplication_id_.fetch_add(1)));
-
-        // Need to make a copy for processing the response for check cache.
-        Attributes *request_copy = new Attributes(attributes);
-        auto response = new CheckResponse;
-        // Lambda capture could not pass unique_ptr, use raw pointer.
-        CheckCache::CheckResult *raw_check_result = check_result.release();
-        QuotaCache::CheckResult *raw_quota_result = quota_result.release();
-        if (!transport) {
-            transport = options_.check_transport;
-        }
-        return transport(
-            request, response, [this, request_copy, response, raw_check_result,
-                raw_quota_result, on_done](const Status &status) {
-        raw_check_result->SetResponse(status, *request_copy, *response);
-        raw_quota_result->SetResponse(status, *request_copy, *response);
-        if (on_done) {
-        if (!raw_check_result->status().ok()) {
-        on_done(raw_check_result->status());
-        } else {
-        on_done(raw_quota_result->status());
-        }
-        }
-        delete raw_check_result;
-        delete raw_quota_result;
-        delete request_copy;
-        delete response;
-
-        if (InvalidDictionaryStatus(status)) {
-        converter_.ShrinkGlobalDictionary();
-        }
-        });
-
-        let client = MixerClient::new_plain( &info.server_name, info.server_port , Default::default()).expect("init");
+        let mut message_dict = MessageDictionary::new(GlobalDictionary::new());
+        let attributes = attribute_wrapper.as_attributes(&mut message_dict);
 
         let mut check_request = CheckRequest::new();
-        check_request.set_attributes(info.attributes);
+        check_request.set_attributes(attributes);
+        check_request.set_global_word_count(message_dict.global_dict_size() as u32);
 
-        let result = client.check(grpc::RequestOptions::new(), check_request).wait();
+        log(&format!("ready to send check"));
+        /*
+        let response_closure = | response: CheckResponse | {
+            log(&format!("response is ready to process in client wrapper"));
+        };
+        */
+        transport(check_request, mixer_info);
 
-        //       log(&format!("mixer check {:?}",result));
-        match result   {
-            Ok(response) =>  {
-                let (m1, check_response, m2) = response;
-                cache.set_reponse(&check_response);
-            },
-
-            Err(err)  =>  {
-                // TODO: fix log error to nginx error logger
-                log(&format!("error calling check {:?}",err));
-            }
-
-        }*/
-
+        log(&format!("returning ok for check"));
         Status::new()
     }
 }

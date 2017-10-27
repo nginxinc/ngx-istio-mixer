@@ -220,10 +220,13 @@ impl GlobalDictionary  {
 
     // find index in the global dictionary
     pub fn index_of(&self, name: &str ) -> Option<&i32> {
-       self.global_dict.get(name)
+        self.global_dict.get(name)
     }
 
 
+    pub fn size(&self) -> usize  {
+        GLOBAL_LIST.len()
+    }
 
 }
 

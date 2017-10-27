@@ -1,4 +1,8 @@
 
+extern crate grpc;
+extern crate futures;
+
+use grpc::RequestOptions;
 use ngx_rust::bindings::ngx_http_request_s;
 use ngx_rust::bindings::ngx_int_t;
 use ngx_rust::bindings::{ NGX_OK, NGX_DECLINED };
@@ -9,10 +13,10 @@ use super::mixer_location::ngx_http_mixer_main_conf_t;
 
 use attribute::attr_wrapper::AttributeWrapper;
 use super::request::process_request_attribute;
-use istio_client::info::MixerServerInfo;
-
-
-
+use istio_client::common::MixerServerInfo;
+use mixer::service_grpc::MixerClient;
+use mixer::service_grpc::Mixer;
+use mixer::check:: { CheckRequest, CheckResponse };
 
 use attribute::global_dict::TARGET_SERVICE;
 use attribute::global_dict::TARGET_IP;
@@ -21,37 +25,6 @@ use attribute::global_dict::TARGET_UID;
 
 use istio_client::mixer_client_wrapper::MixerClientWrapper;
 
-/*
-
-// initialize channel that can be shared
-lazy_static! {
-    static ref CHANNELS: Channels<MixerInfo> = {
-        let (tx, rx) = channel();
-
-        Channels {
-            tx: Mutex::new(tx),
-            rx: Mutex::new(rx),
-        }
-    };
-}
-
-
-// process check event in the background
-pub fn mixer_check_background()  {
-
-    let rx = CHANNELS.rx.lock().unwrap();
-    let client = MixerClientWrapper::new();
-
-    loop {
-        log(&format!("mixer check thread waiting"));
-        let info = rx.recv().unwrap();
-        log(&format!("mixer check thread woke up"));
-
-        let result = client.check(&info);
-
-    }
-}
-*/
 
 
 struct MixerInfo  {
@@ -84,6 +57,34 @@ lazy_static! {
 }
 
 
+fn transport(request: CheckRequest, info: &MixerServerInfo) {
+
+    let client = MixerClient::new_plain( info.get_server_name(), info.get_server_port() , Default::default()).expect("init");
+
+    log(&format!("sending check request: {:?}",request));
+
+    let result = client.check(RequestOptions::new(), request).wait();
+
+
+    //       log(&format!("mixer check {:?}",result));
+    match result   {
+        Ok(response) =>  {
+            let (m1, check_response, m2) = response;
+            log(&format!("received check response {:?}",check_response));
+           // on_complete(response);
+            // need function pointer
+        },
+
+        Err(err)  =>  {
+            // TODO: fix log error to nginx error logger
+            log(&format!("error calling check {:?}",err));
+        }
+
+    }
+
+
+}
+
 
 // perform check
 fn check(main_config: &ngx_http_mixer_main_conf_t, attr: AttributeWrapper) -> bool {
@@ -92,8 +93,7 @@ fn check(main_config: &ngx_http_mixer_main_conf_t, attr: AttributeWrapper) -> bo
     let server_port = main_config.mixer_port as u16;
 
     let info = MixerInfo { server_name: String::from(server_name), server_port: server_port, attributes: attr};
-    let result = DEFAULT_MIXER_CLIENT.check(&info);
-
+    let result = DEFAULT_MIXER_CLIENT.check(&info,transport);
 
    // log(&format!("server: {}, port {}",server_name, server_port));
 

@@ -8,7 +8,7 @@ mod cache_elem;
 
 pub mod options;
 pub mod mixer_client_wrapper;
-pub mod info;
+pub mod common;
 
 mod status;
 

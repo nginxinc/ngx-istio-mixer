@@ -48,6 +48,10 @@ impl MessageDictionary  {
 
     }
 
+    pub fn global_dict_size(&self) -> usize {
+        self.global_dict.size()
+    }
+
 }
 
 

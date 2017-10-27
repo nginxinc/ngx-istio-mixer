@@ -1,3 +1,5 @@
+// This file contains common traits shared among modules
+
 use attribute::attr_wrapper::AttributeWrapper;
 
 pub trait MixerServerInfo  {
@@ -8,3 +10,4 @@ pub trait MixerServerInfo  {
 
     fn get_attributes(&self) -> &AttributeWrapper;
 }
+
