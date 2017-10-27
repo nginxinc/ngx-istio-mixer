@@ -8,22 +8,21 @@ use ngx_rust::bindings::ngx_int_t;
 use ngx_rust::bindings::{ NGX_OK, NGX_DECLINED };
 use ngx_rust::nginx_http::log;
 
-
 use super::mixer_location::ngx_http_mixer_main_conf_t;
 
 use attribute::attr_wrapper::AttributeWrapper;
 use super::request::process_request_attribute;
-use istio_client::common::MixerServerInfo;
+use istio_client::common::{ MixerServerInfo, TransportCallback };
 use mixer::service_grpc::MixerClient;
 use mixer::service_grpc::Mixer;
-use mixer::check:: { CheckRequest, CheckResponse };
+use mixer::check:: { CheckRequest };
 
 use attribute::global_dict::TARGET_SERVICE;
 use attribute::global_dict::TARGET_IP;
 use attribute::global_dict::TARGET_UID;
 
 
-use istio_client::mixer_client_wrapper::MixerClientWrapper;
+use istio_client::mixer_client_wrapper::MixerClientWrapper ;
 
 
 
@@ -51,13 +50,12 @@ impl MixerServerInfo for MixerInfo  {
     }
 }
 
-
 lazy_static! {
     static ref DEFAULT_MIXER_CLIENT: MixerClientWrapper = MixerClientWrapper::new();
 }
 
 
-fn transport(request: CheckRequest, info: &MixerServerInfo) {
+fn transport(request: CheckRequest, info: &MixerServerInfo, on_complete: &mut TransportCallback)  {
 
     let client = MixerClient::new_plain( info.get_server_name(), info.get_server_port() , Default::default()).expect("init");
 
@@ -71,7 +69,7 @@ fn transport(request: CheckRequest, info: &MixerServerInfo) {
         Ok(response) =>  {
             let (m1, check_response, m2) = response;
             log(&format!("received check response {:?}",check_response));
-           // on_complete(response);
+             on_complete.invoke(&check_response);
             // need function pointer
         },
 

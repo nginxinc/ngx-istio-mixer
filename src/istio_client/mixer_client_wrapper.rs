@@ -1,8 +1,9 @@
 /**
  * mixer client, based on Istio mixer client implementation
  */
+
 use super::options::{ CheckOptions, ReportOptions, QuotaOptions };
-use super::common::MixerServerInfo;
+use super::common::{ MixerServerInfo, TransportCallback };
 use super::check_cache::CheckCache;
 use super::quota_cache::QuotaCache;
 use super::status:: { Status, StatusCodeEnum };
@@ -10,6 +11,7 @@ use mixer::check::CheckRequest;
 use mixer::check::CheckResponse;
 use attribute::global_dict::GlobalDictionary;
 use attribute::message_dict::MessageDictionary;
+
 
 use ngx_rust::nginx_http::log;
 
@@ -33,6 +35,10 @@ impl MixerClientOptions {
     }
 }
 
+pub trait MixerAbstractClient  {
+    fn check<T>(&self, mixer_info: &MixerServerInfo, transport: fn(request: CheckRequest, info: &MixerServerInfo, &mut TransportCallback)) -> Status;
+}
+
 pub struct MixerClientWrapper {
 
     options: MixerClientOptions,
@@ -40,8 +46,7 @@ pub struct MixerClientWrapper {
     quota_cache: QuotaCache
 }
 
-
-impl MixerClientWrapper  {
+impl MixerClientWrapper {
 
     pub fn new() -> MixerClientWrapper {
 
@@ -52,8 +57,9 @@ impl MixerClientWrapper  {
         }
     }
 
+
     pub fn check(&self, mixer_info: &MixerServerInfo,
-                 transport: fn(request: CheckRequest, info: &MixerServerInfo)) -> Status  {
+                    transport: fn(request: CheckRequest, info: &MixerServerInfo, &mut TransportCallback)) -> Status  {
 
 
         let attribute_wrapper = mixer_info.get_attributes();
@@ -72,14 +78,16 @@ impl MixerClientWrapper  {
         check_request.set_global_word_count(message_dict.global_dict_size() as u32);
 
         log(&format!("ready to send check"));
-        /*
-        let response_closure = | response: CheckResponse | {
+
+        let response_closure = | response: &CheckResponse | {
             log(&format!("response is ready to process in client wrapper"));
         };
-        */
-        transport(check_request, mixer_info);
+
+        let mut callback = TransportCallback { callback: Box::new(response_closure) };
+        transport(check_request, mixer_info, &mut callback );
 
         log(&format!("returning ok for check"));
         Status::new()
     }
+
 }
