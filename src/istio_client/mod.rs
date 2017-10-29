@@ -8,7 +8,6 @@ mod cache_elem;
 
 pub mod options;
 pub mod mixer_client_wrapper;
-pub mod common;
 
 
 #[cfg(test)]

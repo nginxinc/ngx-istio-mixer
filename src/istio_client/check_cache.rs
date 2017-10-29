@@ -133,7 +133,8 @@ impl CheckResult {
 
     pub fn set_response(&mut self, cache: &CheckCache,status: Status,attributes: &AttributeWrapper, response: &CheckResponse) {
         let handler = self.on_response;
-       // self.set_status(handler(cache, status,mut self,attributes,response));
+        let status = handler(cache, status,self,attributes,response);
+        self.set_status(status);
     }
 
         /*
@@ -207,8 +208,8 @@ fn test_check_result_cache_hit() {
     assert_eq!(cache_result.is_cache_hit(),true);
 }
 
-fn test_response2(cache: &CheckCache,status: Status,result: &mut CheckResult, attributes: &AttributeWrapper, response: &CheckResponse) -> Status {
-    Status::new()
+fn test_response2(cache: &CheckCache,status: Status,result: &mut CheckResult, attributes: &AttributeWrapper, _response: &CheckResponse) -> Status {
+    status
 }
 
 #[test]
