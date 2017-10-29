@@ -16,6 +16,7 @@ mod ngx;
 mod mixer;
 mod attribute;
 mod istio_client;
+mod transport;
 
 pub use ngx::mixer_thread::nginmesh_mixer_init;
 pub use ngx::mixer_thread::nginmesh_mixer_exit;

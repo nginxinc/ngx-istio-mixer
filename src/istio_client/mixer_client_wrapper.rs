@@ -1,14 +1,16 @@
 /**
  * mixer client, based on Istio mixer client implementation
  */
+extern crate futures;
+extern crate grpc;
 
+use futures::Future;
 use super::options::{ CheckOptions, ReportOptions, QuotaOptions };
-use super::common::{ MixerServerInfo, TransportCallback };
-use super::check_cache::CheckCache;
+use super::check_cache:: { CheckCache } ;
 use super::quota_cache::QuotaCache;
-use super::status:: { Status, StatusCodeEnum };
-use mixer::check::CheckRequest;
-use mixer::check::CheckResponse;
+use transport::status:: { Status, StatusCodeEnum };
+use transport::mixer_grpc::Transport;
+use mixer::check:: { CheckRequest, CheckResponse} ;
 use attribute::global_dict::GlobalDictionary;
 use attribute::message_dict::MessageDictionary;
 
@@ -35,9 +37,7 @@ impl MixerClientOptions {
     }
 }
 
-pub trait MixerAbstractClient  {
-    fn check<T>(&self, mixer_info: &MixerServerInfo, transport: fn(request: CheckRequest, info: &MixerServerInfo, &mut TransportCallback)) -> Status;
-}
+
 
 pub struct MixerClientWrapper {
 
@@ -58,18 +58,24 @@ impl MixerClientWrapper {
     }
 
 
-    pub fn check(&self, mixer_info: &MixerServerInfo,
-                    transport: fn(request: CheckRequest, info: &MixerServerInfo, &mut TransportCallback)) -> Status  {
+   // pub fn check<T: Transport,F>(&self,transport: T) -> F where F: Future<Item = CheckResponse >  {
+    pub fn check<T: Transport>(&self,transport: T) -> grpc::SingleResponse<CheckResponse>  {
+
+        let attribute_wrapper = transport.get_attributes();
+
+        /*
+            TODO: implement cache,
+            this should return future with immediate value
+            let result = self.check_cache.check(attribute_wrapper);
+            if result.is_cache_hit() && !result.get_status().ok() {
+                // on_done(check_result->status());
+                return Status::with_code(StatusCodeEnum::NOT_FOUND);
+
+            }
+        */
 
 
-        let attribute_wrapper = mixer_info.get_attributes();
-        let result = self.check_cache.check(attribute_wrapper);
-        if result.is_cache_hit() && !result.get_status().ok() {
-            // on_done(check_result->status());
-            return Status::with_code(StatusCodeEnum::NOT_FOUND);
-
-        }
-
+        // prepare input for check
         let mut message_dict = MessageDictionary::new(GlobalDictionary::new());
         let attributes = attribute_wrapper.as_attributes(&mut message_dict);
 
@@ -79,15 +85,16 @@ impl MixerClientWrapper {
 
         log(&format!("ready to send check"));
 
-        let response_closure = | response: &CheckResponse | {
-            log(&format!("response is ready to process in client wrapper"));
-        };
+        // return future
+        /*
+        transport.check(check_request).map( | response|  {
+            log(&format!("result {:?}",response));
+            Status::with_code(StatusCodeEnum::OK)
+        })
+        */
+        transport.check(check_request)
 
-        let mut callback = TransportCallback { callback: Box::new(response_closure) };
-        transport(check_request, mixer_info, &mut callback );
 
-        log(&format!("returning ok for check"));
-        Status::new()
     }
 
 }

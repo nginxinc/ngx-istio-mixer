@@ -1,27 +1,29 @@
 // This file contains common traits shared among modules
 
-use attribute::attr_wrapper::AttributeWrapper;
-use mixer::check::CheckResponse;
+use mixer::check::{ CheckResponse } ;
+use transport::status:: { Status  };
 
-pub trait MixerServerInfo  {
 
-    fn get_server_name(&self) -> &str;
 
-    fn get_server_port(&self) -> u16;
 
-    fn get_attributes(&self) -> &AttributeWrapper;
-}
-
+// return status given checkresponse
 pub struct TransportCallback {
-    pub callback: Box<FnMut(&CheckResponse)>,
+    pub callback: Box<FnMut(&CheckResponse, Status)>,
 }
 
 impl TransportCallback {
-    fn set_callback<CB: 'static + FnMut(&CheckResponse)>(&mut self, c: CB) {
+    fn set_callback<CB: 'static + FnMut(&CheckResponse, Status)>(&mut self, c: CB) {
         self.callback = Box::new(c);
     }
 
-    pub fn invoke(&mut self,response: &CheckResponse) {
-        (self.callback)(response);
+    pub fn invoke(&mut self,response: &CheckResponse,status: Status) {
+        (self.callback)(response, status);
     }
+}
+
+// trait for when check is done
+pub trait CheckDoneCallBack {
+
+    fn invoke();
+
 }

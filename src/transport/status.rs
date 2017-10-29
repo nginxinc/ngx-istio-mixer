@@ -3,6 +3,7 @@ use std::mem;
 
 // https://github.com/google/protobuf/blob/master/src/google/protobuf/stubs/status.h
 
+#[allow(non_snake_case)]
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum StatusCodeEnum {
 

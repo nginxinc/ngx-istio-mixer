@@ -5,77 +5,24 @@ use std::collections::HashMap;
 use std::clone::Clone;
 
 use mixer::check::CheckResponse;
-use mixer::check::ReferencedAttributes_Condition;
-use ngx_rust::nginx_http::log;
-use super::status::StatusCodeEnum;
+use transport::status::{ Status, StatusCodeEnum} ;
 use super::options::CheckOptions;
-use super::status::Status;
 use attribute::attr_wrapper::AttributeWrapper;
 use super::lru_cache::LRUCache;
 use super::referenced::Referenced;
 
 
 
-/*
-impl Hash for CheckResponse {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-
-        let condition = self.get_precondition();
-        let attributes = condition.get_attributes();
-        let status = condition.get_status();
-        let valid_duration = condition.get_valid_duration();
-        let use_count = condition.get_valid_use_count();
-        let ref_attr = condition.get_referenced_attributes();
-        //   let quota  = response.get_quotas();
- 
-        log(&format!("check attributes :{:?} ",attributes));
-         log(&format!("check ref attributes :{:?} ",ref_attr));
-        log(&format!("success calling check status:{:?}, duration: {:?}",
-        status,valid_duration));
-
-        let words = ref_attr.get_words();
-        let matches = ref_attr.get_attribute_matches();
-        log(&format!(" ref attr words :{:?} ",words));
-        log(&format!(" ref attr matches :{:?} ",matches));
-
-        for condition in matches  {
-           
-            let name = condition.get_name();
-            let condition = condition.get_condition();
-
-             log(&format!("condition name :{:?} ",name));  
-            
-             match condition  {
-                 ReferencedAttributes_Condition::CONDITION_UNSPECIFIED =>   {
-                     log(&format!("unspecified"))
-                 },
-                 ReferencedAttributes_Condition::ABSENCE =>  {
-                     log(&format!("absence"))
-                 },
-                 ReferencedAttributes_Condition::EXACT =>  {
-                     log(&format!("exact"))
-                 }
-                 ReferencedAttributes_Condition::REGEX =>  {
-                     log(&format!("regex"))
-                 }
-             }
-
-        }
-    }
-}
-*/
-
-
-fn on_response(check_cache: &CheckCache,status: Status, attributes: &AttributeWrapper, response: &CheckResponse) -> Status {
+fn on_response(cache: &CheckCache,status: Status,result: &mut CheckResult, attributes: &AttributeWrapper, response: &CheckResponse) -> Status {
 
     if !status.ok() {
-        if check_cache.options.network_fail_open {
+        if cache.options.network_fail_open {
             return Status::new();
         }  else {
             return status;
         }
     } else {
-        return check_cache.cache_response(attributes,response,SystemTime::now());
+        return cache.cache_response(attributes,response,SystemTime::now());
     }
 
 }
@@ -156,13 +103,13 @@ impl CheckCache  {
 pub struct CheckResult {
 
     status: Status,
-    on_response: fn(&CheckCache,Status,&AttributeWrapper,&CheckResponse) -> Status
+    on_response: fn(cache: &CheckCache,status: Status,result: &mut CheckResult, attributes: &AttributeWrapper, response: &CheckResponse) -> Status
 
 }
 
 impl CheckResult {
 
-    pub fn new( on_response: fn(&CheckCache,Status,&AttributeWrapper,&CheckResponse) -> Status) -> CheckResult {
+    pub fn new( on_response: fn(cache: &CheckCache,status: Status,result: &mut CheckResult,attributes: &AttributeWrapper, response: &CheckResponse) -> Status) -> CheckResult {
         CheckResult {
             status: Status::new(),
             on_response
@@ -184,9 +131,9 @@ impl CheckResult {
 
 
 
-    pub fn set_response(&mut self, cache: &CheckCache,status: Status, attributes: &AttributeWrapper,response: &CheckResponse) {
+    pub fn set_response(&mut self, cache: &CheckCache,status: Status,attributes: &AttributeWrapper, response: &CheckResponse) {
         let handler = self.on_response;
-        self.set_status(handler(cache,status,attributes,response));
+       // self.set_status(handler(cache, status,mut self,attributes,response));
     }
 
         /*
@@ -247,7 +194,7 @@ impl CheckResult {
 }
 
 
-fn test_response1(check_cache: &CheckCache,status: Status, attributes: &AttributeWrapper, response: &CheckResponse) -> Status {
+fn test_response1(cache: &CheckCache,status: Status,result: &mut CheckResult, attributes: &AttributeWrapper, response: &CheckResponse) -> Status {
     Status::new()
 }
 
@@ -260,13 +207,12 @@ fn test_check_result_cache_hit() {
     assert_eq!(cache_result.is_cache_hit(),true);
 }
 
-fn test_response2(check_cache: &CheckCache,status: Status, attributes: &AttributeWrapper, response: &CheckResponse) -> Status {
-    status
+fn test_response2(cache: &CheckCache,status: Status,result: &mut CheckResult, attributes: &AttributeWrapper, response: &CheckResponse) -> Status {
+    Status::new()
 }
 
 #[test]
 fn test_check_result_set_response()  {
-
 
 
     let mut check_result = CheckResult::new(test_response2);
