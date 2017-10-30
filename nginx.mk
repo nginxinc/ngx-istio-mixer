@@ -47,17 +47,13 @@ setup:
 	mkdir build/crates
 	tar zxf build/vendor/protoc.zip -C build/crates
 	tar zxf build/vendor/ngx-rust-tar.zip -C build/crates
-	tar zxf build/vendor/mixerclient.zip -C build/crates
+
 
 nginx-build:
 	cd nginx/${NGINX_SRC}; \
 	./configure --prefix=${PWD}/nginx/install $(NGX_OPT); \
 	make; \
 	make install
-
-
-mixer-client:
-	cd build/crates/mixerclient; bazel build mixer_client_lib	
 
 
 setup-nginx:
