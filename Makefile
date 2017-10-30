@@ -6,12 +6,12 @@ include nginx.mk
 
 clean:
 	cargo clean
-	rm -f src/mixer/attributes.rs
-	rm -f src/mixer/status.rs
-	rm -f src/mixer/check.rs
-	rm -f src/mixer/quota.rs
-	rm -f src/mixer/report.rs
-	rm -f src/mixer/service_grpc.rs
+	rm -f ${MIXER_CRATE}/src/mixer/attributes.rs
+	rm -f ${MIXER_CRATE}/src/mixer/status.rs
+	rm -f ${MIXER_CRATE}/src/mixer/check.rs
+	rm -f ${MIXER_CRATE}/src/mixer/quota.rs
+	rm -f ${MIXER_CRATE}/src/mixer/report.rs
+	rm -f ${MIXER_CRATE}/src/mixer/service_grpc.rs
 	rm -f module/*.so
 	rm -rf build/crates
 	rm -rf build/context
