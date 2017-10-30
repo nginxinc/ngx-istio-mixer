@@ -6,6 +6,7 @@ use std::vec::Vec;
 /**
  * convert istio headers into a single string that can be sent as http header
 */
+#[allow(dead_code)]
 pub fn encode_istio_header(headers: &Vec<(&str,&str)>)  -> String {
 
     // for now we do simple serialize, we can convert to same format as envoy for version 0.2 with new mixer API
@@ -23,6 +24,7 @@ pub fn encode_istio_header(headers: &Vec<(&str,&str)>)  -> String {
 }
 
 // decode istio header and convert to map
+#[allow(dead_code)]
 pub fn decode_istio_header(encoded_string: &str) -> HashMap<String,String>   {
 
     let decode_bytes = &decode(encoded_string).unwrap()[..];

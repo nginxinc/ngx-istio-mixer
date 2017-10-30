@@ -21,7 +21,7 @@ impl Clone for CacheElem {
     }
 }
 
-
+#[allow(dead_code)]
 impl  CacheElem  {
 
     pub fn new() -> CacheElem  {

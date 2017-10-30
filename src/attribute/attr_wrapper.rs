@@ -9,7 +9,7 @@ use std::hash::{Hash };
 
 use super::message_dict::MessageDictionary;
 
-
+#[allow(dead_code)]
 enum AttrValue  {
     StrValue(String),
     I64(i64),
@@ -35,17 +35,14 @@ impl AttributeWrapper  {
         }
     }
 
-
+    #[allow(dead_code)]
     pub fn key_exists(&self, key: &str) -> bool  {
 
-        if let Some(value) = self.values.get(key)  {
-            return true;
-        }
-
-        false
+        self.values.contains_key(key)
     }
 
     // hash the value found
+    #[allow(dead_code)]
     pub fn hash(&self, key: &str,hashing: &mut DefaultHasher)  {
 
         if let Some(value) = self.values.get(key)  {
@@ -69,7 +66,7 @@ impl AttributeWrapper  {
                     t_value.get_seconds().hash(hashing)
                 }
                 &AttrValue::StringMap(ref str_value) => {
-                    for (key, value) in str_value.iter() {
+                    for (_key, value) in str_value.iter() {
                         value.hash(hashing);
                     }
                 }
@@ -94,10 +91,12 @@ impl AttributeWrapper  {
         self.insert_value(key,AttrValue::I64(value));
     }
 
+    #[allow(dead_code)]
     pub fn insert_f64_attribute(&mut self, key: &str, value: f64) {
         self.insert_value(key,AttrValue::Double(value));
     }
 
+    #[allow(dead_code)]
     pub fn insert_bool_attribute(&mut self, key: &str, value: bool) {
         self.insert_value(key,AttrValue::Bool(value));
     }

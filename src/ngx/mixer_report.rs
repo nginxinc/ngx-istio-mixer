@@ -75,7 +75,7 @@ pub fn mixer_report_background()  {
 
         let result = resp.wait();
 
-        log(&format!("mixer report thread: finished sending to mixer"));
+        log(&format!("mixer report thread: finished sending to mixer, {:?}",result));
     }
 }
 
@@ -153,7 +153,7 @@ fn process_response_attribute(request: &ngx_http_request_s, attr: &mut Attribute
     attr.insert_int64_attribute(RESPONSE_CODE, headers_out.status as i64);
     attr.insert_int64_attribute(RESPONSE_SIZE, headers_out.content_length_n);
 
-    let duration = headers_out.date_time - request.start_sec;
+    //let duration = headers_out.date_time - request.start_sec;
     attr.insert_int64_attribute(RESPONSE_DURATION, 5000);
 
     // fill in the string value

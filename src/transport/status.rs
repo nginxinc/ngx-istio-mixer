@@ -37,7 +37,7 @@ pub fn from_int(code: i32) -> StatusCodeEnum  {
     };
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Status {
 
     error_code:  StatusCodeEnum,

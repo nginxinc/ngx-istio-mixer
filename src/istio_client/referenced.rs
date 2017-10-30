@@ -7,12 +7,14 @@ use attribute::attr_wrapper::AttributeWrapper;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
+#[allow(dead_code)]
 pub struct Referenced {
 
     absence_keys: Vec<String>,
     exact_Keys: Vec<String>
 }
 
+#[allow(dead_code)]
 impl Referenced {
 
     pub fn new() -> Referenced {

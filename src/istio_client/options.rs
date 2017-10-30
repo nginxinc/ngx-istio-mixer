@@ -11,6 +11,7 @@ pub struct CheckOptions {
    pub network_fail_open: bool
 }
 
+#[allow(dead_code)]
 impl CheckOptions  {
 
   pub fn new() -> CheckOptions  {

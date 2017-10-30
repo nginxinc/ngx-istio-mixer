@@ -12,8 +12,8 @@ use super::lru_cache::LRUCache;
 use super::referenced::Referenced;
 
 
-
-fn on_response(cache: &CheckCache,status: Status,result: &mut CheckResult, attributes: &AttributeWrapper, response: &CheckResponse) -> Status {
+#[allow(dead_code)]
+fn on_response(cache: &CheckCache,status: Status,_result: &mut CheckResult, attributes: &AttributeWrapper, response: &CheckResponse) -> Status {
 
     if !status.ok() {
         if cache.options.network_fail_open {
@@ -27,6 +27,7 @@ fn on_response(cache: &CheckCache,status: Status,result: &mut CheckResult, attri
 
 }
 
+#[allow(dead_code)]
 pub struct CheckCache {
 
     options: CheckOptions,
@@ -35,7 +36,7 @@ pub struct CheckCache {
 }
 
 
-
+#[allow(dead_code)]
 impl CheckCache  {
 
 
@@ -62,7 +63,7 @@ impl CheckCache  {
     }
 
 
-    fn cache_response(&self, attributes: &AttributeWrapper, response: &CheckResponse, time_now: SystemTime) -> Status {
+    fn cache_response(&self, _attributes: &AttributeWrapper, _response: &CheckResponse, _time_now: SystemTime) -> Status {
         return Status::new()
     }
 
@@ -99,7 +100,7 @@ impl CheckCache  {
 }
 
 
-
+#[allow(dead_code)]
 pub struct CheckResult {
 
     status: Status,
@@ -107,6 +108,7 @@ pub struct CheckResult {
 
 }
 
+#[allow(dead_code)]
 impl CheckResult {
 
     pub fn new( on_response: fn(cache: &CheckCache,status: Status,result: &mut CheckResult,attributes: &AttributeWrapper, response: &CheckResponse) -> Status) -> CheckResult {
@@ -194,8 +196,8 @@ impl CheckResult {
 
 }
 
-
-fn test_response1(cache: &CheckCache,status: Status,result: &mut CheckResult, attributes: &AttributeWrapper, response: &CheckResponse) -> Status {
+#[allow(dead_code)]
+fn test_response1(_cache: &CheckCache,_status: Status,_result: &mut CheckResult, _attributes: &AttributeWrapper, _response: &CheckResponse) -> Status {
     Status::new()
 }
 
@@ -208,8 +210,9 @@ fn test_check_result_cache_hit() {
     assert_eq!(cache_result.is_cache_hit(),true);
 }
 
-fn test_response2(cache: &CheckCache,status: Status,result: &mut CheckResult, attributes: &AttributeWrapper, _response: &CheckResponse) -> Status {
-    status
+#[allow(dead_code)]
+fn test_response2(_cache: &CheckCache,_status: Status,_result: &mut CheckResult, _attributes: &AttributeWrapper, _response: &CheckResponse) -> Status {
+    _status
 }
 
 #[test]

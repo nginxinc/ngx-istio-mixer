@@ -27,6 +27,21 @@ fn simple_string_mapping() {
 
 }
 
+
+
+#[test]
+fn test_attr_key_exists() {
+
+     let mut attr_wrapper = AttributeWrapper::new();
+
+    attr_wrapper.insert_string_attribute("source.ip","10.0.0.0");
+    attr_wrapper.insert_string_attribute("destination.ip","10.0.0.0");
+
+    assert!(attr_wrapper.key_exists("source.ip"));
+    assert!(!attr_wrapper.key_exists("source4.ip"));
+}
+
+
 #[test]
 fn simple_int64_mapping() {
 

@@ -4,11 +4,11 @@
 extern crate futures;
 extern crate grpc;
 
-use futures::Future;
+use futures::future::Future;
 use super::options::{ CheckOptions, ReportOptions, QuotaOptions };
 use super::check_cache:: { CheckCache } ;
 use super::quota_cache::QuotaCache;
-use transport::status:: { Status, StatusCodeEnum };
+use transport::status:: { Status  };
 use transport::mixer_grpc::Transport;
 use mixer::check:: { CheckRequest, CheckResponse} ;
 use attribute::global_dict::GlobalDictionary;
@@ -58,8 +58,8 @@ impl MixerClientWrapper {
     }
 
 
-   // pub fn check<T: Transport,F>(&self,transport: T) -> F where F: Future<Item = CheckResponse >  {
-    pub fn check<T: Transport>(&self,transport: T) -> grpc::SingleResponse<CheckResponse>  {
+    pub fn check<T: Transport>(&self,transport: T) -> Box<Future<Item = CheckResponse, Error=Status>>  {
+    //pub fn check<T: Transport>(&self,transport: T) -> grpc::SingleResponse<CheckResponse>  {
 
         let attribute_wrapper = transport.get_attributes();
 
@@ -85,16 +85,7 @@ impl MixerClientWrapper {
 
         log(&format!("ready to send check"));
 
-        // return future
-        /*
-        transport.check(check_request).map( | response|  {
-            log(&format!("result {:?}",response));
-            Status::with_code(StatusCodeEnum::OK)
-        })
-        */
         transport.check(check_request)
-
-
     }
 
 }

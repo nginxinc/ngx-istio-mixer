@@ -4,13 +4,13 @@ extern crate futures;
 
 use grpc::RequestOptions;
 use transport::server_info::MixerInfo;
+use transport::status:: { Status, StatusCodeEnum };
 use mixer::service_grpc::MixerClient;
 use mixer::service_grpc::Mixer;
 use mixer::check:: { CheckRequest, CheckResponse };
 use attribute::attr_wrapper::AttributeWrapper;
-
 use ngx_rust::nginx_http::log;
-use futures::Future;
+use futures::future:: { Future,ok,err};
 
 
 
@@ -19,7 +19,7 @@ pub trait Transport {
 
     fn get_attributes(&self) -> &AttributeWrapper;
 
-    fn check(&self,request: CheckRequest) ->  grpc::SingleResponse<CheckResponse> ;
+    fn check(&self,request: CheckRequest) ->  Box<Future<Item = CheckResponse, Error=Status>> ;
 }
 
 
@@ -47,34 +47,32 @@ impl  Transport for GrpcTransport {
         &self.attributes
     }
 
-    fn check(&self,request: CheckRequest) ->  grpc::SingleResponse<CheckResponse> {
+    fn check(&self,request: CheckRequest) ->  Box<Future<Item = CheckResponse, Error=Status>> {
 
         let client = MixerClient::new_plain( self.mixer_info.get_server_name(), self.mixer_info.get_server_port() , Default::default()).expect("init");
 
         log(&format!("sending check request: {:?}",request));
 
-        /*
-        client.check(RequestOptions::new(), request).then( |result| {
+
+        Box::new(client.check(RequestOptions::new(), request).join_metadata_result().then( |result| {
 
             //       log(&format!("mixer check {:?}",result));
             match result   {
                 Ok(response) =>  {
-                    let (m1, check_response, m2) = response;
+                    let (_m1, check_response, _m2) = response;
                     log(&format!("received check response {:?}",check_response));
-                    return check_response;
+                    return ok::<CheckResponse,Status>(check_response);
                     // need function pointer
                 },
 
-                Err(err)  =>  {
+                Err(error)  =>  {
                     // TODO: fix log error to nginx error logger
-                    log(&format!("error calling check {:?}",err));
-                    return CheckResponse::new();
+                    log(&format!("error calling check {:?}",error));
+                    return err::<CheckResponse,Status>(Status::with_code(StatusCodeEnum::CANCELLED))
                 }
 
             }
-        }) */
-
-        client.check(RequestOptions::new(), request)
+        }))
 
 
     }

@@ -21,7 +21,7 @@ use attribute::global_dict::TARGET_UID;
 use istio_client::mixer_client_wrapper::MixerClientWrapper ;
 use transport::mixer_grpc::GrpcTransport;
 use transport::server_info::MixerInfo;
-
+use futures::future::Future;
 
 
 
@@ -43,9 +43,7 @@ fn check(main_config: &ngx_http_mixer_main_conf_t, attr: AttributeWrapper) -> bo
     let transport = GrpcTransport::new(info,attr);
     let result = DEFAULT_MIXER_CLIENT.check(transport).wait();
 
-   // log(&format!("server: {}, port {}",server_name, server_port));
-
-    log(&format!("send attribute to mixer check background task"));
+    log(&format!("send attribute to mixer check background task, {:?}",result));
 
     true
 

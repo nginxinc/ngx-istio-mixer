@@ -188,6 +188,7 @@ const GLOBAL_LIST: [&'static str; 159] = [
     "source.service",
 ];
 
+#[allow(dead_code)]
 pub fn Get_Global_Words() -> [&'static str; 159] {
     GLOBAL_LIST
 }
@@ -197,6 +198,7 @@ pub struct GlobalDictionary   {
 
     global_dict: HashMap<String,i32>,
 
+    #[allow(dead_code)]
     top_index: i32
 }
 
