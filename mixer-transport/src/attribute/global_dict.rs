@@ -188,7 +188,7 @@ const GLOBAL_LIST: [&'static str; 159] = [
     "source.service",
 ];
 
-#[allow(dead_code)]
+#[allow(dead_code,non_snake_case)]
 pub fn Get_Global_Words() -> [&'static str; 159] {
     GLOBAL_LIST
 }

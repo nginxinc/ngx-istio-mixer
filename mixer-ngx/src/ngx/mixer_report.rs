@@ -1,26 +1,26 @@
 extern crate grpc;
 extern crate futures;
 extern crate ngx_rust;
-
+extern crate ngx_mixer_transport;
 
 use std::str;
 use std::sync::mpsc::{channel};
 use std::sync::Mutex;
 use std::collections::HashMap;
 
-use mixer::service_grpc::MixerClient;
-use mixer::report::ReportRequest;
-use mixer::attributes::Attributes;
-use mixer::service_grpc::Mixer;
+use ngx_mixer_transport::mixer_grpc::service_grpc::MixerClient;
+use ngx_mixer_transport::mixer_grpc::report::ReportRequest;
+use ngx_mixer_transport::mixer_grpc::attributes::Attributes;
+use ngx_mixer_transport::mixer_grpc::service_grpc::Mixer;
 
 
 use protobuf::RepeatedField;
 use ngx_rust::bindings::ngx_http_request_s;
 use ngx_rust::nginx_http::log;
 
-use attribute::attr_wrapper::AttributeWrapper;
-use attribute::global_dict::GlobalDictionary;
-use attribute::message_dict::MessageDictionary;
+use ngx_mixer_transport::attribute::attr_wrapper::AttributeWrapper;
+use ngx_mixer_transport::attribute::global_dict::GlobalDictionary;
+use ngx_mixer_transport::attribute::message_dict::MessageDictionary;
 
 use super::mixer_location::ngx_http_mixer_main_conf_t;
 
@@ -29,14 +29,14 @@ use super::message::MixerInfo;
 use super::request::process_request_attribute;
 
 
-use attribute::global_dict::TARGET_SERVICE;
+use ngx_mixer_transport::attribute::global_dict::TARGET_SERVICE;
 
-use attribute::global_dict::RESPONSE_CODE;
-use attribute::global_dict::RESPONSE_DURATION;
-use attribute::global_dict::RESPONSE_SIZE;
-use attribute::global_dict::RESPONSE_HEADERS;
-use attribute::global_dict::TARGET_IP;
-use attribute::global_dict::TARGET_UID;
+use ngx_mixer_transport::attribute::global_dict::RESPONSE_CODE;
+use ngx_mixer_transport::attribute::global_dict::RESPONSE_DURATION;
+use ngx_mixer_transport::attribute::global_dict::RESPONSE_SIZE;
+use ngx_mixer_transport::attribute::global_dict::RESPONSE_HEADERS;
+use ngx_mixer_transport::attribute::global_dict::TARGET_IP;
+use ngx_mixer_transport::attribute::global_dict::TARGET_UID;
 
 
 

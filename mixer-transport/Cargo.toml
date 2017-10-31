@@ -1,0 +1,23 @@
+[package]
+name = "ngx-mixer-transport"
+version = "0.0.27"
+authors = ["Sehyo Chang   sehyo@nginx.com"]
+
+
+
+[dependencies]
+grpc		    = "0.2.1"
+protobuf        = "1.4.1"
+futures         = "0.1.14"
+futures-cpupool = "0.1.5"
+tls-api         = "0.1.8"
+httpbis         = "0.4.1"
+lazy_static     = "0.2.8"
+time            = "0.1.38"
+base64          = "0.6.0"
+
+[build-dependencies]
+protoc-rust-grpc = { path = "../build/crates/grpc-rust/protoc-rust-grpc" }
+bindgen = "0.30.0"
+
+

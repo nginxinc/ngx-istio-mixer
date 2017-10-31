@@ -1,7 +1,7 @@
 extern crate protoc_rust_grpc;
 use std::env;
 
-const MIXER_GRPC_OUT: &str  = "src/mixer";
+const MIXER_GRPC_OUT: &str  = "src/mixer_grpc";
 
 
 fn generate_protoc() {

@@ -3,7 +3,7 @@
  */
 
 
-extern crate ngx_mixer_module;
+extern crate ngx_mixer_transport;
 extern crate grpc;
 extern crate futures;
 

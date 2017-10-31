@@ -1,6 +1,6 @@
 
 extern crate ngx_rust;
-
+extern crate ngx_mixer_transport;
 
 use std::collections::HashMap;
 
@@ -9,22 +9,22 @@ use protobuf::well_known_types::Timestamp;
 use ngx_rust::bindings::ngx_http_request_s;
 use ngx_rust::nginx_http::log;
 
-use attribute::attr_wrapper::AttributeWrapper;
+use ngx_mixer_transport::attribute::attr_wrapper::AttributeWrapper;
 
 
-use attribute::global_dict::REQUEST_HEADER;
-use attribute::global_dict::REQUEST_HOST;
-use attribute::global_dict::REQUEST_METHOD;
-use attribute::global_dict::REQUEST_PATH;
-use attribute::global_dict::REQUEST_REFER;
-use attribute::global_dict::REQUEST_SCHEME;
-use attribute::global_dict::REQUEST_SIZE;
-use attribute::global_dict::REQUEST_TIME;
-use attribute::global_dict::REQUEST_USERAGENT;
-use attribute::global_dict::SOURCE_IP;
-use attribute::global_dict::SOURCE_UID;
-use attribute::global_dict::SRC_IP_HEADER;
-use attribute::global_dict::SRC_UID_HEADER;
+use ngx_mixer_transport::attribute::global_dict::REQUEST_HEADER;
+use ngx_mixer_transport::attribute::global_dict::REQUEST_HOST;
+use ngx_mixer_transport::attribute::global_dict::REQUEST_METHOD;
+use ngx_mixer_transport::attribute::global_dict::REQUEST_PATH;
+use ngx_mixer_transport::attribute::global_dict::REQUEST_REFER;
+use ngx_mixer_transport::attribute::global_dict::REQUEST_SCHEME;
+use ngx_mixer_transport::attribute::global_dict::REQUEST_SIZE;
+use ngx_mixer_transport::attribute::global_dict::REQUEST_TIME;
+use ngx_mixer_transport::attribute::global_dict::REQUEST_USERAGENT;
+use ngx_mixer_transport::attribute::global_dict::SOURCE_IP;
+use ngx_mixer_transport::attribute::global_dict::SOURCE_UID;
+use ngx_mixer_transport::attribute::global_dict::SRC_IP_HEADER;
+use ngx_mixer_transport::attribute::global_dict::SRC_UID_HEADER;
 
 
 

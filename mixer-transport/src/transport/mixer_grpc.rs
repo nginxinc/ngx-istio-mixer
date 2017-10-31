@@ -5,11 +5,10 @@ extern crate futures;
 use grpc::RequestOptions;
 use transport::server_info::MixerInfo;
 use transport::status:: { Status, StatusCodeEnum };
-use mixer::service_grpc::MixerClient;
-use mixer::service_grpc::Mixer;
-use mixer::check:: { CheckRequest, CheckResponse };
+use mixer_grpc::service_grpc::MixerClient;
+use mixer_grpc::service_grpc::Mixer;
+use mixer_grpc::check:: { CheckRequest, CheckResponse };
 use attribute::attr_wrapper::AttributeWrapper;
-use ngx_rust::nginx_http::log;
 use futures::future:: { Future,ok,err};
 
 
@@ -51,7 +50,7 @@ impl  Transport for GrpcTransport {
 
         let client = MixerClient::new_plain( self.mixer_info.get_server_name(), self.mixer_info.get_server_port() , Default::default()).expect("init");
 
-        log(&format!("sending check request: {:?}",request));
+        //log(&format!("sending check request: {:?}",request));
 
 
         Box::new(client.check(RequestOptions::new(), request).join_metadata_result().then( |result| {
@@ -60,14 +59,14 @@ impl  Transport for GrpcTransport {
             match result   {
                 Ok(response) =>  {
                     let (_m1, check_response, _m2) = response;
-                    log(&format!("received check response {:?}",check_response));
+                    //log(&format!("received check response {:?}",check_response));
                     return ok::<CheckResponse,Status>(check_response);
                     // need function pointer
                 },
 
-                Err(error)  =>  {
+                Err(_error)  =>  {
                     // TODO: fix log error to nginx error logger
-                    log(&format!("error calling check {:?}",error));
+                    //log(&format!("error calling check {:?}",error));
                     return err::<CheckResponse,Status>(Status::with_code(StatusCodeEnum::CANCELLED))
                 }
 

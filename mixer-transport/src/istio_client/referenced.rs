@@ -1,7 +1,6 @@
 use std::vec::Vec;
-use ngx_rust::nginx_http::log;
 
-use mixer::check::{ ReferencedAttributes, ReferencedAttributes_Condition } ;
+use mixer_grpc::check::{ ReferencedAttributes, ReferencedAttributes_Condition } ;
 use attribute::global_dict::Get_Global_Words;
 use attribute::attr_wrapper::AttributeWrapper;
 use std::collections::hash_map::DefaultHasher;
@@ -11,7 +10,7 @@ use std::hash::{Hash, Hasher};
 pub struct Referenced {
 
     absence_keys: Vec<String>,
-    exact_Keys: Vec<String>
+    exact_keys: Vec<String>
 }
 
 #[allow(dead_code)]
@@ -20,7 +19,7 @@ impl Referenced {
     pub fn new() -> Referenced {
         Referenced {
             absence_keys: vec![],
-            exact_Keys: vec![]
+            exact_keys: vec![]
         }
     }
 
@@ -33,7 +32,7 @@ impl Referenced {
             let idx = attr_match.get_name() as usize;
             if idx >= 0 {
                 if idx >= global_words.len() {
-                    log(&format!("Global word index is too big: {}, >= {}", idx, global_words.len()));
+                    //log(&format!("Global word index is too big: {}, >= {}", idx, global_words.len()));
                     return false;
                 }
                 name = global_words[idx];
@@ -42,7 +41,7 @@ impl Referenced {
                 //    per_message_idx = -(array_idx + 1)
                 let m_idx = (- (idx as i32) - 1) as usize;
                 if m_idx >= reference.get_words().len() as usize {
-                    log(&format!("Per message word index is too big: {}, >= {}", idx, reference.get_words().len()));
+                    //log(&format!("Per message word index is too big: {}, >= {}", idx, reference.get_words().len()));
                     return false;
                 }
                 name = &reference.get_words()[m_idx];
@@ -50,9 +49,9 @@ impl Referenced {
 
             match attr_match.get_condition() {
                 ReferencedAttributes_Condition::ABSENCE => self.absence_keys.push(name.to_string()),
-                ReferencedAttributes_Condition::EXACT => self.exact_Keys.push(name.to_string()),
+                ReferencedAttributes_Condition::EXACT => self.exact_keys.push(name.to_string()),
                 ReferencedAttributes_Condition::REGEX => {
-                    log(&format!("Received REGEX in Reference Attributes {}", name));
+                   // log(&format!("Received REGEX in Reference Attributes {}", name));
                     return false;
                 },
                 _ => {}
@@ -74,7 +73,7 @@ impl Referenced {
 
         let mut hashing = DefaultHasher::new();
 
-        for key in &self.exact_Keys {
+        for key in &self.exact_keys {
             attributes.hash(&key, &mut hashing);
         }
 
@@ -97,7 +96,7 @@ impl Hash for Referenced {
             key.hash(state);
         }
 
-        let mut sorted_exact_keys = self.exact_Keys.clone();
+        let mut sorted_exact_keys = self.exact_keys.clone();
         sorted_exact_keys.sort();
 
         for key in sorted_exact_keys {

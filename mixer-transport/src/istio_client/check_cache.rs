@@ -4,7 +4,7 @@ use std::time::{ SystemTime};
 use std::collections::HashMap;
 use std::clone::Clone;
 
-use mixer::check::CheckResponse;
+use mixer_grpc::check::CheckResponse;
 use transport::status::{ Status, StatusCodeEnum} ;
 use super::options::CheckOptions;
 use attribute::attr_wrapper::AttributeWrapper;

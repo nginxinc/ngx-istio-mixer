@@ -1,5 +1,5 @@
 [root]
-name = "ngx-mixer-module"
+name = "ngx-mixer-transport"
 version = "0.0.27"
 dependencies = [
  "base64 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -9,7 +9,6 @@ dependencies = [
  "grpc 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "httpbis 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 0.2.9 (registry+https://github.com/rust-lang/crates.io-index)",
- "ngx-rust 1.13.5",
  "protobuf 1.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "protoc-rust-grpc 0.2.1",
  "time 0.1.38 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -338,6 +337,23 @@ dependencies = [
  "libc 0.2.33 (registry+https://github.com/rust-lang/crates.io-index)",
  "winapi 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "ws2_32-sys 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "ngx-mixer-module"
+version = "0.0.27"
+dependencies = [
+ "base64 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "futures 0.1.16 (registry+https://github.com/rust-lang/crates.io-index)",
+ "futures-cpupool 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "grpc 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "httpbis 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "lazy_static 0.2.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ngx-mixer-transport 0.0.27",
+ "ngx-rust 1.13.5",
+ "protobuf 1.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "time 0.1.38 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tls-api 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

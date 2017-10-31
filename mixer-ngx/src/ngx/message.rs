@@ -2,7 +2,7 @@ use std::sync::mpsc::{ Sender,Receiver};
 use std::sync::Mutex;
 
 
-use mixer::attributes::Attributes;
+use ngx_mixer_transport::mixer_grpc::attributes::Attributes;
 
 pub struct Channels<T> {
     pub tx: Mutex<Sender<T>>,

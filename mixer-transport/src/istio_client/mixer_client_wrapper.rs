@@ -10,13 +10,11 @@ use super::check_cache:: { CheckCache } ;
 use super::quota_cache::QuotaCache;
 use transport::status:: { Status  };
 use transport::mixer_grpc::Transport;
-use mixer::check:: { CheckRequest, CheckResponse} ;
+use mixer_grpc::check:: { CheckRequest, CheckResponse} ;
 use attribute::global_dict::GlobalDictionary;
 use attribute::message_dict::MessageDictionary;
 
-
-use ngx_rust::nginx_http::log;
-
+#[allow(dead_code)]
 pub struct MixerClientOptions  {
 
     check_options: CheckOptions,
@@ -38,7 +36,7 @@ impl MixerClientOptions {
 }
 
 
-
+#[allow(dead_code)]
 pub struct MixerClientWrapper {
 
     options: MixerClientOptions,
@@ -83,7 +81,7 @@ impl MixerClientWrapper {
         check_request.set_attributes(attributes);
         check_request.set_global_word_count(message_dict.global_dict_size() as u32);
 
-        log(&format!("ready to send check"));
+        //log(&format!("ready to send check"));
 
         transport.check(check_request)
     }

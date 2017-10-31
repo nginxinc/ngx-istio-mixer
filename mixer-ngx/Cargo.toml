@@ -11,6 +11,7 @@ test = true
 crate-type = ["staticlib","rlib"]
 
 
+
 [dependencies]
 grpc		    = "0.2.1"
 protobuf        = "1.4.1"
@@ -22,9 +23,8 @@ lazy_static     = "0.2.8"
 time            = "0.1.38"
 base64          = "0.6.0"
 ngx-rust        =  { path = "../build/crates/ngx-rust" , version = "1.13.5" }
+ngx-mixer-transport        =  { path = "../mixer-transport" , version = "0.0.27" }
 
-[build-dependencies]
-protoc-rust-grpc = { path = "../build/crates/grpc-rust/protoc-rust-grpc" }
-bindgen = "0.30.0"
+
 
 

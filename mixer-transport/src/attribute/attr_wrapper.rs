@@ -2,8 +2,8 @@
 use std::collections::HashMap;
 
 use protobuf::well_known_types::Timestamp;
-use mixer::attributes::Attributes;
-use mixer::attributes::StringMap;
+use mixer_grpc::attributes::Attributes;
+use mixer_grpc::attributes::StringMap;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash };
 

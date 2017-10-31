@@ -6,18 +6,15 @@ extern crate tls_api;
 extern crate time;
 extern crate base64;
 extern crate ngx_rust;
-
+extern crate ngx_mixer_transport;
 
 
 
 #[macro_use]
 extern crate lazy_static;
 
-mod ngx;
-mod mixer;
-mod attribute;
-mod istio_client;
-mod transport;
+pub mod ngx;
+
 
 pub use ngx::mixer_thread::nginmesh_mixer_init;
 pub use ngx::mixer_thread::nginmesh_mixer_exit;
