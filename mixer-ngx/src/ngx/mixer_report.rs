@@ -81,6 +81,7 @@ pub fn mixer_report_background()  {
 
 
 // send to background thread using channels
+#[allow(unused_must_use)]
 fn send_dispatcher(main_config: &ngx_http_mixer_main_conf_t, attr: Attributes)  {
 
     let server_name = main_config.mixer_server.to_str();

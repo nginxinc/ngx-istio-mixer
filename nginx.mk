@@ -96,6 +96,10 @@ test-nginx-setup:
 	nginx -s reload
 
 
+# run integrated test
+test-intg:
+	cargo +stable test --color=always intg -- --nocapture
+
 # remove nginx container
 test-nginx-clean:
 	docker rm -f  ${DOCKER_NGINX_NAME} || true

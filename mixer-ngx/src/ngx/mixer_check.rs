@@ -17,7 +17,7 @@ use ngx_mixer_transport::attribute::attr_wrapper::AttributeWrapper;
 use ngx_mixer_transport::attribute::global_dict::TARGET_SERVICE;
 use ngx_mixer_transport::attribute::global_dict::TARGET_IP;
 use ngx_mixer_transport::attribute::global_dict::TARGET_UID;
-
+use ngx_mixer_transport::transport::status:: { Status, StatusCodeEnum };
 
 use ngx_mixer_transport::istio_client::mixer_client_wrapper::MixerClientWrapper ;
 use ngx_mixer_transport::transport::mixer_grpc::GrpcTransport;
@@ -42,7 +42,14 @@ pub fn check(server_name: &str,server_port: u16, attr: AttributeWrapper) -> bool
     let transport = GrpcTransport::new(info,attr);
     let result = DEFAULT_MIXER_CLIENT.check(transport).wait();
 
-   // log(&format!("send attribute to mixer check background task, {:?}",result));
+    match result {
+        Ok(_) => return true,
+        Err(error) => {
+            if error.get_error_code() == StatusCodeEnum::PERMISSION_DENIED {
+                return false;
+            }
+        }
+    }
 
     true
 

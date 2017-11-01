@@ -12,6 +12,6 @@ fn test_code_ok() {
 #[test]
 fn test_code_ok_invalid_arg() {
 
-    let mut status = Status::with_code(StatusCodeEnum::INVALID_ARGUMENT);
+    let status = Status::with_code(StatusCodeEnum::INVALID_ARGUMENT);
      assert_eq!(status.get_error_code(), StatusCodeEnum::INVALID_ARGUMENT);
 }

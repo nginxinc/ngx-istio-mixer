@@ -7,7 +7,7 @@ use ngx_mixer_transport::istio_client::mixer_client_wrapper::MixerClientWrapper 
 use ngx_mixer_transport::attribute::attr_wrapper::AttributeWrapper;
 use ngx_mixer_transport::transport::mixer_grpc::GrpcTransport;
 use ngx_mixer_transport::transport::server_info::MixerInfo;
-use ngx_mixer_transport::transport::status::StatusCodeEnum;
+use ngx_mixer_transport::transport::status::{ StatusCodeEnum};
 use futures::future::Future;
 
 // run integration test, in order to run this, mixer server should be running https://github.com/istio/mixer/blob/master/doc/dev/development.md
@@ -30,8 +30,8 @@ fn intg_check_empty_request() {
     println!("result, {:?}",result);
 
     match result  {
-        Ok(response) =>  assert!(true,"succeed"),
-        Err(error)  => assert!(false,"failed check")
+        Ok(_) =>  assert!(true,"succeed"),
+        Err(_)  => assert!(false,"failed check")
     }
 }
 
@@ -66,8 +66,8 @@ fn intg_check_deny() {
     println!("result, {:?}",result);
 
     match result  {
-        Ok(response) =>  assert!(true,"succeed"),
-        Err(error)  => assert!(false,"failed check")
+        Ok(_) =>  assert!(false,"should not have succeed"),
+        Err(error)  => assert_eq!(error.get_error_code(),StatusCodeEnum::PERMISSION_DENIED,"permission denied expected")
     }
 }
 
