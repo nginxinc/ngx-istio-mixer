@@ -2,6 +2,7 @@ FROM nginmesh/ngx-rust-tool:1.20.0-C
 
 MAINTAINER Sehyo Chang "sehyo@nginx.com"
 
+# install bazel
 RUN apt-get update; apt-get install -y openjdk-8-jdk
 RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
 RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
@@ -15,15 +16,14 @@ ADD ./build /src/build
 RUN mkdir /src/protobuf
 ADD ./protobuf /src/protobuf
 ADD ./module /src/module
-RUN cd /src;make setup; make nginx-setup; make mixer-client
+RUN cd /src;make setup; make nginx-setup;
+
 # build project  with empty source to setup dependencies
 ADD ./Cargo.toml /src
 ADD ./Cargo.lock /src
-RUN mkdir /src/src
-RUN mkdir /src/src/mixer
-COPY ./src/mixer/mod.rs /src/src/mixer
-RUN touch /src/src/lib.rs 
-RUN cd /src;cargo build
+ADD ./mixer-ngx /src/mixer-ngx
+ADD ./mixer-transport /src/mixer-transport
+RUN cd /src;cargo build --all
 
 
 

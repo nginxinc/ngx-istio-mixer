@@ -3,15 +3,7 @@ FROM nginmesh/ngx_http_istio_mixer_module-base:latest
 MAINTAINER Sehyo Chang "sehyo@nginx.com"
 
 # this is coming from context which is from /build/context not root of the source
-RUN mkdir /src/src/bin
-COPY ./src/bin/* /src/src/bin/
-RUN mkdir /src/src/istio_client
-COPY ./src/istio_client/* /src/src/istio_client/
-RUN mkdir -p /src/src/mixer
-COPY ./src/mixer/* /src/src/mixer/
-RUN mkdir /src/src/ngx
-COPY ./src/ngx/* /src/src/ngx/
-COPY ./src/lib.rs /src/src
-ADD ./build.rs /src/build
+ADD ./mixer-ngx /src/mixer-ngx
+ADD ./mixer-transport /src/mixer-transport
 ADD ./module /src/module
 RUN cd /src;make nginx-module

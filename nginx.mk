@@ -37,6 +37,7 @@ DOCKER_NGINX_NAME=nginx-test
 DOCKER_NGINX_EXEC=docker exec -it ${DOCKER_NGINX_NAME}
 DOCKER_NGINX_EXECD=docker exec -d ${DOCKER_NGINX_NAME}
 DOCKER_NGINX_DAEMON=docker run -d -p 8000:8000  --privileged --name  ${DOCKER_NGINX_NAME} \
+    --sysctl net.ipv4.ip_nonlocal_bind=1 \
 	-v ${MODULE_DIR}/config/modules:/etc/nginx/modules \
 	-v ${MODULE_DIR}:/src  -w /src   ${DOCKER_NGIX_IMAGE}
 
@@ -134,9 +135,9 @@ build-module-docker:
 	rm -rf build/context
 	mkdir build/context
 	cp build/Dockerfile.module build/context
-	cp -r src build/context
+	cp -r mixer-ngx build/context
+	cp -r mixer-transport build/context
 	cp -r module build/context
-	cp build/build.rs build/context
 	docker build -f ./build/context/Dockerfile.module -t ${DOCKER_MODULE_IMAGE}:latest ./build/context
 
 # build module and deposit in the module directory
@@ -148,8 +149,13 @@ build-base:	super_clean
 	docker tag ${DOCKER_MODULE_BASE_IMAGE}:${GIT_COMMIT} ${DOCKER_MODULE_BASE_IMAGE}:latest
 
 
-base-tool: 
+run-base-image:
 	docker run -it --rm  ${DOCKER_MODULE_BASE_IMAGE}:latest /bin/bash
+
+
+run-module-image:
+	docker run -it --rm  ${DOCKER_MODULE_IMAGE}:latest /bin/bash
+
 
 # copy dependent modules that must be load locally. they are assume to be checked as peer directory
 # later, they should be clone directly from github repo
