@@ -1,4 +1,4 @@
-NGINX_VER = 1.13.5
+NGINX_VER = 1.13.6
 UNAME_S := $(shell uname -s)
 GIT_COMMIT=$(shell git rev-parse --short HEAD)
 NGX_DEBUG="--with-debug"
@@ -15,7 +15,7 @@ NGX_MODULES = --with-compat  --with-threads --with-http_addition_module \
 ifeq ($(UNAME_S),Linux)
     NGINX_SRC += nginx-linux
     NGX_OPT= $(NGX_MODULES) \
-       --with-file-aio --with-http_ssl_module --with-stream_ssl_module  \
+       --with-file-aio
        --with-cc-opt='-g -fstack-protector-strong -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2 -fPIC' \
        --with-ld-opt='-Wl,-Bsymbolic-functions -Wl,-z,relro -Wl,-z,now -Wl,--as-needed -pie'
 endif
@@ -25,12 +25,16 @@ ifeq ($(UNAME_S),Darwin)
 endif
 DOCKER_MODULE_IMAGE = nginmesh/${MODULE_NAME}
 DOCKER_MODULE_BASE_IMAGE = nginmesh/${MODULE_NAME}-base
+DOCKER_MODULE_NGINX_BUILD_IMAGE = nginmesh/${MODULE_NAME}-ngx-build
+DOCKER_MODULE_NGINX_BASE_IMAGE= nginmesh/${MODULE_NAME}-ngx-base
 DOCKER_RUST_IMAGE = nginmesh/ngx-rust-tool:${RUST_COMPILER_TAG}
 DOCKER_NGIX_IMAGE = nginmesh/nginx-dev:${NGINX_TAG}
 DOCKER_MIXER_IMAGE = nginmesh/ngix-mixer:1.0
 MODULE_SO_DIR=nginx/nginx-linux/objs
 MODULE_SO_BIN=${MODULE_SO_DIR}/${MODULE_NAME}.so
+NGINX_BIN=${MODULE_SO_DIR}/nginx
 MODULE_SO_HOST=config/modules/${MODULE_NAME}.so
+NGINX_SO_HOST=config
 DOCKER_BUILD_TOOL=docker run -it --rm -v ${ROOT_DIR}:/src -w /src/${MODULE_PROJ_NAME} ${DOCKER_RUST_IMAGE}
 DOCKER_NGINX_TOOL=docker run -it --rm -v ${ROOT_DIR}:/src -w /src/${MODULE_PROJ_NAME} ${DOCKER_NGIX_IMAGE}
 DOCKER_NGINX_NAME=nginx-test
@@ -38,8 +42,9 @@ DOCKER_NGINX_EXEC=docker exec -it ${DOCKER_NGINX_NAME}
 DOCKER_NGINX_EXECD=docker exec -d ${DOCKER_NGINX_NAME}
 DOCKER_NGINX_DAEMON=docker run -d -p 8000:8000  --privileged --name  ${DOCKER_NGINX_NAME} \
     --sysctl net.ipv4.ip_nonlocal_bind=1 \
+    --sysctl net.ipv4.ip_forward=1 \
 	-v ${MODULE_DIR}/config/modules:/etc/nginx/modules \
-	-v ${MODULE_DIR}:/src  -w /src   ${DOCKER_NGIX_IMAGE}
+	-v ${MODULE_DIR}:/src  -w /src   ${DOCKER_MODULE_NGINX_BASE_IMAGE}:latest
 
 
 # this need to be invoked before any build steps
@@ -54,8 +59,7 @@ setup:
 nginx-build:
 	cd nginx/${NGINX_SRC}; \
 	./configure --prefix=${PWD}/nginx/install $(NGX_OPT); \
-	make; \
-	make install
+	make;
 
 
 setup-nginx:
@@ -93,7 +97,7 @@ test-nginx-setup:
 	rm -rf /etc/nginx/conf.d/*
 	cp config/conf.d/* /etc/nginx/conf.d
 	node tests/services/http.js 9100 > u1.log 2> u1.err &
-#	tests/prepare_proxy.sh -p 15001 -u ${DOCKER_USER} &
+#	tests/tproxy.sh &
 	nginx -s reload
 
 
@@ -149,12 +153,26 @@ build-base:	super_clean
 	docker tag ${DOCKER_MODULE_BASE_IMAGE}:${GIT_COMMIT} ${DOCKER_MODULE_BASE_IMAGE}:latest
 
 
+copy-ngx-exec:
+	docker rm -v ngx-copy || true
+	docker create --name ngx-copy ${DOCKER_MODULE_NGINX_BUILD_IMAGE}:latest
+	docker cp ngx-copy:/src/${NGINX_BIN} ${NGINX_SO_HOST}
+	docker rm -v ngx-copy
+
+
+build-nginx-base:
+	docker build -f ./build/Dockerfile.build-nginx -t ${DOCKER_MODULE_NGINX_BASE_IMAGE}:${GIT_COMMIT} .
+	docker tag ${DOCKER_MODULE_NGINX_BASE_IMAGE}:${GIT_COMMIT} ${DOCKER_MODULE_NGINX_BASE_IMAGE}:latest
+
+
+
 run-base-image:
 	docker run -it --rm  ${DOCKER_MODULE_BASE_IMAGE}:latest /bin/bash
 
 
-run-module-image:
-	docker run -it --rm  ${DOCKER_MODULE_IMAGE}:latest /bin/bash
+run-ngx-image:
+	docker run -it --rm  ${DOCKER_MODULE_NGINX_BASE_IMAGE}:latest /bin/ash
+
 
 
 # copy dependent modules that must be load locally. they are assume to be checked as peer directory
