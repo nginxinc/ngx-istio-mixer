@@ -1,4 +1,4 @@
-FROM alpine:3.5
+FROM mhart/alpine-node:9.0.0
 
 MAINTAINER Sehyo Chang "sehyo@nginx.com"
 
@@ -146,11 +146,8 @@ RUN apk update
 
 # install dev en
 RUN apk add curl wget unzip gnupg vim
- RUN apk add netcat-openbsd make net-tools iptables procps
-
-RUN apk add nodejs
-
-RUN apk add iproute2
+RUN apk add netcat-openbsd make net-tools iptables procps
+RUN apk add iproute2 libc6-compat
 
 
 EXPOSE 80

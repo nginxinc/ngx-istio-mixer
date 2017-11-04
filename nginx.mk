@@ -1,4 +1,4 @@
-NGINX_VER = 1.13.6
+NGINX_VER = 1.13.5
 UNAME_S := $(shell uname -s)
 GIT_COMMIT=$(shell git rev-parse --short HEAD)
 NGX_DEBUG="--with-debug"
@@ -33,7 +33,7 @@ DOCKER_MIXER_IMAGE = nginmesh/ngix-mixer:1.0
 MODULE_SO_DIR=nginx/nginx-linux/objs
 MODULE_SO_BIN=${MODULE_SO_DIR}/${MODULE_NAME}.so
 NGINX_BIN=${MODULE_SO_DIR}/nginx
-MODULE_SO_HOST=config/modules/${MODULE_NAME}.so
+MODULE_SO_HOST=test/config/modules/${MODULE_NAME}.so
 NGINX_SO_HOST=config
 DOCKER_BUILD_TOOL=docker run -it --rm -v ${ROOT_DIR}:/src -w /src/${MODULE_PROJ_NAME} ${DOCKER_RUST_IMAGE}
 DOCKER_NGINX_TOOL=docker run -it --rm -v ${ROOT_DIR}:/src -w /src/${MODULE_PROJ_NAME} ${DOCKER_NGIX_IMAGE}
@@ -43,8 +43,8 @@ DOCKER_NGINX_EXECD=docker exec -d ${DOCKER_NGINX_NAME}
 DOCKER_NGINX_DAEMON=docker run -d -p 8000:8000  --privileged --name  ${DOCKER_NGINX_NAME} \
     --sysctl net.ipv4.ip_nonlocal_bind=1 \
     --sysctl net.ipv4.ip_forward=1 \
-	-v ${MODULE_DIR}/config/modules:/etc/nginx/modules \
-	-v ${MODULE_DIR}:/src  -w /src   ${DOCKER_MODULE_NGINX_BASE_IMAGE}:latest
+	-v ${MODULE_DIR}/test/config/modules:/etc/nginx/modules \
+	-v ${MODULE_DIR}:/src  -w /src   ${DOCKER_NGIX_IMAGE}
 
 
 # this need to be invoked before any build steps
@@ -93,12 +93,7 @@ nginx-module:
 # copies the configuration and modules
 # start test services
 test-nginx-setup:
-	cp config/nginx.conf /etc/nginx
-	rm -rf /etc/nginx/conf.d/*
-	cp config/conf.d/* /etc/nginx/conf.d
-	node tests/services/http.js 9100 > u1.log 2> u1.err &
-#	tests/tproxy.sh &
-	nginx -s reload
+	test/deploy.sh
 
 
 # run integrated test
@@ -161,7 +156,7 @@ copy-ngx-exec:
 
 
 build-nginx-base:
-	docker build -f ./build/Dockerfile.build-nginx -t ${DOCKER_MODULE_NGINX_BASE_IMAGE}:${GIT_COMMIT} .
+	docker build -f ./build/Dockerfile.build-alpine-nginx -t ${DOCKER_MODULE_NGINX_BASE_IMAGE}:${GIT_COMMIT} .
 	docker tag ${DOCKER_MODULE_NGINX_BASE_IMAGE}:${GIT_COMMIT} ${DOCKER_MODULE_NGINX_BASE_IMAGE}:latest
 
 
