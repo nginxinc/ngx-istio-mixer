@@ -5,7 +5,7 @@ use std::io::Result;
 
 
 // perform make with argument
-fn make(arg: &str) -> Result<Output> {
+pub fn make(arg: &str) -> Result<Output> {
     let current_path = env::current_dir().unwrap();
     let make_path = current_path.parent().unwrap();
     let path_name = format!("{}",make_path.display());

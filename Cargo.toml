@@ -1,7 +1,8 @@
 [workspace]
 members = [
     "mixer-ngx",
-    "mixer-transport"
+    "mixer-transport",
+    "mixer-tests"
 ]
 
 exclude = [
