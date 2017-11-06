@@ -12,8 +12,8 @@ use ngx_rust::bindings::ngx_int_t;
 use ngx_rust::bindings::{ NGX_OK, NGX_DECLINED };
 
 
-use super::location_config:: ngx_http_mixer_loc_conf_t ;
-use super::main_config::ngx_http_mixer_main_conf_t;
+use ngx::location_config:: ngx_http_mixer_loc_conf_t ;
+use ngx::main_config::ngx_http_mixer_main_conf_t;
 
 
 use ngx_mixer_transport::attribute::attr_wrapper::AttributeWrapper;
@@ -23,7 +23,7 @@ use ngx_mixer_transport::istio_client::mixer_client_wrapper::MixerClientWrapper 
 use ngx_mixer_transport::transport::mixer_grpc::GrpcTransport;
 use ngx_mixer_transport::transport::server_info::MixerInfo;
 
-use super::config::MixerConfig;
+use ngx::config::MixerConfig;
 
 
 lazy_static! {

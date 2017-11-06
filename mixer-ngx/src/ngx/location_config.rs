@@ -4,7 +4,7 @@ use ngx_rust::bindings:: { ngx_str_t, ngx_flag_t } ;
 use ngx_mixer_transport::attribute::attr_wrapper::AttributeWrapper;
 use ngx_mixer_transport::attribute::global_dict::{ DESTINATION_SERVICE };
 
-use config::MixerConfig;
+use ngx::config::MixerConfig;
 
 #[repr(C)]
 pub struct ngx_http_mixer_loc_conf_t {

@@ -17,17 +17,12 @@ extern crate lazy_static;
 #[macro_use]
 mod log;
 
+pub mod ngx;
+
+pub mod message;
 pub mod mixer_report;
 pub mod mixer_check;
 pub mod mixer_thread;
-
-mod encode;
-mod location_config;
-mod request;
-mod message;
-mod main_config;
-mod config;
-
 
 pub use mixer_thread::nginmesh_mixer_init;
 pub use mixer_thread::nginmesh_mixer_exit;

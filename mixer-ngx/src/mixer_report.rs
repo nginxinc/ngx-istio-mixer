@@ -22,11 +22,11 @@ use ngx_mixer_transport::attribute::attr_wrapper::AttributeWrapper;
 use ngx_mixer_transport::attribute::global_dict::GlobalDictionary;
 use ngx_mixer_transport::attribute::message_dict::MessageDictionary;
 
-use super::main_config::ngx_http_mixer_main_conf_t;
-
 use super::message::Channels;
 use super::message::MixerInfo;
-use super::config::MixerConfig;
+
+use ngx::main_config::ngx_http_mixer_main_conf_t;
+use ngx::config::MixerConfig;
 
 
 // initialize channel that can be shared

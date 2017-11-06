@@ -5,7 +5,7 @@ use ngx_rust::bindings:: { ngx_int_t, ngx_str_t } ;
 use ngx_mixer_transport::attribute::attr_wrapper::AttributeWrapper;
 use ngx_mixer_transport::attribute::global_dict::{ SOURCE_IP, SOURCE_UID, SOURCE_SERVICE, SOURCE_PORT };
 
-use config::MixerConfig;
+use super::config::MixerConfig;
 
 #[repr(C)]
 pub struct ngx_http_mixer_main_conf_t {

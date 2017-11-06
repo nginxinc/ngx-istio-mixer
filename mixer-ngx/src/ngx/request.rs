@@ -14,7 +14,7 @@ use ngx_mixer_transport::attribute::global_dict::{ REQUEST_HEADER, REQUEST_HOST,
                                                     RESPONSE_CODE, RESPONSE_SIZE, RESPONSE_DURATION, RESPONSE_HEADERS
 };
 
-use config::MixerConfig;
+use super::config::MixerConfig;
 
 
 impl MixerConfig for ngx_http_request_s  {
