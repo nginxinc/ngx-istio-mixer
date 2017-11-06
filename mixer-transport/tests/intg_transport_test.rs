@@ -44,7 +44,7 @@ fn intg_check_deny() {
     let mut attributes = AttributeWrapper::new();
     attributes.insert_string_attribute("destination.service","abc.ns.svc.cluster.local");
     attributes.insert_string_attribute("source.name","myservice");
-    attributes.insert_string_attribute("target.port","8080");
+    attributes.insert_string_attribute("source.port","8080");
 
     let mut string_map: HashMap<String,String> = HashMap::new();
     string_map.insert("clnt".to_string(),"abc".to_string());

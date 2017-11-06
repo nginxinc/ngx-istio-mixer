@@ -30,9 +30,10 @@ typedef struct {
     ngx_str_t mixer_server;              /**< mixer server */
     ngx_int_t mixer_port;                /**  mixer port */
 
-    ngx_str_t target_ip;           // target ip
-    ngx_str_t target_uid;          // target uid
-    ngx_str_t target_service;       // target service
+    ngx_str_t source_ip;           // target ip
+    ngx_str_t source_uid;          // target uid
+    ngx_str_t source_service;       // target service
+    ngx_int_t source_port;          // source port
 
 
 } ngx_http_mixer_main_conf_t;
@@ -91,31 +92,38 @@ static ngx_command_t ngx_http_istio_mixer_commands[] = {
        NULL
      },
     {
-      ngx_string("mixer_target_ip"),
+      ngx_string("mixer_source_ip"),
       NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE1,
       ngx_conf_set_str_slot,
       NGX_HTTP_MAIN_CONF_OFFSET,
-      offsetof(ngx_http_mixer_main_conf_t, target_ip),  // store in the location configuration
+      offsetof(ngx_http_mixer_main_conf_t, source_ip),  // store in the location configuration
       NULL
     },
 
     {
-      ngx_string("mixer_target_uid"),
+      ngx_string("mixer_source_uid"),
       NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE1,
       ngx_conf_set_str_slot,
       NGX_HTTP_MAIN_CONF_OFFSET,
-      offsetof(ngx_http_mixer_main_conf_t, target_uid),  // store in the location configuration
+      offsetof(ngx_http_mixer_main_conf_t, source_uid),  // store in the location configuration
       NULL
     },
     {
-      ngx_string("mixer_target_service"),
+      ngx_string("mixer_source_service"),
       NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE1,
       ngx_conf_set_str_slot,
       NGX_HTTP_MAIN_CONF_OFFSET,
-      offsetof(ngx_http_mixer_main_conf_t, target_service),  // store in the location configuration
+      offsetof(ngx_http_mixer_main_conf_t, source_service),  // store in the location configuration
       NULL
     },
-
+    {
+      ngx_string("mixer_source_port"),
+      NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE1,
+      ngx_conf_set_num_slot,
+      NGX_HTTP_MAIN_CONF_OFFSET,
+      offsetof(ngx_http_mixer_main_conf_t, source_port),  // store in the location configuration
+      NULL
+    },
     { 
       ngx_string("mixer_server"), /* directive */
       NGX_HTTP_MAIN_CONF|NGX_CONF_TAKE1,  // server takes 1 //
@@ -313,6 +321,7 @@ static void *ngx_http_mixer_create_main_conf(ngx_conf_t *cf)
   }
 
   conf->mixer_port = NGX_CONF_UNSET_UINT;
+  conf->source_port = NGX_CONF_UNSET_UINT;
 
 
   return conf;

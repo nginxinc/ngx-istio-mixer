@@ -84,7 +84,9 @@ impl AttributeWrapper  {
     }
 
     pub fn insert_string_attribute(&mut self, key: &str, value: &str) {
-        self.insert_value(key, AttrValue::StrValue(String::from(value)));
+        if value.len() > 0 {
+            self.insert_value(key, AttrValue::StrValue(String::from(value)));
+        }
     }
 
     pub fn insert_int64_attribute(&mut self, key: &str, value: i64) {

@@ -6,7 +6,7 @@ extern crate ngx_mixer_transport;
 use std::str;
 use std::sync::mpsc::{channel};
 use std::sync::Mutex;
-use std::collections::HashMap;
+
 
 use ngx_mixer_transport::mixer_grpc::service_grpc::MixerClient;
 use ngx_mixer_transport::mixer_grpc::report::ReportRequest;
@@ -22,23 +22,11 @@ use ngx_mixer_transport::attribute::attr_wrapper::AttributeWrapper;
 use ngx_mixer_transport::attribute::global_dict::GlobalDictionary;
 use ngx_mixer_transport::attribute::message_dict::MessageDictionary;
 
-use super::mixer_location::ngx_http_mixer_main_conf_t;
+use super::main_config::ngx_http_mixer_main_conf_t;
 
 use super::message::Channels;
 use super::message::MixerInfo;
-use super::request::process_request_attribute;
-
-
-use ngx_mixer_transport::attribute::global_dict::TARGET_SERVICE;
-
-use ngx_mixer_transport::attribute::global_dict::RESPONSE_CODE;
-use ngx_mixer_transport::attribute::global_dict::RESPONSE_DURATION;
-use ngx_mixer_transport::attribute::global_dict::RESPONSE_SIZE;
-use ngx_mixer_transport::attribute::global_dict::RESPONSE_HEADERS;
-use ngx_mixer_transport::attribute::global_dict::TARGET_IP;
-use ngx_mixer_transport::attribute::global_dict::TARGET_UID;
-
-
+use super::config::MixerConfig;
 
 
 // initialize channel that can be shared
@@ -106,9 +94,12 @@ pub extern fn nginmesh_mixer_report_handler(request: &ngx_http_request_s,main_co
 
     let mut attr = AttributeWrapper::new();
 
-    process_istio_attr(main_config,&mut attr);
-    process_request_attribute(request, &mut attr);
-    process_response_attribute(request, &mut attr);
+    main_config.process_istio_attr(&mut attr);
+
+    request.process_istio_attr(&mut attr);
+
+    let headers_out =  &request.headers_out;
+    headers_out.process_istio_attr(&mut attr);
 
 
     let mut message_dict = MessageDictionary::new(GlobalDictionary::new());
@@ -117,57 +108,4 @@ pub extern fn nginmesh_mixer_report_handler(request: &ngx_http_request_s,main_co
 }
 
 
-/*
- * Istio attributes such as source.ip are passed as http header and also send out source headewr
- */
-fn process_istio_attr(main_config: &ngx_http_mixer_main_conf_t, attr: &mut AttributeWrapper) {
 
-    // fill in target attributes
-    let target_ip = main_config.target_ip.to_str();
-    if target_ip.len() > 0 {
-        log(&format!("target ip founded!"));
-        attr.insert_string_attribute( TARGET_IP,target_ip);
-    }
-
-    let target_uid = main_config.target_uid.to_str();
-    if target_uid.len() > 0 {
-        log(&format!("target uid founded!"));
-        attr.insert_string_attribute(TARGET_UID,target_uid);
-    }
-
-    let target_service = main_config.target_service.to_str();
-    if target_service.len() > 0 {
-        log(&format!("target service founded!"));
-        attr.insert_string_attribute(TARGET_SERVICE,target_service);
-    }
-
-}
-
-
-
-
-
-fn process_response_attribute(request: &ngx_http_request_s, attr: &mut AttributeWrapper, )  {
-
-    let headers_out =  request.headers_out;
-
-    attr.insert_int64_attribute(RESPONSE_CODE, headers_out.status as i64);
-    attr.insert_int64_attribute(RESPONSE_SIZE, headers_out.content_length_n);
-
-    //let duration = headers_out.date_time - request.start_sec;
-    attr.insert_int64_attribute(RESPONSE_DURATION, 5000);
-
-    // fill in the string value
-    let mut map: HashMap<String,String> = HashMap::new();
-    {
-        for (name,value) in headers_out.headers_iterator()   {
-            log(&format!("processing out header name: {}, value: {}",&name,&value));
-
-            map.insert(name,value);
-
-        }
-    }
-
-    attr.insert_string_map(RESPONSE_HEADERS, map);
-
-}

@@ -22,9 +22,11 @@ pub mod mixer_check;
 pub mod mixer_thread;
 
 mod encode;
-mod mixer_location;
+mod location_config;
 mod request;
 mod message;
+mod main_config;
+mod config;
 
 
 pub use mixer_thread::nginmesh_mixer_init;
