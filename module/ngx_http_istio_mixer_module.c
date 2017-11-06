@@ -18,6 +18,7 @@
 typedef struct {
     ngx_flag_t    enable_report;              // for every location, we need flag to enable/disable mixer
     ngx_flag_t    enable_check;               // enable/disable check
+    ngx_str_t     destination_service;        // destination service
 
 } ngx_http_mixer_loc_conf_t;
 
@@ -52,7 +53,7 @@ static void *ngx_http_mixer_create_main_conf(ngx_conf_t *cf);
 // handlers in rust
 
 void  nginmesh_mixer_report_handler(ngx_http_request_t *r, ngx_http_mixer_main_conf_t *main_conf);
-ngx_int_t nginmesh_mixer_check_handler(ngx_http_request_t *r, ngx_http_mixer_main_conf_t *main_conf);
+ngx_int_t nginmesh_mixer_check_handler(ngx_http_request_t *r, ngx_http_mixer_main_conf_t *main_conf, ngx_http_mixer_loc_conf_t *loc_conf);
 
 ngx_int_t  nginmesh_mixer_init(ngx_cycle_t *cycle);
 void  nginmesh_mixer_exit();
@@ -74,14 +75,21 @@ static ngx_command_t ngx_http_istio_mixer_commands[] = {
       NULL
     },
     { 
-        ngx_string("mixer_check"), /* directive */
-        NGX_HTTP_LOC_CONF | NGX_CONF_FLAG, 
-        ngx_conf_set_flag_slot, /* configuration setup function */
-        NGX_HTTP_LOC_CONF_OFFSET, 
-        offsetof(ngx_http_mixer_loc_conf_t, enable_check),  // store in the location configuration
-        NULL
+       ngx_string("mixer_check"), /* directive */
+       NGX_HTTP_LOC_CONF | NGX_CONF_FLAG,
+       ngx_conf_set_flag_slot, /* configuration setup function */
+       NGX_HTTP_LOC_CONF_OFFSET,
+       offsetof(ngx_http_mixer_loc_conf_t, enable_check),  // store in the location configuration
+       NULL
     },
-
+    {
+       ngx_string("mixer_destination_service"), /* directive */
+       NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,
+       ngx_conf_set_str_slot, /* configuration setup function */
+       NGX_HTTP_LOC_CONF_OFFSET,
+       offsetof(ngx_http_mixer_loc_conf_t, destination_service),  // store in the location configuration
+       NULL
+     },
     {
       ngx_string("mixer_target_ip"),
       NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE1,
@@ -249,7 +257,7 @@ static ngx_int_t ngx_http_istio_mixer_check_handler(ngx_http_request_t *r)
     
     main_conf = ngx_http_get_module_main_conf(r, ngx_http_istio_mixer_module);
 
-    return nginmesh_mixer_check_handler(r,main_conf);
+    return nginmesh_mixer_check_handler(r,main_conf,loc_conf);
 
 
 } 
@@ -266,6 +274,7 @@ static void *ngx_http_mixer_create_loc_conf(ngx_conf_t *cf) {
 
     conf->enable_report = NGX_CONF_UNSET;
     conf->enable_check = NGX_CONF_UNSET;
+ //   conf->destination_service = NGX_CONF_UNSET;
 
     ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "set up  mixer location config");
 
@@ -283,6 +292,7 @@ ngx_http_mixer_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
 
     ngx_conf_merge_value(conf->enable_report, prev->enable_report, 0);
     ngx_conf_merge_value(conf->enable_check, prev->enable_check, 0);
+    ngx_conf_merge_str_value(conf->destination_service,prev->destination_service,"");
 
     return NGX_CONF_OK;
 }

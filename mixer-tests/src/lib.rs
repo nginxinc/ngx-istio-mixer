@@ -3,4 +3,6 @@ extern crate reqwest;
 mod util;
 
 
-mod intg_check_test;
+mod nginx_report_test;
+
+mod nginx_check_test;

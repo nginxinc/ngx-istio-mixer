@@ -24,6 +24,8 @@ pub const TARGET_IP: &str = "target.ip";
 pub const TARGET_UID: &str = "target.uid";
 pub const SRC_IP_HEADER: &str = "X-ISTIO-SRC-IP";
 pub const SRC_UID_HEADER: &str = "X-ISTIO-SRC-UID";
+pub const DESTINATION_SERVICE: &str = "destination.service";
+
 
 
 const GLOBAL_LIST: [&'static str; 159] = [

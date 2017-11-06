@@ -5,7 +5,7 @@ use std::io::Read;
 
 
 #[test]
-fn nginx_check_test()  {
+fn nginx_report_test()  {
 
     let _result = make("test-nginx-only");
 
