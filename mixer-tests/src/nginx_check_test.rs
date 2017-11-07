@@ -7,7 +7,7 @@ use reqwest::StatusCode;
 
 header! { (Clnt, "clnt") => [String] }
 
-// call check, this should succeed since this doesn't have any
+// in order run these test, please run following make step:  'make test-nginx-only'
 #[test]
 fn nginx_check_basic_test()  {
 
