@@ -6,3 +6,4 @@ authors = ["Sehyo Chang   sehyo@nginx.com"]
 
 [dependencies]
 reqwest = "0.8.0"
+hyper = "0.11.6"

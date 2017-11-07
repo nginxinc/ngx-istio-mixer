@@ -542,6 +542,7 @@ dependencies = [
 name = "ngx-mixer-test"
 version = "0.0.27"
 dependencies = [
+ "hyper 0.11.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "reqwest 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 

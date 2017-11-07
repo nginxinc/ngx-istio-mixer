@@ -9,7 +9,7 @@ use futures::future::Future;
 
 use ngx_rust::bindings::ngx_http_request_s;
 use ngx_rust::bindings::ngx_int_t;
-use ngx_rust::bindings::{ NGX_OK, NGX_DECLINED };
+use ngx_rust::bindings::{ NGX_OK, NGX_DECLINED, NGX_HTTP_UNAUTHORIZED };
 
 
 use ngx::location_config:: ngx_http_mixer_loc_conf_t ;
@@ -77,9 +77,10 @@ pub extern fn nginmesh_mixer_check_handler(request: &ngx_http_request_s,
 
     if !check(server_name,server_port, attributes) {
         ngx_log!("rust check denied");
-        return NGX_DECLINED as ngx_int_t;
+        return NGX_HTTP_UNAUTHORIZED as ngx_int_t;
     }
 
     ngx_log!("rust check allowed");
     return NGX_OK as ngx_int_t;
+
 }
