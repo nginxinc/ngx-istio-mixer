@@ -95,9 +95,6 @@ impl MixerConfig for ngx_http_headers_out_t {
         attr.insert_int64_attribute(RESPONSE_CODE, self.status as i64);
         attr.insert_int64_attribute(RESPONSE_SIZE, self.content_length_n);
 
-        //let duration = headers_out.date_time - request.start_sec;
-        attr.insert_int64_attribute(RESPONSE_DURATION, 5000);
-
         // fill in the string value
         let mut map: HashMap<String,String> = HashMap::new();
         {
