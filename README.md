@@ -12,21 +12,21 @@ Clang is used for generating gRpc client.
 https://rust-lang-nursery.github.io/rust-bindgen/requirements.html
 
 
-## Build
+## Set up for local development
 
 ```bash
 make setup
 ```
 
-This install Nginx and gRpc compiler crates necessary for building this crate.
+This install Nginx and gRpc compiler crates necessary for building and test crate on host computer
 
 ## Unit Tests
 
 ```bash
-cargo test
+make test-unit
 ```
 
-Run unit tests for rust code only.  
+Run all unit tests
 
 ### Building and generating Nginx module
 

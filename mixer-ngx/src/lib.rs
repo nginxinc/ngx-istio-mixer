@@ -1,10 +1,8 @@
-extern crate futures;
-extern crate futures_cpupool;
-extern crate protobuf;
-extern crate grpc;
-extern crate tls_api;
 extern crate time;
 extern crate base64;
+extern crate grpc;
+extern crate futures;
+extern crate protobuf;
 extern crate ngx_rust;
 extern crate ngx_mixer_transport;
 

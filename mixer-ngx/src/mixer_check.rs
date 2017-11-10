@@ -1,8 +1,6 @@
-
-extern crate grpc;
-extern crate futures;
 extern crate ngx_mixer_transport;
 extern crate ngx_rust;
+extern crate futures;
 
 use futures::future::Future;
 

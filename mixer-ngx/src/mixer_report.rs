@@ -90,15 +90,12 @@ fn send_dispatcher(main_config: &ngx_http_mixer_main_conf_t, attr: Attributes)  
 
 #[no_mangle]
 pub extern fn nginmesh_mixer_report_handler(request: &ngx_http_request_s,main_config: &ngx_http_mixer_main_conf_t,
-    srv_conf_option: Option<&ngx_http_mixer_srv_conf_t>)  {
+    srv_conf: &ngx_http_mixer_srv_conf_t)  {
 
 
     let mut attr = AttributeWrapper::new();
 
-    if let Some(srv_conf) = srv_conf_option {
-        ngx_log!("send srv mixer attribute to mixer");
-        srv_conf.process_istio_attr(&mut attr);
-    }
+    srv_conf.process_istio_attr(&mut attr);
 
     request.process_istio_attr(&mut attr);
 

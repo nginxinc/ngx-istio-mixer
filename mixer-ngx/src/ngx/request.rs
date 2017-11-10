@@ -23,6 +23,8 @@ impl MixerConfig for ngx_http_request_s  {
 
     fn process_istio_attr(&self, attr: &mut AttributeWrapper )  {
 
+        ngx_log!("send request attribute to mixer");
+
         let headers_in = self.headers_in;
 
 
@@ -89,6 +91,7 @@ impl MixerConfig for ngx_http_headers_out_t {
     fn process_istio_attr(&self, attr: &mut AttributeWrapper, )  {
 
 
+        ngx_log!("send request header attribute to mixer");
         attr.insert_int64_attribute(RESPONSE_CODE, self.status as i64);
         attr.insert_int64_attribute(RESPONSE_SIZE, self.content_length_n);
 

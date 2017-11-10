@@ -5,7 +5,6 @@ use std::{thread };
 
 use ngx_rust::bindings::ngx_int_t;
 use ngx_rust::bindings::NGX_OK;
-use ngx_rust::nginx_http::log;
 
 use mixer_report::mixer_report_background;
 //use ngx::mixer_check::mixer_check_background;

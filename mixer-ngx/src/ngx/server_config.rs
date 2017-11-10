@@ -25,6 +25,7 @@ impl MixerConfig for  ngx_http_mixer_srv_conf_t  {
 
     fn process_istio_attr(&self, attr: &mut AttributeWrapper) {
 
+        ngx_log!("send srv mixer attribute to mixer");
         attr.insert_string_attribute( DESTINATION_SERVICE, self.destination_service.to_str());
         attr.insert_string_attribute( DESTINATION_UID, self.destination_uid.to_str());
         attr.insert_string_attribute( DESTINATION_IP, self.destination_ip.to_str());

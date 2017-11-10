@@ -35,7 +35,7 @@ typedef struct {
 typedef struct  {
     ngx_str_t     destination_service;        // destination service
     ngx_str_t     destination_uid;           // destination service
-    ngx_int_t     destination_ip;           // destination ip address
+    ngx_str_t     destination_ip;           // destination ip address
     ngx_str_t     source_ip;                // source ip
     ngx_str_t     source_uid;               // source uid
     ngx_str_t     source_service;           // source service
@@ -252,7 +252,6 @@ static ngx_int_t ngx_http_istio_mixer_report_handler(ngx_http_request_t *r)
     }
 
     srv_conf = ngx_http_get_module_srv_conf(r,ngx_http_istio_mixer_module);
-
 
 
     main_conf = ngx_http_get_module_main_conf(r, ngx_http_istio_mixer_module);

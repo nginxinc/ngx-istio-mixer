@@ -100,6 +100,11 @@ test-nginx-setup:
 test-intg:
 	cargo +stable test --color=always intg -- --nocapture
 
+
+test-unit:
+	cargo test --lib
+
+
 # remove nginx container
 test-nginx-clean:
 	docker rm -f  ${DOCKER_NGINX_NAME} || true
@@ -136,6 +141,7 @@ build-module-docker:
 	cp build/Dockerfile.module build/context
 	cp -r mixer-ngx build/context
 	cp -r mixer-transport build/context
+	cp -r mixer-tests build/context
 	cp -r module build/context
 	docker build -f ./build/context/Dockerfile.module -t ${DOCKER_MODULE_IMAGE}:latest ./build/context
 
@@ -143,7 +149,7 @@ build-module-docker:
 build-module: build-module-docker copy-module
 
 # build base container image that pre-compiles rust and nginx modules
-build-base:	super_clean
+build-base:
 	docker build -f ./build/Dockerfile.base -t ${DOCKER_MODULE_BASE_IMAGE}:${GIT_COMMIT} .
 	docker tag ${DOCKER_MODULE_BASE_IMAGE}:${GIT_COMMIT} ${DOCKER_MODULE_BASE_IMAGE}:latest
 
