@@ -1,13 +1,17 @@
 extern crate reqwest;
+extern crate ngx_mixer_test;
 
-use util::make;
+#[macro_use]
+extern crate hyper;
+
+use ngx_mixer_test::util::make;
 use std::io::Read;
 
 
 #[test]
 fn nginx_report_test()  {
 
-    let _result = make("test-nginx-only");
+   // let _result = make("test-nginx-only");
 
     let mut response = reqwest::get("http://localhost:8000/report").unwrap();
     assert!(response.status().is_success(),"nginx test check succedd");

@@ -25,6 +25,8 @@ pub const SOURCE_SERVICE: &str = "source.service";
 pub const SRC_IP_HEADER: &str = "X-ISTIO-SRC-IP";
 pub const SRC_UID_HEADER: &str = "X-ISTIO-SRC-UID";
 pub const DESTINATION_SERVICE: &str = "destination.service";
+pub const DESTINATION_UID: &str = "destination.uid";
+pub const DESTINATION_IP: &str = "destination.ip";
 
 
 

@@ -18,19 +18,20 @@ use mixer_report::mixer_report_background;
 #[no_mangle]
 pub extern fn nginmesh_mixer_init() -> ngx_int_t {
 
-    log(&format!("init mixer start "));
+    ngx_log!("init mixer start ");
     thread::spawn(|| {
-        log(&format!("starting mixer report background task"));
+        ngx_log!("starting mixer report background task");
         mixer_report_background();
     });
 
     
-    log(&format!("init mixer end "));
+    ngx_log!("init mixer end ");
     return NGX_OK as ngx_int_t;
 }
 
 #[no_mangle]
 pub extern fn nginmesh_mixer_exit() {
-    log(&format!("mixer exit "));
+
+    ngx_log!("mixer exit ");
 }
 

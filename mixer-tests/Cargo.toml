@@ -3,6 +3,11 @@ name = "ngx-mixer-test"
 version = "0.0.27"
 authors = ["Sehyo Chang   sehyo@nginx.com"]
 
+[lib]
+doctest = false
+test = false
+
+
 
 [dependencies]
 reqwest = "0.8.0"

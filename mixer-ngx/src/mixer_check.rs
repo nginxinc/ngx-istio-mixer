@@ -9,10 +9,10 @@ use futures::future::Future;
 
 use ngx_rust::bindings::ngx_http_request_s;
 use ngx_rust::bindings::ngx_int_t;
-use ngx_rust::bindings::{ NGX_OK, NGX_DECLINED, NGX_HTTP_UNAUTHORIZED };
+use ngx_rust::bindings::{ NGX_OK, NGX_HTTP_UNAUTHORIZED };
 
 
-use ngx::location_config:: ngx_http_mixer_loc_conf_t ;
+use ngx::server_config::ngx_http_mixer_srv_conf_t;
 use ngx::main_config::ngx_http_mixer_main_conf_t;
 
 
@@ -61,13 +61,16 @@ pub fn check(server_name: &str,server_port: u16, attr: AttributeWrapper) -> bool
 #[no_mangle]
 pub extern fn nginmesh_mixer_check_handler(request: &ngx_http_request_s,
                                main_config: &ngx_http_mixer_main_conf_t,
-                               loc_config: &ngx_http_mixer_loc_conf_t)  -> ngx_int_t {
+                                           srv_conf_option: Option<&ngx_http_mixer_srv_conf_t>)  -> ngx_int_t {
 
     ngx_log!("rust mixer check handler called");
 
     let mut attributes = AttributeWrapper::new();
-    main_config.process_istio_attr(&mut attributes);
-    loc_config.process_istio_attr(&mut attributes);
+
+    if let Some(srv_conf) = srv_conf_option {
+        ngx_log!("send srv mixer attribute to mixer");
+        srv_conf.process_istio_attr(&mut attributes);
+    }
     request.process_istio_attr(&mut attributes);
 
 

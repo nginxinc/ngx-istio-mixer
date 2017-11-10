@@ -1,6 +1,9 @@
 extern crate reqwest;
+extern crate ngx_mixer_test;
+#[macro_use]
+extern crate hyper;
 
-use util::make;
+use ngx_mixer_test::util::make;
 use std::io::Read;
 use hyper::header::Headers;
 use reqwest::StatusCode;

@@ -16,7 +16,6 @@ use ngx_mixer_transport::mixer_grpc::service_grpc::Mixer;
 
 use protobuf::RepeatedField;
 use ngx_rust::bindings::ngx_http_request_s;
-use ngx_rust::nginx_http::log;
 
 use ngx_mixer_transport::attribute::attr_wrapper::AttributeWrapper;
 use ngx_mixer_transport::attribute::global_dict::GlobalDictionary;
@@ -26,6 +25,7 @@ use super::message::Channels;
 use super::message::MixerInfo;
 
 use ngx::main_config::ngx_http_mixer_main_conf_t;
+use ngx::server_config::ngx_http_mixer_srv_conf_t;
 use ngx::config::MixerConfig;
 
 
@@ -48,9 +48,9 @@ pub fn mixer_report_background()  {
     let rx = CHANNELS.rx.lock().unwrap();
 
     loop {
-        log(&format!("mixer report  thread waiting"));
+        ngx_log!("mixer report  thread waiting");
         let info = rx.recv().unwrap();
-        log(&format!("mixer report thread woke up"));
+        ngx_log!("mixer report thread woke up");
 
         let client = MixerClient::new_plain( &info.server_name, info.server_port , Default::default()).expect("init");
 
@@ -63,7 +63,7 @@ pub fn mixer_report_background()  {
 
         let result = resp.wait();
 
-        log(&format!("mixer report thread: finished sending to mixer, {:?}",result));
+        ngx_log!("mixer report thread: finished sending to mixer, {:?}",result);
     }
 }
 
@@ -82,19 +82,23 @@ fn send_dispatcher(main_config: &ngx_http_mixer_main_conf_t, attr: Attributes)  
 
    // log(&format!("server: {}, port {}",server_name, server_port));
 
-    log(&format!("send attribute to mixer report background task"));
+    ngx_log!("send attribute to mixer report background task");
 
 }
 
 
 
 #[no_mangle]
-pub extern fn nginmesh_mixer_report_handler(request: &ngx_http_request_s,main_config: &ngx_http_mixer_main_conf_t)  {
+pub extern fn nginmesh_mixer_report_handler(request: &ngx_http_request_s,main_config: &ngx_http_mixer_main_conf_t,
+    srv_conf_option: Option<&ngx_http_mixer_srv_conf_t>)  {
 
 
     let mut attr = AttributeWrapper::new();
 
-    main_config.process_istio_attr(&mut attr);
+    if let Some(srv_conf) = srv_conf_option {
+        ngx_log!("send srv mixer attribute to mixer");
+        srv_conf.process_istio_attr(&mut attr);
+    }
 
     request.process_istio_attr(&mut attr);
 
