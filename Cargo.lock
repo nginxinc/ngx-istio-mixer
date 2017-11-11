@@ -10,7 +10,7 @@ dependencies = [
  "httpbis 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 0.2.9 (registry+https://github.com/rust-lang/crates.io-index)",
  "protobuf 1.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "protoc-rust-grpc 0.2.1",
+ "protoc-rust-grpc 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "time 0.1.38 (registry+https://github.com/rust-lang/crates.io-index)",
  "tls-api 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -293,6 +293,7 @@ dependencies = [
 [[package]]
 name = "grpc-compiler"
 version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "protobuf 1.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -532,7 +533,7 @@ dependencies = [
  "httpbis 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 0.2.9 (registry+https://github.com/rust-lang/crates.io-index)",
  "ngx-mixer-transport 0.0.27",
- "ngx-rust 1.13.5",
+ "ngx-rust 0.1.0 (git+https://github.com/nginmesh/ngx-rust.git)",
  "protobuf 1.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "time 0.1.38 (registry+https://github.com/rust-lang/crates.io-index)",
  "tls-api 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -548,7 +549,8 @@ dependencies = [
 
 [[package]]
 name = "ngx-rust"
-version = "1.13.5"
+version = "0.1.0"
+source = "git+https://github.com/nginmesh/ngx-rust.git#9517b562d8af724f10c1b2b427b02b64fc8b6212"
 dependencies = [
  "bindgen 0.30.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -676,8 +678,9 @@ dependencies = [
 [[package]]
 name = "protoc-rust-grpc"
 version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "grpc-compiler 0.2.1",
+ "grpc-compiler 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "protobuf 1.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "protoc 1.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "protoc-rust 1.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1249,6 +1252,7 @@ dependencies = [
 "checksum futures-cpupool 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)" = "e86f49cc0d92fe1b97a5980ec32d56208272cbb00f15044ea9e2799dde766fdf"
 "checksum glob 0.2.11 (registry+https://github.com/rust-lang/crates.io-index)" = "8be18de09a56b60ed0edf84bc9df007e30040691af7acd1c41874faac5895bfb"
 "checksum grpc 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "fc6251c5d191eb0d122a4b4fdc24dfa0095b4f54e1f70de5c3913e0332054662"
+"checksum grpc-compiler 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "0b80ef06aa3e174f24eb688358e83afc50e328798de258b29e8abd27d6b9fc3c"
 "checksum httparse 1.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "af2f2dd97457e8fb1ae7c5a420db346af389926e36f43768b96f101546b04a07"
 "checksum httpbis 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)" = "73dde194d197eaa5b49bb58d212ed4a99a713cf47fc77a9d0471b76c0f73fcf0"
 "checksum hyper 0.11.6 (registry+https://github.com/rust-lang/crates.io-index)" = "1b45eac8b696d59491b079bd04fcb0f3488c0f6ed62dcb36bcfea8a543e9cdc3"
@@ -1272,6 +1276,7 @@ dependencies = [
 "checksum miow 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "8c1f2f3b1cf331de6896aabf6e9d55dca90356cc9960cca7eaaf408a355ae919"
 "checksum native-tls 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)" = "04b781c9134a954c84f0594b9ab3f5606abc516030388e8511887ef4c204a1e5"
 "checksum net2 0.2.31 (registry+https://github.com/rust-lang/crates.io-index)" = "3a80f842784ef6c9a958b68b7516bc7e35883c614004dd94959a4dca1b716c09"
+"checksum ngx-rust 0.1.0 (git+https://github.com/nginmesh/ngx-rust.git)" = "<none>"
 "checksum nom 3.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "05aec50c70fd288702bcd93284a8444607f3292dbdf2a30de5ea5dcdbe72287b"
 "checksum num-traits 0.1.40 (registry+https://github.com/rust-lang/crates.io-index)" = "99843c856d68d8b4313b03a17e33c4bb42ae8f6610ea81b28abe076ac721b9b0"
 "checksum num_cpus 1.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "514f0d73e64be53ff320680ca671b64fe3fb91da01e1ae2ddc99eb51d453b20d"
@@ -1287,6 +1292,7 @@ dependencies = [
 "checksum protobuf 1.4.2 (registry+https://github.com/rust-lang/crates.io-index)" = "99c7a6694a7896f7c039bc20a6947b83781b019d7d40df77ae069cd2a432e4a7"
 "checksum protoc 1.4.2 (registry+https://github.com/rust-lang/crates.io-index)" = "e2411b3169977a51cfc5e184c00b3426c4fabe69c01a91387eb2fba845a35f37"
 "checksum protoc-rust 1.4.2 (registry+https://github.com/rust-lang/crates.io-index)" = "0943274fd2755772b4f95189fabe2334634655ab43b49135647009a309e87878"
+"checksum protoc-rust-grpc 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "68bc8fa6685f274fe41d6d47e3c7d702662ff7c268e5bfa8d5e7a809784418c6"
 "checksum quasi 0.32.0 (registry+https://github.com/rust-lang/crates.io-index)" = "18c45c4854d6d1cf5d531db97c75880feb91c958b0720f4ec1057135fec358b3"
 "checksum quasi_codegen 0.32.0 (registry+https://github.com/rust-lang/crates.io-index)" = "51b9e25fa23c044c1803f43ca59c98dac608976dd04ce799411edd58ece776d4"
 "checksum rand 0.3.17 (registry+https://github.com/rust-lang/crates.io-index)" = "61efcbcd9fa8d8fbb07c84e34a8af18a1ff177b449689ad38a6e9457ecc7b2ae"
