@@ -17,7 +17,7 @@ time            = "0.1.38"
 base64          = "0.6.0"
 
 [build-dependencies]
-protoc-rust-grpc = { path = "../build/crates/grpc-rust/protoc-rust-grpc" }
+protoc-rust-grpc = "0.2.1"
 bindgen = "0.30.0"
 
 

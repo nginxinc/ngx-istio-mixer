@@ -47,15 +47,6 @@ DOCKER_NGINX_DAEMON=docker run -d -p 8000:8000  --privileged --name  ${DOCKER_NG
 	-v ${MODULE_DIR}:/src  -w /src   ${DOCKER_NGIX_IMAGE}
 
 
-# this need to be invoked before any build steps
-# set up dependencies
-setup:
-	rm -rf build/crates
-	mkdir build/crates
-	tar zxf build/vendor/protoc.zip -C build/crates
-	tar zxf build/vendor/ngx-rust-tar.zip -C build/crates
-
-
 nginx-build:
 	cd nginx/${NGINX_SRC}; \
 	./configure --prefix=${PWD}/nginx/install $(NGX_OPT); \
