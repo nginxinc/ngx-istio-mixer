@@ -15,7 +15,7 @@ use ngx_mixer_transport::mixer_grpc::service_grpc::Mixer;
 
 
 use protobuf::RepeatedField;
-use ngx_rust::bindings::ngx_array_t;
+use ngx_rust::bindings:: { ngx_array_t, NGX_LOG_DEBUG_HTTP };
 use ngx_rust::bindings::ngx_http_request_s;
 use ngx_rust::bindings::ngx_http_upstream_state_t;
 
@@ -119,6 +119,8 @@ fn upstream_response_time_calculation( upstream_states: *const ngx_array_t ) -> 
 pub extern fn nginmesh_mixer_report_handler(request: &ngx_http_request_s,main_config: &ngx_http_mixer_main_conf_t,
     srv_conf: &ngx_http_mixer_srv_conf_t)  {
 
+
+    ngx_http_debug!(request,"invoking nginx report");
 
     let mut attr = AttributeWrapper::new();
 

@@ -11,7 +11,7 @@ use ngx_mixer_transport::attribute::attr_wrapper::AttributeWrapper;
 use ngx_mixer_transport::attribute::global_dict::{ REQUEST_HEADER, REQUEST_HOST, REQUEST_METHOD, REQUEST_PATH,
                                                    REQUEST_REFER, REQUEST_SCHEME, REQUEST_SIZE, REQUEST_TIME, REQUEST_USERAGENT,
                                                    SOURCE_IP, SOURCE_UID, SRC_IP_HEADER, SRC_UID_HEADER,
-                                                    RESPONSE_CODE, RESPONSE_SIZE, RESPONSE_DURATION, RESPONSE_HEADERS
+                                                    RESPONSE_CODE, RESPONSE_SIZE, RESPONSE_HEADERS
 };
 
 use super::config::MixerConfig;
