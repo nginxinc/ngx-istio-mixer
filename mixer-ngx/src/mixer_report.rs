@@ -1,13 +1,8 @@
-extern crate grpc;
-extern crate futures;
-extern crate ngx_rust;
-extern crate ngx_mixer_transport;
-
 use std::str;
 use std::sync::mpsc::{channel};
 use std::sync::Mutex;
 
-
+use grpc::RequestOptions;
 use ngx_mixer_transport::mixer_grpc::service_grpc::MixerClient;
 use ngx_mixer_transport::mixer_grpc::report::ReportRequest;
 use ngx_mixer_transport::mixer_grpc::attributes::Attributes;
@@ -15,7 +10,7 @@ use ngx_mixer_transport::mixer_grpc::service_grpc::Mixer;
 
 
 use protobuf::RepeatedField;
-use ngx_rust::bindings:: { ngx_array_t, NGX_LOG_DEBUG_HTTP };
+use ngx_rust::bindings:: { ngx_array_t };
 use ngx_rust::bindings::ngx_http_request_s;
 use ngx_rust::bindings::ngx_http_upstream_state_t;
 
@@ -52,9 +47,9 @@ pub fn mixer_report_background()  {
     let rx = CHANNELS.rx.lock().unwrap();
 
     loop {
-        ngx_log!("mixer report  thread waiting");
+        ngx_event_debug!("mixer report  thread waiting");
         let info = rx.recv().unwrap();
-        ngx_log!("mixer report thread woke up");
+        ngx_event_debug!("mixer report thread woke up");
 
         let client = MixerClient::new_plain( &info.server_name, info.server_port , Default::default()).expect("init");
 
@@ -63,18 +58,18 @@ pub fn mixer_report_background()  {
         rf.push(info.attributes);
         req.set_attributes(rf);
 
-        let resp = client.report(grpc::RequestOptions::new(), req);
+        let resp = client.report(RequestOptions::new(), req);
 
         let result = resp.wait();
 
-        ngx_log!("mixer report thread: finished sending to mixer, {:?}",result);
+        ngx_event_debug!("mixer report thread: finished sending to mixer, {:?}",result);
     }
 }
 
 
 // send to background thread using channels
 #[allow(unused_must_use)]
-fn send_dispatcher(main_config: &ngx_http_mixer_main_conf_t, attr: Attributes)  {
+fn send_dispatcher(request: &ngx_http_request_s,main_config: &ngx_http_mixer_main_conf_t, attr: Attributes)  {
 
     let server_name = main_config.mixer_server.to_str();
     let server_port = main_config.mixer_port as u16;
@@ -83,10 +78,7 @@ fn send_dispatcher(main_config: &ngx_http_mixer_main_conf_t, attr: Attributes)  
     let info = MixerInfo { server_name: String::from(server_name), server_port: server_port, attributes: attr};
     tx.send(info.clone());
 
-
-   // log(&format!("server: {}, port {}",server_name, server_port));
-
-    ngx_log!("send attribute to mixer report background task");
+    ngx_http_debug!(request,"send attribute to mixer report background task");
 
 }
 
@@ -135,7 +127,7 @@ pub extern fn nginmesh_mixer_report_handler(request: &ngx_http_request_s,main_co
 
 
     let mut message_dict = MessageDictionary::new(GlobalDictionary::new());
-    send_dispatcher(main_config, attr.as_attributes(&mut message_dict));
+    send_dispatcher(request,main_config, attr.as_attributes(&mut message_dict));
 
 }
 

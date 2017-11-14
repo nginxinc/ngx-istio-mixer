@@ -3,17 +3,16 @@ extern crate base64;
 extern crate grpc;
 extern crate futures;
 extern crate protobuf;
+
+#[macro_use]
 extern crate ngx_rust;
+
 extern crate ngx_mixer_transport;
-
-
 
 #[macro_use]
 extern crate lazy_static;
 
 
-#[macro_use]
-mod log;
 
 pub mod ngx;
 

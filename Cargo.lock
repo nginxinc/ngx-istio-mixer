@@ -533,7 +533,7 @@ dependencies = [
  "httpbis 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 0.2.9 (registry+https://github.com/rust-lang/crates.io-index)",
  "ngx-mixer-transport 0.0.27",
- "ngx-rust 0.1.0 (git+https://github.com/nginmesh/ngx-rust.git)",
+ "ngx-rust 0.1.1 (git+https://github.com/nginmesh/ngx-rust.git)",
  "protobuf 1.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "time 0.1.38 (registry+https://github.com/rust-lang/crates.io-index)",
  "tls-api 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -549,8 +549,8 @@ dependencies = [
 
 [[package]]
 name = "ngx-rust"
-version = "0.1.0"
-source = "git+https://github.com/nginmesh/ngx-rust.git#9517b562d8af724f10c1b2b427b02b64fc8b6212"
+version = "0.1.1"
+source = "git+https://github.com/nginmesh/ngx-rust.git#4fa395c399706891a80ecae426b5ba050a2e4eb9"
 dependencies = [
  "bindgen 0.30.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -1276,7 +1276,7 @@ dependencies = [
 "checksum miow 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "8c1f2f3b1cf331de6896aabf6e9d55dca90356cc9960cca7eaaf408a355ae919"
 "checksum native-tls 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)" = "04b781c9134a954c84f0594b9ab3f5606abc516030388e8511887ef4c204a1e5"
 "checksum net2 0.2.31 (registry+https://github.com/rust-lang/crates.io-index)" = "3a80f842784ef6c9a958b68b7516bc7e35883c614004dd94959a4dca1b716c09"
-"checksum ngx-rust 0.1.0 (git+https://github.com/nginmesh/ngx-rust.git)" = "<none>"
+"checksum ngx-rust 0.1.1 (git+https://github.com/nginmesh/ngx-rust.git)" = "<none>"
 "checksum nom 3.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "05aec50c70fd288702bcd93284a8444607f3292dbdf2a30de5ea5dcdbe72287b"
 "checksum num-traits 0.1.40 (registry+https://github.com/rust-lang/crates.io-index)" = "99843c856d68d8b4313b03a17e33c4bb42ae8f6610ea81b28abe076ac721b9b0"
 "checksum num_cpus 1.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "514f0d73e64be53ff320680ca671b64fe3fb91da01e1ae2ddc99eb51d453b20d"
