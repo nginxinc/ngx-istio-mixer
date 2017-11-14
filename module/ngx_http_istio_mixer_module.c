@@ -213,7 +213,7 @@ static ngx_int_t ngx_http_mixer_filter_init(ngx_conf_t *cf) {
     }
     *h1 = ngx_http_istio_mixer_report_handler;
 
-    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "registering mixer_report handler");
+    ngx_log_debug(NGX_LOG_DEBUG_EVENT, ngx_cycle->log, 0, "registering mixer_report handler");
 
     clcf = ngx_http_conf_get_module_loc_conf(cf, ngx_http_core_module);
     clcf->handler = ngx_http_istio_mixer_check_handler;
@@ -224,7 +224,7 @@ static ngx_int_t ngx_http_mixer_filter_init(ngx_conf_t *cf) {
     }
     *h2 = ngx_http_istio_mixer_check_handler;
 
-    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "registering mixer_check handler");
+    ngx_log_debug(NGX_LOG_DEBUG_EVENT, ngx_cycle->log, 0, "registering mixer_check handler");
 
 
     
@@ -242,12 +242,12 @@ static ngx_int_t ngx_http_istio_mixer_report_handler(ngx_http_request_t *r)
     ngx_http_mixer_main_conf_t *main_conf;
     ngx_http_mixer_srv_conf_t *srv_conf;
 
-    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "start invoking istio mixer report handler");
+    ngx_log_debug(NGX_LOG_DEBUG_HTTP,  r->connection->log, 0, "start invoking istio mixer report handler");
 
     loc_conf = ngx_http_get_module_loc_conf(r, ngx_http_istio_mixer_module);
 
     if (!loc_conf->enable_report) {
-        ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "mixer_report not enabled, just passing thru");
+        ngx_log_debug(NGX_LOG_DEBUG_HTTP,  r->connection->log, 0, "mixer_report not enabled, just passing thru");
         return NGX_OK;
     }
 
@@ -256,12 +256,12 @@ static ngx_int_t ngx_http_istio_mixer_report_handler(ngx_http_request_t *r)
 
     main_conf = ngx_http_get_module_main_conf(r, ngx_http_istio_mixer_module);
 
-    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "using mixer server: %*s",main_conf->mixer_server.len,main_conf->mixer_server.data);
+    ngx_log_debug2(NGX_LOG_DEBUG_HTTP,  r->connection->log, 0, "using mixer server: %*s",main_conf->mixer_server.len,main_conf->mixer_server.data);
 
     // invoke mix client
     nginmesh_mixer_report_handler(r,main_conf,srv_conf);
 
-    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "finish calling mixer report handler");
+    ngx_log_debug(NGX_LOG_DEBUG_HTTP,  r->connection->log, 0, "finish calling mixer report handler");
 
 
    return NGX_OK;
@@ -278,13 +278,13 @@ static ngx_int_t ngx_http_istio_mixer_check_handler(ngx_http_request_t *r)
     ngx_http_mixer_main_conf_t *main_conf;
     ngx_http_mixer_srv_conf_t *srv_conf;
 
-    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "start invoking mixer_check handler");
+    ngx_log_debug(NGX_LOG_DEBUG_HTTP,  r->connection->log, 0, "start invoking mixer_check handler");
 
     loc_conf = ngx_http_get_module_loc_conf(r, ngx_http_istio_mixer_module);
 
 
     if (!loc_conf->enable_check) {
-        ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "mixer check not enabled, passing thru");
+        ngx_log_debug(NGX_LOG_DEBUG_HTTP,  r->connection->log, 0, "mixer check not enabled, passing thru");
         return NGX_OK;
     }
 
@@ -312,14 +312,14 @@ static void *ngx_http_mixer_create_loc_conf(ngx_conf_t *cf) {
     conf->enable_check = NGX_CONF_UNSET;
 
 
-    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "set up  mixer location config");
+    ngx_log_debug(NGX_LOG_DEBUG_EVENT, ngx_cycle->log, 0, "set up  mixer location config");
 
     return conf;
 }
 
 static char *ngx_http_mixer_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
 {
-    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "merging loc conf");
+    ngx_log_debug(NGX_LOG_DEBUG_EVENT, ngx_cycle->log, 0, "merging loc conf");
 
     ngx_http_mixer_loc_conf_t  *prev = parent;
     ngx_http_mixer_loc_conf_t  *conf = child;
@@ -343,7 +343,7 @@ static void *ngx_http_mixer_create_srv_conf(ngx_conf_t *cf) {
 
     conf->source_port = NGX_CONF_UNSET_UINT;
 
-    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "set up  mixer srv config");
+    ngx_log_debug(NGX_LOG_DEBUG_EVENT, ngx_cycle->log, 0, "set up  mixer srv config");
 
     return conf;
 }
@@ -351,7 +351,7 @@ static void *ngx_http_mixer_create_srv_conf(ngx_conf_t *cf) {
 
 static char *ngx_http_mixer_merge_srv_conf(ngx_conf_t *cf, void *parent, void *child)
 {
-    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "merging srv conf");
+    ngx_log_debug(NGX_LOG_DEBUG_EVENT, ngx_cycle->log, 0, "merging srv conf");
 
     ngx_http_mixer_srv_conf_t  *prev = parent;
     ngx_http_mixer_srv_conf_t  *conf = child;
@@ -375,7 +375,7 @@ static void *ngx_http_mixer_create_main_conf(ngx_conf_t *cf)
 {
   ngx_http_mixer_main_conf_t *conf;
 
-  ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "setting up main config");
+  ngx_log_debug(NGX_LOG_DEBUG_EVENT, ngx_cycle->log, 0, "setting up main config");
 
 
   conf = ngx_pcalloc(cf->pool, sizeof(ngx_http_mixer_main_conf_t));
