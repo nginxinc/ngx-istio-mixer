@@ -9,3 +9,7 @@ exclude = [
     "build"
 ]
 
+
+[profile.release]
+lto = true
+

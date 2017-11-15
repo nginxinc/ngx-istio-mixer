@@ -13,8 +13,7 @@ clean:
 	rm -f ${MIXER_CRATE}/src/grpc/report.rs
 	rm -f ${MIXER_CRATE}/src/grpc/service_grpc.rs
 	rm -f module/*.so
-	rm -rf build/crates
-	rm -rf build/context
+	rm -rf dockercontext
 
 
 super_clean: clean
