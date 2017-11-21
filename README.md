@@ -47,7 +47,6 @@ Build system use Docker to generate the module binary.
 
 ### mixer_server
 
-| -   | - |
 | --- | --- |
 | **Syntax**  | **mixer_server** <mixer_url_or_ip> |
 | **Default** | - |
@@ -58,7 +57,6 @@ Build system use Docker to generate the module binary.
 
 ### mixer_port
 
-| -   | - |
 | --- | --- |
 | **Syntax**  | **mixer_port** <port_number> |
 | **Default** | - |
@@ -69,7 +67,6 @@ Build system use Docker to generate the module binary.
 
 ### mixer_source_ip
 
-| -   | - |
 | --- | --- |
 | **Syntax**  | **mixer_source_ip** <ip_address> |
 | **Default** | - |
@@ -80,7 +77,6 @@ Build system use Docker to generate the module binary.
 
 ### mixer_source_uid
 
-| -   | - |
 | --- | --- |
 | **Syntax**  | **mixer_source_uid** <kubernetes client service id> |
 | **Default** | - |
@@ -91,7 +87,6 @@ Build system use Docker to generate the module binary.
 
 ### mixer_source_service
 
-| -   | - |
 | --- | --- |
 | **Syntax**  | **mixer_source_service** <kubernetes client service name> |
 | **Default** | - |
@@ -103,7 +98,7 @@ Build system use Docker to generate the module binary.
 
 ### mixer_source_port
 
-| -   | - |
+
 | --- | --- |
 | **Syntax**  | **mixer_source_port** <kubernetes client service name> |
 | **Default** | - |
@@ -115,7 +110,7 @@ Build system use Docker to generate the module binary.
 
 ### mixer_destination_service
 
-| -   | - |
+
 | --- | --- |
 | **Syntax**  | **mixer_destination_service** <kubernetes destination service name> |
 | **Default** | - |
@@ -126,7 +121,7 @@ Build system use Docker to generate the module binary.
 
 ### mixer_destination_uid
 
-| -   | - |
+
 | --- | --- |
 | **Syntax**  | **mixer_destination_service** <kubernetes destination service uid> |
 | **Default** | - |
@@ -155,13 +150,8 @@ Build system use Docker to generate the module binary.
 
 
 
-## Integration test
-
-This works only on mac.
+## Running unit test
 
 ```bash
-make test-nginx-only
-make test-http
+make test-unit
 ```
-
-
