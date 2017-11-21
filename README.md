@@ -1,55 +1,167 @@
-# Nginx Mixer Module
-
-Nginx module for integrating with Istio Mixer as part of Sidecar Proxy.
-
-The module is written using both C and R.  It depends on Nginx Rust module which provides 
-Rust wrapper for Nginx core.
-
-## Requirements
-
-Clang is used for generating gRpc client.
-
-https://rust-lang-nursery.github.io/rust-bindgen/requirements.html
+# NGINX dynamic module for Istio Mixer 
 
 
-## Set up for local development
+## Dependencies
 
-```bash
-make setup
+Build system use Docker to generate the module binary.
+
+## Compatibility
+
+* 1.11.x (last tested with 1.13.5)
+
+
+## Synopsis
+
+```nginx
+
+ http   {
+ 
+ 	 mixer_server istio-mixer.istio-system;
+     mixer_port   9091;
+
+ 
+	 server {
+	 
+	      mixer_source_ip     10.0.0.0;
+          mixer_source_uid    kubernetes://productpage-v1-2213572757-758cs.beta1;
+          mixer_source_service productpage.beta1.svc.cluster.local;
+          mixer_destination_service abc.ns.svc.cluster.local;
+          mixer_destination_uid details;
+         
+         
+          location /  {
+              mixer_report on;
+              proxy_pass http://service1;
+          }
+         
+            
+			
+	 }
+		
+ }	
+
 ```
 
-This install Nginx and gRpc compiler crates necessary for building and test crate on host computer
 
-## Unit Tests
+## Directives
 
-```bash
-make test-unit
-```
+### mixer_server
 
-Run all unit tests
+| -   | - |
+| --- | --- |
+| **Syntax**  | **mixer_server** <mixer_url_or_ip> |
+| **Default** | - |
+| **Context** | http |
 
-### Building and generating Nginx module
-
-Module generation is done using Docker to speed up build.
-
-```bash
-make build-base
-```
-
-This build base image which contains all the dependent crates and nginx core.  
-It should be rebuilt if dependent crates, nginx or protobuf definition changes
-
-```bash
-make build-module
-```
-
-Generate Nginx dyanmic module which will be saved in the 'config/modules'.
+`Description:` Specify the mixer server address
 
 
-### Integration Test
+### mixer_port
+
+| -   | - |
+| --- | --- |
+| **Syntax**  | **mixer_port** <port_number> |
+| **Default** | - |
+| **Context** | http |
+
+`Description:` Specify the mixer server port
+
+
+### mixer_source_ip
+
+| -   | - |
+| --- | --- |
+| **Syntax**  | **mixer_source_ip** <ip_address> |
+| **Default** | - |
+| **Context** | server, location  |
+| **Mixer attribute** | source.ip  |
+
+`Description:` Standard mixer attribute **Client IP address**
+
+### mixer_source_uid
+
+| -   | - |
+| --- | --- |
+| **Syntax**  | **mixer_source_uid** <kubernetes client service id> |
+| **Default** | - |
+| **Context** | server, location  |
+| **Mixer attribute** | source.uid  |
+
+`Description:` Standard mixer attribute **Platform-specific unique identifier for the client instance of the source service**
+
+### mixer_source_service
+
+| -   | - |
+| --- | --- |
+| **Syntax**  | **mixer_source_service** <kubernetes client service name> |
+| **Default** | - |
+| **Context** | server, location  |
+| **Mixer attribute** | source.service  |
+
+`Description:` Standard mixer attribute **The fully qualified name of the service that the client belongs to**
+
+
+### mixer_source_port
+
+| -   | - |
+| --- | --- |
+| **Syntax**  | **mixer_source_port** <kubernetes client service name> |
+| **Default** | - |
+| **Context** | server, location  |
+| **Mixer attribute** | source.service  |
+
+`Description:` Standard mixer attribute **The fully qualified name of the service that the client belongs to**
+
+
+### mixer_destination_service
+
+| -   | - |
+| --- | --- |
+| **Syntax**  | **mixer_destination_service** <kubernetes destination service name> |
+| **Default** | - |
+| **Context** | server, location  |
+| **Mixer attribute** | destination.servicee  |
+
+`Description:` Standard mixer attribute **The fully qualified name of the service that the server belongs to**
+
+### mixer_destination_uid
+
+| -   | - |
+| --- | --- |
+| **Syntax**  | **mixer_destination_service** <kubernetes destination service uid> |
+| **Default** | - |
+| **Context** | server, location  |
+| **Mixer attribute** | destination.uid  |
+
+`Description:` Standard mixer attribute **Platform-specific unique identifier for the server instance of the destination service.**
+
+
+
+## Installation
+
+1. Clone the git repository
+
+  ```
+  shell> git clone git@github.com:nginmesh/ngx-istio-mixer.git
+  ```
+
+2. Build the dynamic module
+
+  ```
+  shell> make build-base;make build-module
+  ```
+
+  This copies the generated .so file into module/release directory
+
+
+
+## Integration test
+
+This works only on mac.
 
 ```bash
 make test-nginx-only
+make test-http
 ```
 
-This launches docker container with nginx configuration that can connect to outside mixer.
+
