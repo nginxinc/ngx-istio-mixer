@@ -1,4 +1,4 @@
-NGINX_VER = 1.13.5
+NGINX_VER = 1.13.7
 RUST_COMPILER_TAG = 1.21.0
 DOCKER_REPO=nginmesh
 UNAME_S := $(shell uname -s)

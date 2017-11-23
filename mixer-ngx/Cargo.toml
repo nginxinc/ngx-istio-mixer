@@ -1,6 +1,6 @@
 [package]
 name = "ngx-mixer-module"
-version = "0.0.27"
+version = "0.1.1"
 authors = ["Sehyo Chang   sehyo@nginx.com"]
 
 
@@ -22,5 +22,6 @@ httpbis         = "0.4.1"
 lazy_static     = "0.2.8"
 time            = "0.1.38"
 base64          = "0.6.0"
-ngx-rust        =  { git = "https://github.com/nginmesh/ngx-rust.git", version = "0.1.1" }
+ngx-rust        =  { git = "https://github.com/nginmesh/ngx-rust.git", version = "0.1.2" }
+#ngx-rust        =  { path = "../../ngx-rust/ngx-binding" , version = "0.1.2" }
 ngx-mixer-transport        =  { path = "../mixer-transport" , version = "0.0.27" }
