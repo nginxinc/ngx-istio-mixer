@@ -219,3 +219,21 @@
 - destination.user
 
 - source.service
+
+# api attributes
+- api.service
+- api.version
+- api.operation
+- api.protocol
+
+# auth attributes
+- request.auth.principal
+- request.auth.audiences
+- request.auth.presenter
+
+# api key
+- request.api_key
+
+# check.error_code and error_message
+- check.error_code
+- check.error_message

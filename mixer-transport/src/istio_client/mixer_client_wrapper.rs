@@ -8,7 +8,7 @@ use futures::future::Future;
 use super::options::{ CheckOptions, ReportOptions, QuotaOptions };
 use super::check_cache:: { CheckCache } ;
 use super::quota_cache::QuotaCache;
-use transport::status:: { Status  };
+use transport::status:: { Status };
 use transport::mixer_grpc::Transport;
 use mixer_grpc::check:: { CheckRequest, CheckResponse} ;
 use attribute::global_dict::GlobalDictionary;

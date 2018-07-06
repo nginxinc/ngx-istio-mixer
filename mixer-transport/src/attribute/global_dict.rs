@@ -208,11 +208,13 @@ pub struct GlobalDictionary   {
 
 impl GlobalDictionary  {
 
-
+    // Create new instance of GlobalDictionary
     pub fn new() -> GlobalDictionary  {
 
+        // Get global list of keywords
         let global_words = GLOBAL_LIST;
         let mut global_dict: HashMap<String,i32> = HashMap::new();
+        // Copy list of keywords into global dictionary hashMap
         for  i in 0..global_words.len() {
             let key = GLOBAL_LIST[i];
             global_dict.insert(String::from(key),i as i32);

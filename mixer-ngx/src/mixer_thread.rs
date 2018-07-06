@@ -14,6 +14,8 @@ use mixer_report::mixer_report_background;
 pub extern fn nginmesh_mixer_init() -> ngx_int_t {
 
     ngx_event_debug!("init mixer start ");
+    // Spawn new thread to listen for mixer attributes from NGINX and send to mixer
+    ngx_event_debug!("Using dev module version - IP");
     thread::spawn(|| {
         ngx_event_debug!("starting mixer report background task");
         mixer_report_background();

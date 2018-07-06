@@ -8,7 +8,9 @@ use ngx_mixer_transport::attribute::global_dict::{ SOURCE_IP, SOURCE_UID, SOURCE
 };
 
 use super::config::MixerConfig;
+use std::net::Ipv4Addr;
 
+// ngx_http_mixer_srv_conf_t struct made compatible with data type in c module using #[repr(C)]
 #[repr(C)]
 pub struct ngx_http_mixer_srv_conf_t {
 
@@ -28,7 +30,9 @@ impl MixerConfig for  ngx_http_mixer_srv_conf_t  {
         attr.insert_string_attribute( DESTINATION_SERVICE, self.destination_service.to_str());
         attr.insert_string_attribute( DESTINATION_UID, self.destination_uid.to_str());
         attr.insert_string_attribute( DESTINATION_IP, self.destination_ip.to_str());
-        attr.insert_string_attribute( SOURCE_IP,self.source_ip.to_str());
+        attr.insert_ip_attribute( SOURCE_IP,self.source_ip.to_str().parse::<Ipv4Addr>().unwrap());
+        let ip_value = self.source_ip.to_str().parse::<Ipv4Addr>().unwrap();
+        ngx_event_debug!("IP value!! String: {}, Bytes vector: {:?}", ip_value, ip_value.octets().to_vec());
         attr.insert_string_attribute(SOURCE_UID,self.source_uid.to_str());
         attr.insert_string_attribute(SOURCE_SERVICE,self.source_service.to_str());
         attr.insert_int64_attribute(SOURCE_PORT,self.source_port as i64);
