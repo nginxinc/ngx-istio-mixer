@@ -17,7 +17,7 @@ use ngx_rust::bindings::ngx_http_upstream_state_t;
 use ngx_mixer_transport::attribute::attr_wrapper::AttributeWrapper;
 use ngx_mixer_transport::attribute::global_dict::GlobalDictionary;
 use ngx_mixer_transport::attribute::message_dict::MessageDictionary;
-use ngx_mixer_transport::attribute::global_dict::{ RESPONSE_DURATION };
+use ngx_mixer_transport::attribute::global_dict::{ RESPONSE_DURATION, CONTEXT_PROTOCOL };
 
 
 use super::message::Channels;
@@ -155,6 +155,9 @@ pub extern fn nginmesh_mixer_report_handler(request: &ngx_http_request_s,main_co
     let mut message_dict = MessageDictionary::new(GlobalDictionary::new());
 
     ngx_http_debug!(request,"setting mixer attributes");
+
+    attr.insert_string_attribute( CONTEXT_PROTOCOL, "http");
+
     // Send attributes from config to background thread
     send_dispatcher(request,main_config, attr.as_attributes(&mut message_dict));
 

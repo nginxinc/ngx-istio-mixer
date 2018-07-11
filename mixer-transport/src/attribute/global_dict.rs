@@ -22,11 +22,14 @@ pub const SOURCE_IP: &str = "source.ip";
 pub const SOURCE_UID: &str = "source.uid";
 pub const SOURCE_PORT: &str = "source.port";
 pub const SOURCE_SERVICE: &str = "source.service";
+pub const SOURCE_LABELS: &str = "source.labels";
 pub const SRC_IP_HEADER: &str = "X-ISTIO-SRC-IP";
 pub const SRC_UID_HEADER: &str = "X-ISTIO-SRC-UID";
 pub const DESTINATION_SERVICE: &str = "destination.service";
 pub const DESTINATION_UID: &str = "destination.uid";
 pub const DESTINATION_IP: &str = "destination.ip";
+pub const DESTINATION_LABELS: &str = "destination.labels";
+pub const CONTEXT_PROTOCOL: &str = "context.protocol";
 
 
 
