@@ -113,6 +113,18 @@ Build system use Docker to generate the module binary.
 `Description:` Standard mixer attribute **The fully qualified name of the service that the client belongs to**
 
 
+### mixer_source_labels
+
+| -   | - |
+| --- | --- |
+| **Syntax**  | **mixer_source_labels** <kubernetes client service labels> |
+| **Default** | - |
+| **Context** | server  |
+| **Mixer attribute** | source.labels  |
+
+`Description:` Standard mixer attribute **The map of key-value pairs attached to the client instance.**
+
+
 ### mixer_destination_service
 
 | -   | - |
@@ -134,6 +146,18 @@ Build system use Docker to generate the module binary.
 | **Mixer attribute** | destination.uid  |
 
 `Description:` Standard mixer attribute **Platform-specific unique identifier for the server instance of the destination service.**
+
+
+### mixer_destination_labels
+
+| -   | - |
+| --- | --- |
+| **Syntax**  | **mixer_destination_labels** <kubernetes destination service labels> |
+| **Default** | - |
+| **Context** | server  |
+| **Mixer attribute** | destination.labels  |
+
+`Description:` Standard mixer attribute **A map of key-value pairs attached to the server instance.**
 
 
 
