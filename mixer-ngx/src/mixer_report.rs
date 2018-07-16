@@ -81,7 +81,6 @@ fn send_dispatcher(request: &ngx_http_request_s,main_config: &ngx_http_mixer_mai
 
 
     let tx = CHANNELS.tx.lock().unwrap().clone();
-    ngx_event_debug!("Attributes to be sent: {:?}", attr);
     let info = MixerInfo { server_name: String::from(server_name), server_port: server_port, attributes: attr};
 
 
