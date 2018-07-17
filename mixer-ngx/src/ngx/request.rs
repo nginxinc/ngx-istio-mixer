@@ -51,15 +51,7 @@ impl MixerConfig for ngx_http_request_s  {
             for (name,value) in headers_in.headers_iterator()   {
                 ngx_http_debug!(self,"in header name: {}, value: {}",&name,&value);
 
-                // TODO: remove header
                 match name.as_ref()  {
-
-                    // TODO: Update SOURCE_IP to bytes value,
-                    // source ip is written to attribute as string value, which mixer doesn't support.
-                    // SRC_IP_HEADER  => {
-                    //     ngx_http_debug!(self,"source IP received {}",&value);
-                    //     attr.insert_string_attribute( SOURCE_IP,&value);
-                    // },
 
                     SRC_UID_HEADER => {
                         ngx_http_debug!(self,"source UID received {}",&value);
@@ -87,7 +79,7 @@ impl MixerConfig for ngx_http_headers_out_t {
     fn process_istio_attr(&self, attr: &mut AttributeWrapper, )  {
 
 
-       // ngx_http_debug!("send request header attribute to mixer");
+        // ngx_http_debug!("send request header attribute to mixer");
         // Add response code and response size from request
         attr.insert_int64_attribute(RESPONSE_CODE, self.status as i64);
         attr.insert_int64_attribute(RESPONSE_SIZE, self.content_length_n);
@@ -96,8 +88,6 @@ impl MixerConfig for ngx_http_headers_out_t {
         let mut map: HashMap<String,String> = HashMap::new();
         {
             for (name,value) in self.headers_iterator()   {
-
-            //    ngx_http_debug!("processing out header name: {}, value: {}",name,value);
 
                 map.insert(name,value);
 

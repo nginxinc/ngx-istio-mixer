@@ -139,6 +139,7 @@ pub extern fn nginmesh_mixer_report_handler(request: &ngx_http_request_s,main_co
     // Ngx_http_mixer_srv_conf_t made compatible through struct definition in ./ngx/server_config.rs
     srv_conf.process_istio_attr(&mut attr);
 
+    ngx_event_debug!("Mixer Attributes: {:?}", attr);
     // Send request attribute to mixer
     request.process_istio_attr(&mut attr);
 

@@ -231,8 +231,6 @@ char *service_labels_block(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     // Add offset of particular label value within structure
     ctx = (service_labels_conf_t *) (p + cmd->offset);
 
-    ngx_log_debug(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "Entering Service Labels Block~");
-
     // Save old configuration
     save = *cf;
 
@@ -262,8 +260,6 @@ char *save_service_labels_slot(ngx_conf_t *cf, ngx_command_t *cmd, void *conf) {
 
     // Get context set in block
     ctx = cf->ctx;
-
-    ngx_log_debug(NGX_LOG_DEBUG_EVENT, ngx_cycle->log, 0, "Entering Service Labels Save");
 
     // Get single line's arguments
     value = cf->args->elts;

@@ -1,4 +1,3 @@
-
 use std::collections::HashMap;
 
 use protobuf::well_known_types::Timestamp;
@@ -11,6 +10,7 @@ use std::net::Ipv4Addr;
 use super::message_dict::MessageDictionary;
 
 #[allow(dead_code)]
+#[derive(Debug)]
 enum AttrValue  {
     StrValue(String),
     I64(i64),
@@ -21,7 +21,7 @@ enum AttrValue  {
     Ip(Ipv4Addr)
 }
 
-
+#[derive(Debug)]
 pub struct AttributeWrapper {
 
     values: HashMap<String,AttrValue>,       // map of value
@@ -149,7 +149,6 @@ impl AttributeWrapper  {
                     attrs.mut_string_maps().insert(index, map_string_map(str_value,  dict));
                 }
                 &AttrValue::Ip(ref ip_value) => {
-                    // ngx_event_debug!("IP value!! String: {}, Bytes vector: {}", ip_value, ip_value.octets().to_vec());
                     attrs.mut_bytes().insert(index, ip_value.octets().to_vec());
                 }
 
