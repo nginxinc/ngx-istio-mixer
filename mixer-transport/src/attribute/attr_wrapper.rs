@@ -1,25 +1,27 @@
-
 use std::collections::HashMap;
 
 use protobuf::well_known_types::Timestamp;
-use mixer_grpc::attributes::Attributes;
+use mixer_grpc::attributes::CompressedAttributes;
 use mixer_grpc::attributes::StringMap;
 use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash };
+use std::hash::{ Hash };
+use std::net::Ipv4Addr;
 
 use super::message_dict::MessageDictionary;
 
 #[allow(dead_code)]
+#[derive(Debug)]
 enum AttrValue  {
     StrValue(String),
     I64(i64),
     Double(f64),
     Bool(bool),
     Timestamp(Timestamp),
-    StringMap(HashMap<String,String>)
+    StringMap(HashMap<String,String>),
+    Ip(Ipv4Addr)
 }
 
-
+#[derive(Debug)]
 pub struct AttributeWrapper {
 
     values: HashMap<String,AttrValue>,       // map of value
@@ -64,11 +66,14 @@ impl AttributeWrapper  {
                 },
                 &AttrValue::Timestamp(ref t_value) => {
                     t_value.get_seconds().hash(hashing)
-                }
+                },
                 &AttrValue::StringMap(ref str_value) => {
                     for (_key, value) in str_value.iter() {
                         value.hash(hashing);
                     }
+                },
+                &AttrValue::Ip(ref ip_value) => {
+                    ip_value.hash(hashing);
                 }
             }
 
@@ -112,10 +117,14 @@ impl AttributeWrapper  {
         self.insert_value(key,AttrValue::StringMap(value));
     }
 
-        // generate mixer attributes
-    pub fn as_attributes(&self, dict: &mut MessageDictionary) -> Attributes  {
+    pub fn insert_ip_attribute(&mut self, key:&str, value: Ipv4Addr) {
+        self.insert_value(key,AttrValue::Ip(value));
+    }
 
-        let mut attrs = Attributes::new();
+        // generate mixer attributes
+    pub fn as_attributes(&self, dict: &mut MessageDictionary) -> CompressedAttributes  {
+
+        let mut attrs = CompressedAttributes::new();
 
         for (key,value) in &self.values {
 
@@ -138,6 +147,9 @@ impl AttributeWrapper  {
                 },
                 &AttrValue::StringMap(ref str_value) => {
                     attrs.mut_string_maps().insert(index, map_string_map(str_value,  dict));
+                }
+                &AttrValue::Ip(ref ip_value) => {
+                    attrs.mut_bytes().insert(index, ip_value.octets().to_vec());
                 }
 
             }

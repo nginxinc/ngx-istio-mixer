@@ -22,11 +22,14 @@ pub const SOURCE_IP: &str = "source.ip";
 pub const SOURCE_UID: &str = "source.uid";
 pub const SOURCE_PORT: &str = "source.port";
 pub const SOURCE_SERVICE: &str = "source.service";
+pub const SOURCE_LABELS: &str = "source.labels";
 pub const SRC_IP_HEADER: &str = "X-ISTIO-SRC-IP";
 pub const SRC_UID_HEADER: &str = "X-ISTIO-SRC-UID";
 pub const DESTINATION_SERVICE: &str = "destination.service";
 pub const DESTINATION_UID: &str = "destination.uid";
 pub const DESTINATION_IP: &str = "destination.ip";
+pub const DESTINATION_LABELS: &str = "destination.labels";
+pub const CONTEXT_PROTOCOL: &str = "context.protocol";
 
 
 
@@ -208,11 +211,13 @@ pub struct GlobalDictionary   {
 
 impl GlobalDictionary  {
 
-
+    // Create new instance of GlobalDictionary
     pub fn new() -> GlobalDictionary  {
 
+        // Get global list of keywords
         let global_words = GLOBAL_LIST;
         let mut global_dict: HashMap<String,i32> = HashMap::new();
+        // Copy list of keywords into global dictionary hashMap
         for  i in 0..global_words.len() {
             let key = GLOBAL_LIST[i];
             global_dict.insert(String::from(key),i as i32);

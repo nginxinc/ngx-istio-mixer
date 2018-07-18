@@ -16,6 +16,8 @@ syntax = "proto3";
 
 package istio.mixer.v1;
 
+option go_package = "istio.io/api/mixer/v1";
+
 import "gogoproto/gogo.proto";
 import "mixer/v1/attributes.proto";
 
@@ -41,7 +43,7 @@ message ReportRequest {
   //
   // If a client is not sophisticated and doesn't want to use delta-encoding,
   // a degenerate case is to include all attributes in every individual message.
-  repeated Attributes attributes = 1 [(gogoproto.nullable) = false];
+  repeated CompressedAttributes attributes = 1 [(gogoproto.nullable) = false];
 
   // The default message-level dictionary for all the attributes.
   // Individual attribute messages can have their own dictionaries, but if they don't
@@ -56,5 +58,6 @@ message ReportRequest {
   uint32 global_word_count = 3;
 }
 
+// Used to carry responses to telemetry reports
 message ReportResponse {
 }
