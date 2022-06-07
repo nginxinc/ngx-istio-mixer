@@ -7,7 +7,7 @@ authors = ["Sehyo Chang   sehyo@nginx.com"]
 
 [dependencies]
 grpc		    = "0.2.1"
-protobuf        = "1.4.1"
+protobuf        = "2.6.0"
 futures         = "0.1.14"
 futures-cpupool = "0.1.5"
 tls-api         = "0.1.8"
