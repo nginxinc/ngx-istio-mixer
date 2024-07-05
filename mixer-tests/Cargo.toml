@@ -11,4 +11,4 @@ test = false
 
 [dependencies]
 reqwest = "0.8.0"
-hyper = "0.11.6"
+hyper = "0.14.5"
